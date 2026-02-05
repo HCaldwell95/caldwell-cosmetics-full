@@ -1,0 +1,58 @@
+# ----------------------------------
+# Python
+# ----------------------------------
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.log
+
+# ----------------------------------
+# Virtual Environments
+# ----------------------------------
+venv/
+.env
+.env.*
+
+# ----------------------------------
+# Django
+# ----------------------------------
+db.sqlite3
+db.sqlite3-journal
+media/
+staticfiles/
+
+# ----------------------------------
+# Django Migrations (keep if solo dev)
+# ----------------------------------
+# Comment this out if you want migrations tracked
+# */migrations/*.py
+# */migrations/__init__.py
+
+# ----------------------------------
+# IDE / Editor
+# ----------------------------------
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ----------------------------------
+# OS Files
+# ----------------------------------
+.DS_Store
+Thumbs.db
+
+# ----------------------------------
+# Testing / Coverage
+# ----------------------------------
+.coverage
+htmlcov/
+.pytest_cache/
+
+# ----------------------------------
+# Build / Distribution
+# ----------------------------------
+build/
+dist/
+*.egg-info/
