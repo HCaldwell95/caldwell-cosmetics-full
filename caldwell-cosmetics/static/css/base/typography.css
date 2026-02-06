@@ -1,0 +1,39 @@
+body {
+    font-family: var(--font-cormorant);
+    color: var(--color-text-dark);
+    background-color: var(--color-background-light);
+    line-height: 1.6;
+    font-size: 16px;
+}
+
+/* Headings */
+h2, h3, h4, h5, h6 {
+    font-family: var(--font-italiana);
+    font-weight: 400;
+    margin-bottom: var(--space-md);
+    color: var(--color-dark-brown);
+    text-transform: uppercase;
+}
+
+h1 { font-size: 3rem; }
+h2 { font-size: 2.5rem; }
+h3 { font-size: 2rem; }
+h4 { font-size: 1.75rem; }
+h5 { font-size: 1.5rem; }
+h6 { font-size: 1.25rem; }
+
+/* Paragraphs */
+p {
+    margin-bottom: var(--space-md);
+}
+
+/* Links */
+a {
+    color: var(--color-primary);
+    transition: color 0.3s ease;
+    text-decoration: none;
+}
+
+a:hover {
+    color: var(--color-secondary);
+}

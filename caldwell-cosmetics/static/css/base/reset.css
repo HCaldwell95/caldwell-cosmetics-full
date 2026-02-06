@@ -1,0 +1,30 @@
+/* Reset margin, padding, and box-sizing */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Remove list styles */
+ul, ol {
+    list-style: none;
+}
+
+/* Remove default link styles */
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+/* Remove image borders */
+img {
+    border: 0;
+    max-width: 100%;
+    display: block;
+}
+
+/* Basic form elements */
+input, button, textarea, select {
+    font-family: inherit;
+    font-size: inherit;
+}

@@ -1,0 +1,54 @@
+/* Base variables */
+:root {
+
+    --color-primary: #d4a373;
+    --color-primary-dark: #b8865f;
+    --color-secondary: #2c3e50;
+    --color-text: #333333;
+    --color-text-light: #666666;
+    --color-background: #ffffff;
+    --color-background-alt: #f8f9fa;
+    --color-overlay: rgba(0, 0, 0, 0.4);
+
+    /* Background Colors */
+    --color-background-light: rgb(255, 251, 249); /* Off-White */
+    --color-background-cream: rgb(253, 247, 245); /* Cream */
+    --color-hero-overlay: rgba(95, 95, 95, 0.4); /* Hero image tint overlay */
+
+    /* Accent & Text Colors */
+    --color-accent-peach: #eed6c2; /* Peach Accent */
+    --color-accent-dark: #302121; /* Darker variant */
+    --color-text-dark: #302321; /* Dark Brown for text and links */
+    --color-heading: black;
+
+    /* Typography */
+    --font-cormorant: 'Cormorant', serif;
+    --font-italiana: 'Italiana', sans-serif;
+    --font-weight-regular: 400;
+    --font-weight-bold: 600;
+    --font-size-base: 14px;
+    --font-size-heading: 1.5rem;
+    --font-size-small: 90%;
+
+    /* Spacing */
+    --spacing-xs: 0.5rem;
+    --spacing-sm: 1rem;
+    --spacing-md: 2rem;
+    --spacing-lg: 3rem;
+    --spacing-xl: 4rem;
+    --spacing-xxl: 6rem;
+    
+    --border-radius: 8px;
+    --transition-speed: 0.3s;
+    
+    --max-width-content: 1200px;
+    --max-width-text: 800px;
+
+    /* Border radius */
+    --color-border: rgba(0, 0, 0, 0.5);
+    --border-width: 2px;
+    --border-radius: 10px;
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+}

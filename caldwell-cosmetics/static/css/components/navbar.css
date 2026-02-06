@@ -1,0 +1,173 @@
+/* ----------------- Fixed Navbar ----------------- */
+.nav-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    /* Off-white "glass" look */
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0));
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1pc solid rgba(255, 255, 255, 0.18);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    
+    z-index: 1000;
+    height: 100px; /* Narrow fixed bar */
+}
+
+.nav-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 100%;
+    padding: 0 20px;
+    background: rgba(255, 255, 255, 0.18);
+}
+
+/* ---------- Logo ---------- */
+.logo-link {
+    display: flex;
+    align-items: center;
+    max-height: 100%;
+}
+
+.logo-image {
+    max-height: 100px; /* scales to fit navbar height */
+    height: auto;
+    width: auto;
+    display: block;
+}
+
+/* ---------- Navigation Links ---------- */
+nav {
+    display: flex;
+    align-items: center;
+}
+
+.nav-links {
+    list-style: none;
+    display: flex;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+}
+
+.nav-links li {
+    margin-left: 30px;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: var(--text, #333);
+    font-weight: 500;
+    font-size: 1.5em;
+    transition: color 0.3s;
+    position: relative;
+    padding: 5px 0;
+    text-transform: uppercase;
+}
+
+/* Hover underline effect */
+.nav-links a:after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: -3px;
+    left: 0;
+    background-color: var(--color-accent-dark);
+    transition: width 0.3s;
+}
+
+.nav-links a:hover {
+    color: var(--color-accent-peach, #ff8c42);
+}
+
+.nav-links a:hover:after {
+    width: 100%;
+}
+
+/* Sign in link as button */
+.sign-in-btn {
+    background-color: transparent;
+    border: 2px solid var(--color-accent-dark);
+    border-radius: 4px;
+    padding: 5px 12px;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.sign-in-btn:hover {
+    background-color: var(--color-accent-peach);
+    color: #fff;
+}
+
+/* Book Now button */
+.book-btn {
+    background-color: var(--color-accent-dark);
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    padding: 6px 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+.book-btn:hover {
+    background-color: var(--color-accent-peach);
+    transform: translateY(-2px);
+}
+
+/* ---------- Body padding to account for fixed navbar ---------- */
+body {
+    padding-top: 70px; /* same as navbar height */
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 991px) {
+    .nav-container {
+        flex-direction: column;
+        height: auto;
+        padding: 10px 20px;
+    }
+
+    .logo-image {
+        max-height: 50px;
+        margin-bottom: 8px;
+    }
+
+    .nav-links {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .nav-links li {
+        margin: 10px 0;
+    }
+
+    body {
+        padding-top: 120px; /* allow extra space for stacked menu */
+    }
+}
+
+@media (max-width: 575px) {
+    .logo-image {
+        max-height: 40px;
+    }
+
+    .nav-links a,
+    .sign-in-btn,
+    .book-btn {
+        font-size: 14px;
+    }
+
+    .book-btn,
+    .sign-in-btn {
+        padding: 5px 12px;
+    }
+
+    body {
+        padding-top: 130px;
+    }
+}

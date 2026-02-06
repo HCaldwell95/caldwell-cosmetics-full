@@ -1,0 +1,224 @@
+/* ---------------------------------------------------------------------- 
+    Variables
+------------------------------------------------------------------------- */
+:root {
+    --color-accent-peach: #f4c6a5;
+    --color-dark-brown: #4a2c1a;
+    --color-white: #ffffff;
+    --border-width: 2px;
+
+    --font-size-xsmall: 0.75rem;
+    --font-size-small: 0.875rem;
+    --font-size-medium: 1rem;
+    --font-size-large: 1.2rem;
+    --font-size-xl: 1.5rem;
+
+    --space-xs: 4px;
+    --space-sm: 8px;
+    --space-md: 16px;
+    --space-lg: 24px;
+
+    --z-footer: 1;
+    --z-modal: 9999;
+}
+
+/* ---------------------------------------------------------------------- 
+    Footer Base Styles
+------------------------------------------------------------------------- */
+.footer-main {
+    background-color: var(--color-accent-peach);
+    width: 100%;
+    position: relative;
+    margin-top: var(--space-md);
+    border-top: var(--border-width) ridge var(--color-dark-brown);
+    z-index: var(--z-footer);
+    padding: var(--space-md);
+    font-family: 'Cormorant', serif;
+}
+
+#footer-background-image {
+    position: relative;
+    z-index: 0;
+}
+
+#footer-background-image::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: url(../images/footer-overlay.jpg) no-repeat center/cover;
+    opacity: 0.2;
+    z-index: -1;
+}
+
+/* Footer Sections */
+.footer-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-md);
+}
+
+.footer-address,
+.footer-contact {
+    color: var(--color-dark-brown);
+}
+
+.footer-address h6,
+.footer-contact h6 {
+    font-size: var(--font-size-small);
+    margin-bottom: var(--space-xs);
+}
+
+.footer-address p,
+.footer-contact p,
+.footer-contact a {
+    font-size: var(--font-size-xsmall);
+    margin: 0;
+}
+
+/* Back to top */
+.back-to-top {
+    text-align: center;
+    font-size: var(--font-size-large);
+    margin-top: var(--space-sm);
+}
+
+.back-to-top a {
+    color: var(--color-dark-brown);
+    transition: color 0.3s;
+}
+
+.back-to-top a:hover,
+.back-to-top a:focus {
+    color: #ddbe66;
+}
+
+/* Social Networks */
+.social-networks ul {
+    display: flex;
+    justify-content: space-evenly;
+    list-style: none;
+    padding: 0;
+    gap: var(--space-md);
+}
+
+.social-networks a {
+    font-size: var(--font-size-xl);
+    color: var(--color-dark-brown);
+    transition: color 0.3s;
+}
+
+.social-networks a:hover,
+.social-networks a:focus {
+    color: #ddbe66;
+}
+
+/* ---------------------------------------------------------------------- 
+    Modal Styles
+------------------------------------------------------------------------- */
+.modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.4);
+    z-index: var(--z-modal);
+    pointer-events: none;
+}
+
+.modal.show {
+    display: block;
+    pointer-events: auto;
+}
+
+.modal-content {
+    background-color: var(--color-white);
+    margin: 10% auto;
+    padding: var(--space-md);
+    border-radius: 6px;
+    width: 90%;
+    max-width: 400px;
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.modal-content .close {
+    float: right;
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #aaa;
+    cursor: pointer;
+    transition: color 0.3s;
+}
+
+.modal-content .close:hover,
+.modal-content .close:focus {
+    color: #000;
+}
+
+/* Buttons */
+button {
+    padding: var(--space-sm) var(--space-md);
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: var(--font-size-medium);
+    transition: background-color 0.3s, box-shadow 0.3s;
+}
+
+#accept {
+    background-color: #4CAF50;
+    color: var(--color-white);
+}
+
+#accept:hover {
+    background-color: #45a049;
+}
+
+#decline {
+    background-color: #f44336;
+    color: var(--color-white);
+}
+
+#decline:hover {
+    background-color: #e53935;
+}
+
+/* ---------------------------------------------------------------------- 
+    Responsive Styles (Mobile First)
+------------------------------------------------------------------------- */
+@media screen and (min-width: 768px) {
+    .footer-main {
+        padding: var(--space-lg);
+    }
+
+    .back-to-top {
+        font-size: 2rem;
+    }
+
+    .footer-address p,
+    .footer-contact p,
+    .footer-contact a {
+        font-size: var(--font-size-small);
+    }
+
+    .social-networks a {
+        font-size: 2rem;
+    }
+
+    .footer-section {
+        flex-direction: row;
+        justify-content: space-between;
+    }
+}
+
+@media screen and (min-width: 1024px) {
+    .back-to-top { font-size: 2.5rem; }
+    .footer-address h6, .footer-contact h6 { font-size: var(--font-size-medium); }
+    .social-networks a { font-size: 2.5rem; }
+}
+
+@media screen and (min-width: 1280px) {
+    .back-to-top { font-size: 3rem; }
+    .footer-address p, .footer-contact p, .footer-contact a { font-size: var(--font-size-medium); }
+}
+

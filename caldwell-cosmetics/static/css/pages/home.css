@@ -1,0 +1,453 @@
+/* ============================================
+   HOME PAGE STYLES
+   ============================================ */
+
+
+
+/* ============================================
+   MAIN CONTENT
+   ============================================ */
+
+.main-content {
+    background-color: var(--color-background);
+}
+
+/* ============================================
+   SECTION BASE STYLES
+   ============================================ */
+
+.section {
+    padding: var(--spacing-xl) 0;
+}
+
+.section--about {
+    background-color: var(--color-background);
+}
+
+.section--treatments-overview {
+    background-color: var(--color-background-alt);
+}
+
+.section--gallery {
+    background-color: var(--color-background);
+}
+
+.section--booking-process {
+    background-color: var(--color-background-alt);
+}
+
+.section--location {
+    background-color: var(--color-background);
+    padding-bottom: 0;
+}
+
+.container {
+    max-width: var(--max-width-content);
+    margin: 0 auto;
+    padding: 0 var(--spacing-md);
+}
+
+/* ============================================
+   SECTION HEADERS
+   ============================================ */
+
+.section__header {
+    text-align: center;
+    margin-bottom: var(--spacing-lg);
+}
+
+.section__title {
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 400;
+    color: var(--color-secondary);
+    margin-bottom: var(--spacing-md);
+    position: relative;
+    display: inline-block;
+    font-family: 'Playfair Display', serif;
+}
+
+.section__title::after {
+    content: '';
+    display: block;
+    width: 60px;
+    height: 3px;
+    background-color: var(--color-primary);
+    margin: var(--spacing-sm) auto 0;
+}
+
+/* ============================================
+   ABOUT SECTION
+   ============================================ */
+
+.about__content {
+    max-width: var(--max-width-text);
+    margin: 0 auto;
+}
+
+.about__content p {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: var(--color-text);
+    margin-bottom: var(--spacing-md);
+}
+
+.about__intro {
+    font-size: 1.2rem !important;
+    color: var(--color-text-light);
+    font-weight: 300;
+}
+
+.about__highlight {
+    background-color: var(--color-background-alt);
+    border-left: 4px solid var(--color-primary);
+    padding: var(--spacing-md);
+    margin: var(--spacing-lg) 0;
+    border-radius: var(--border-radius);
+}
+
+.about__highlight p {
+    margin-bottom: 0;
+}
+
+.about__closing {
+    font-weight: 500;
+    color: var(--color-secondary);
+}
+
+/* ============================================
+   TREATMENTS OVERVIEW SECTION
+   ============================================ */
+
+.treatments-overview__content {
+    max-width: var(--max-width-text);
+    margin: 0 auto;
+    text-align: center;
+}
+
+.treatments-overview__content p {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: var(--color-text);
+    margin-bottom: var(--spacing-md);
+}
+
+/* ============================================
+   BUTTON STYLES
+   ============================================ */
+
+.btn {
+    display: inline-block;
+    padding: var(--spacing-sm) var(--spacing-lg);
+    font-size: 1.8rem;
+    font-weight: 500;
+    text-decoration: none;
+    border-radius: var(--border-radius);
+    transition: all var(--transition-speed) ease;
+    border: none;
+    cursor: pointer;
+    margin-top: var(--spacing-md);
+}
+
+.btn--primary {
+    background-color: var(--color-primary);
+    color: #ffffff;
+}
+
+.btn--primary:hover {
+    background-color: var(--color-primary-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    color: #ffffff;
+}
+
+/* ============================================
+   GALLERY CAROUSEL
+   ============================================ */
+
+.gallery-carousel {
+    position: relative;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.gallery-carousel__inner {
+    position: relative;
+    overflow: hidden;
+}
+
+.gallery-carousel__item {
+    display: none;
+    width: 100%;
+}
+
+.gallery-carousel__item--active {
+    display: block;
+}
+
+.gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--spacing-md);
+    padding: var(--spacing-sm);
+}
+
+@media (min-width: 768px) {
+    .gallery-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+.gallery-grid__item {
+    position: relative;
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+    border-radius: var(--border-radius);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform var(--transition-speed) ease;
+}
+
+.gallery-grid__item:hover {
+    transform: scale(1.02);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.gallery-grid__media {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* ============================================
+   CAROUSEL CONTROLS
+   ============================================ */
+
+.gallery-carousel__control {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: rgba(255, 255, 255, 0.9);
+    border: none;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 10;
+    transition: all var(--transition-speed) ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.gallery-carousel__control:hover {
+    background-color: rgba(255, 255, 255, 1);
+    transform: translateY(-50%) scale(1.1);
+}
+
+.gallery-carousel__control--prev {
+    left: var(--spacing-md);
+}
+
+.gallery-carousel__control--next {
+    right: var(--spacing-md);
+}
+
+.gallery-carousel__control-icon {
+    font-size: 2rem;
+    color: var(--color-secondary);
+    font-weight: bold;
+}
+
+@media (max-width: 768px) {
+    .gallery-carousel__control {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .gallery-carousel__control--prev {
+        left: var(--spacing-sm);
+    }
+    
+    .gallery-carousel__control--next {
+        right: var(--spacing-sm);
+    }
+    
+    .gallery-carousel__control-icon {
+        font-size: 1.5rem;
+    }
+}
+
+/* ============================================
+   BOOKING PROCESS SECTION
+   ============================================ */
+
+.booking-steps {
+    max-width: var(--max-width-text);
+    margin: 0 auto;
+    padding-left: 0;
+    counter-reset: step-counter;
+    list-style: none;
+}
+
+.booking-steps__item {
+    position: relative;
+    padding-left: var(--spacing-xl);
+    margin-bottom: var(--spacing-lg);
+    counter-increment: step-counter;
+}
+
+.booking-steps__item::before {
+    content: counter(step-counter);
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 40px;
+    height: 40px;
+    background-color: var(--color-primary);
+    color: #ffffff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+.booking-steps__title {
+    display: block;
+    color: var(--color-secondary);
+    font-size: 1.2rem;
+    margin-bottom: var(--spacing-xs);
+}
+
+.booking-steps__description {
+    color: var(--color-text-light);
+    line-height: 1.6;
+    margin-bottom: 0;
+}
+
+.booking-process__footer {
+    text-align: center;
+    font-size: 1.2rem;
+    font-weight: 500;
+    color: var(--color-secondary);
+    margin-top: var(--spacing-lg);
+}
+
+/* ============================================
+   LOCATION MAP SECTION
+   ============================================ */
+
+.location-map {
+    width: 100%;
+    height: 450px;
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.location-map__iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+
+/* ============================================
+   UTILITY CLASSES
+   ============================================ */
+
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* ============================================
+   RESPONSIVE ADJUSTMENTS
+   ============================================ */
+
+@media (max-width: 768px) {
+    .section {
+        padding: var(--spacing-lg) 0;
+    }
+    
+    .hero {
+        height: 60vh;
+        min-height: 400px;
+    }
+    
+    .booking-steps__item {
+        padding-left: var(--spacing-lg);
+    }
+    
+    .booking-steps__item::before {
+        width: 35px;
+        height: 35px;
+        font-size: 1rem;
+    }
+    
+    .location-map {
+        height: 350px;
+    }
+}
+
+@media (max-width: 576px) {
+    :root {
+        --spacing-md: 1.5rem;
+        --spacing-lg: 2rem;
+        --spacing-xl: 2.5rem;
+    }
+    
+    .container {
+        padding: 0 var(--spacing-sm);
+    }
+    
+    .gallery-grid {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-sm);
+    }
+}
+
+/* ============================================
+   PRINT STYLES
+   ============================================ */
+
+@media print {
+    .hero,
+    .services-marquee,
+    .gallery-carousel,
+    .location-map {
+        display: none;
+    }
+    
+    .section {
+        page-break-inside: avoid;
+    }
+}
+
+/* ============================================
+   ACCESSIBILITY ENHANCEMENTS
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    
+    .services-marquee__track {
+        animation: none;
+    }
+}
+
+/* Focus states for keyboard navigation */
+.btn:focus-visible,
+.gallery-carousel__control:focus-visible {
+    outline: 3px solid var(--color-primary);
+    outline-offset: 2px;
+}

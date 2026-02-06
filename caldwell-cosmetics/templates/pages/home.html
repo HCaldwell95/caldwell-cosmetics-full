@@ -1,0 +1,315 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Home | Caldwell Cosmetics{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/style.css' %}">
+{% endblock %}
+
+{% block hero %}
+<!-- Hero Section -->
+<section class="hero">
+    <div class="hero__container">
+        <img 
+            src="https://res.cloudinary.com/ddj2rpxcb/image/upload/v1749706306/home-hero-min_rf44a9.jpg" 
+            class="hero__image" 
+            alt="Natural beauty - close up of woman with blue eyes"
+            loading="eager"
+        >
+        <div class="hero__overlay"></div>
+        <div class="hero__content">
+            <h1 class="hero__title">Caldwell Cosmetics</h1>
+            <p class="hero__tagline">Est. 2024</p>
+            <div class="hero__description">
+                <p>Where natural beauty meets personalised care.</p>
+                <p class="hero__description-extended">
+                    Join us in celebrating the beauty of simplicity, promoting wellness, and 
+                    discovering the best version of yourself.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Services Marquee -->
+<div class="services-marquee">
+    <div class="services-marquee__track">
+        <span class="services-marquee__item">IPL Hair Reduction</span>
+        <span class="services-marquee__item">Skin Rejuvenation</span>
+        <span class="services-marquee__item">Platelet Rich Plasma (PRP)</span>
+        <span class="services-marquee__item">Anti Wrinkle Injections</span>
+        <span class="services-marquee__item">Hair Rejuvenation</span>
+        <span class="services-marquee__item">illumiFacial®</span>
+        <span class="services-marquee__item">Acne Treatments</span>
+        <span class="services-marquee__item">Facial Veins or Pigment Removal</span>
+        <span class="services-marquee__item">Consultations</span>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<main class="main-content">
+    
+    <!-- About Section -->
+    <section class="section section--about">
+        <div class="container">
+            <header class="section__header">
+                <h2 class="section__title">About Us</h2>
+            </header>
+            
+            <div class="about__content">
+                <p class="about__intro">
+                    At Caldwell Cosmetics, we believe beauty starts from within—and we're here to help you feel confident, radiant, and truly yourself. 
+                    Led by Rabia, a compassionate Nurse with over seven years of NHS experience, our clinic combines professional expertise with a genuine 
+                    passion for holistic well-being.
+                </p>
+                
+                <p>
+                    We specialise in personalised skin treatments designed to bring out your natural glow, all within a calm, welcoming space that encourages 
+                    self-care and confidence. Every detail of your visit is thoughtfully considered, creating an experience that feels as good as it looks.
+                </p>
+                
+                <p>
+                    Whether you're beginning your skincare journey or looking to enhance your current routine, we're here to support you with expert advice, 
+                    tailored treatments, and a warm, personal touch.
+                </p>
+                
+                <div class="about__highlight">
+                    <p>
+                        <strong>And there's more to come—Caldwell Cosmetics is growing!</strong> We're excited to be expanding our range of treatments to give you even more ways 
+                        to feel your best. From targeted skincare solutions to relaxing wellness services, our upcoming offerings will help you care for your skin, 
+                        body, and mind.
+                    </p>
+                </div>
+                
+                <p class="about__closing">
+                    Join us on your journey to glowing, confident skin—and discover how beautiful it feels to invest in yourself.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Treatments Overview -->
+    <section class="section section--treatments-overview">
+        <div class="container">
+            <header class="section__header">
+                <h2 class="section__title">Our Treatments</h2>
+            </header>
+            
+            <div class="treatments-overview__content">
+                <p>
+                    At Caldwell Cosmetics, we believe everyone deserves to feel confident in their skin. That's why we offer a wide range 
+                    of advanced aesthetic treatments designed not just to enhance your natural beauty, but to help you feel your absolute best.
+                </p>
+                
+                <p>
+                    From your very first consultation, our friendly and experienced team will take the time to understand your personal goals 
+                    and tailor every treatment to suit your unique needs.
+                </p>
+                
+                <p>
+                    Discover the right treatment for you by exploring our full range of services. We're here to guide you every step of the way with expert advice and personalised care.
+                </p>
+                
+                <a href="" class="btn btn--primary">View All Treatments</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Gallery Carousel -->
+    <section class="section section--gallery">
+        <div class="container">
+            <div class="gallery-carousel" id="galleryCarousel" data-bs-ride="carousel" data-bs-interval="20000">
+                <div class="gallery-carousel__inner">
+                    
+                    <!-- Slide 1 -->
+                    <div class="gallery-carousel__item gallery-carousel__item--active">
+                        <div class="gallery-grid">
+                            <div class="gallery-grid__item">
+                                <video 
+                                    src="https://res.cloudinary.com/ddj2rpxcb/video/upload/v1755382637/M5hmG5Xv_a0ivsm.mp4" 
+                                    class="gallery-grid__media" 
+                                    autoplay 
+                                    muted 
+                                    loop 
+                                    playsinline
+                                    aria-label="Treatment demonstration video"
+                                >
+                                    Your browser does not support the video tag.
+                                </video>
+                            </div>
+                            
+                            <div class="gallery-grid__item">
+                                <img 
+                                    src="https://res.cloudinary.com/ddj2rpxcb/image/upload/v1750199188/M339WHoP_h1foad.jpg" 
+                                    class="gallery-grid__media" 
+                                    alt="Client wearing protective goggles during treatment"
+                                    loading="lazy"
+                                >
+                            </div>
+                            
+                            <div class="gallery-grid__item">
+                                <img 
+                                    src="https://res.cloudinary.com/ddj2rpxcb/image/upload/v1750199217/PfUXDT_K_h3fxzz.jpg" 
+                                    class="gallery-grid__media" 
+                                    alt="Professional skin consultation session"
+                                    loading="lazy"
+                                >
+                            </div>
+                            
+                            <div class="gallery-grid__item">
+                                <video 
+                                    src="https://res.cloudinary.com/ddj2rpxcb/video/upload/v1755382637/Tglo7yac_y9xhic.mp4" 
+                                    class="gallery-grid__media" 
+                                    autoplay 
+                                    muted 
+                                    loop 
+                                    playsinline
+                                    aria-label="Skincare treatment demonstration"
+                                >
+                                    Your browser does not support the video tag.
+                                </video>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Slide 2 -->
+                    <div class="gallery-carousel__item">
+                        <div class="gallery-grid">
+                            <div class="gallery-grid__item">
+                                <video 
+                                    src="https://res.cloudinary.com/ddj2rpxcb/video/upload/v1755382639/hJesY0oz_dckp8q.mp4" 
+                                    class="gallery-grid__media" 
+                                    autoplay 
+                                    muted 
+                                    loop 
+                                    playsinline
+                                    aria-label="Treatment procedure video"
+                                >
+                                    Your browser does not support the video tag.
+                                </video>
+                            </div>
+                            
+                            <div class="gallery-grid__item">
+                                <img 
+                                    src="https://res.cloudinary.com/ddj2rpxcb/image/upload/v1750199969/OVgW8loX_jh7dia.jpg" 
+                                    class="gallery-grid__media" 
+                                    alt="Treatment room with Where The Magic Happens signage"
+                                    loading="lazy"
+                                >
+                            </div>
+                            
+                            <div class="gallery-grid__item">
+                                <img 
+                                    src="https://res.cloudinary.com/ddj2rpxcb/image/upload/v1750199297/WlsG5qsb_zpn2pl.jpg" 
+                                    class="gallery-grid__media" 
+                                    alt="Clinic interior featuring motivational signage"
+                                    loading="lazy"
+                                >
+                            </div>
+                            
+                            <div class="gallery-grid__item">
+                                <video 
+                                    src="https://res.cloudinary.com/ddj2rpxcb/video/upload/v1755382637/HQZkuraG_akptes.mp4" 
+                                    class="gallery-grid__media" 
+                                    autoplay 
+                                    muted 
+                                    loop 
+                                    playsinline
+                                    aria-label="Advanced treatment technique video"
+                                >
+                                    Your browser does not support the video tag.
+                                </video>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Carousel Controls -->
+                <button class="gallery-carousel__control gallery-carousel__control--prev" type="button" data-bs-target="#galleryCarousel" data-bs-slide="prev">
+                    <span class="gallery-carousel__control-icon" aria-hidden="true">‹</span>
+                    <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="gallery-carousel__control gallery-carousel__control--next" type="button" data-bs-target="#galleryCarousel" data-bs-slide="next">
+                    <span class="gallery-carousel__control-icon" aria-hidden="true">›</span>
+                    <span class="visually-hidden">Next</span>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Booking Process -->
+    <section class="section section--booking-process">
+        <div class="container">
+            <header class="section__header">
+                <h2 class="section__title">How to Book a Treatment</h2>
+            </header>
+            
+            <ol class="booking-steps">
+                <li class="booking-steps__item">
+                    <strong class="booking-steps__title">Click the Book Now! link</strong>
+                    <p class="booking-steps__description">This will take you to our external booking platform, Aesthetic Nurse Software</p>
+                </li>
+                
+                <li class="booking-steps__item">
+                    <strong class="booking-steps__title">Book an Appointment</strong>
+                    <p class="booking-steps__description">Click on "Schedule a Treatment" button.</p>
+                </li>
+                
+                <li class="booking-steps__item">
+                    <strong class="booking-steps__title">Select Your Treatment</strong>
+                    <p class="booking-steps__description">Click on the treatment you wish to book, read the brief description to ensure you select the right service.</p>
+                </li>
+                
+                <li class="booking-steps__item">
+                    <strong class="booking-steps__title">Choose Your Preferred Date & Time</strong>
+                    <p class="booking-steps__description">The calendar will show available slots in real time. Select a date that suits you and a specific time from the options displayed.</p>
+                </li>
+                
+                <li class="booking-steps__item">
+                    <strong class="booking-steps__title">Provide Your Details</strong>
+                    <p class="booking-steps__description">Fill in your full name, email address, and contact number. If it's your first booking, you may need to create a quick account with a password. Some treatments may require additional information (e.g., medical history, skin concerns).</p>
+                </li>
+                
+                <li class="booking-steps__item">
+                    <strong class="booking-steps__title">Payment</strong>
+                    <p class="booking-steps__description">Some treatments may require payment upfront or a deposit. Follow the secure payment instructions. You will receive a confirmation receipt once your payment is successful.</p>
+                </li>
+                
+                <li class="booking-steps__item">
+                    <strong class="booking-steps__title">Confirmation & Reminders</strong>
+                    <p class="booking-steps__description">You will receive an email and/or SMS confirmation with your booking details when the appointment has been confirmed. The system may send reminders 24-48 hours before your appointment. If you need to reschedule or cancel, call text or email.</p>
+                </li>
+                
+                <li class="booking-steps__item">
+                    <strong class="booking-steps__title">Tips for a Smooth Booking Experience</strong>
+                    <p class="booking-steps__description">Ensure you have a stable internet connection when booking. Check your spam/junk folder if you don't see your confirmation email.</p>
+                </li>
+            </ol>
+            
+            <p class="booking-process__footer">It's a quick and easy process!</p>
+        </div>
+    </section>
+
+    <!-- Location Map -->
+    <section class="section section--location">
+        <div class="container">
+            <header class="section__header">
+                <h2 class="section__title">Find Us</h2>
+            </header>
+            
+            <div class="location-map">
+                <iframe 
+                    class="location-map__iframe"
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2385.282025244525!2d-3.585094223272199!3d53.28448287227133!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x486527aea5d34a3b%3A0xe971a1dfa0e61a2c!2sCaldwell%20Cosmetics!5e0!3m2!1sen!2suk!4v1725047808673!5m2!1sen!2suk"
+                    loading="lazy"
+                    allowfullscreen
+                    title="Caldwell Cosmetics location map"
+                ></iframe>
+            </div>
+        </div>
+    </section>
+
+</main>
+{% endblock %}

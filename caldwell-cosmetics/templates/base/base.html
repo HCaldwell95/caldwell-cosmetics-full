@@ -1,0 +1,54 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Caldwell Cosmetics. A natural aesthetics clinic, specialising in skin and hair enhancement and rejuvenation. Based in Abergele, North Wales. Restore the beauty from within.">
+    <meta name="keywords" content="caldwell cosmetics aesthetics, caldwell cosmetics, aesthetic clinic, skin treatments, beauty, wales, natural, healthy, skin">
+
+    <title>{% block title %}Caldwell Cosmetics{% endblock %}</title>
+
+    <!-- Favicon -->
+    <link rel="icon" href="{% static 'favicon/favicon.ico' %}">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    {% block extra_css %}{% endblock %}
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,300..700;1,300..700&family=Italiana&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <script src="https://kit.fontawesome.com/62f7b1be0a.js" crossorigin="anonymous"></script>
+
+    <!-- FullCalendar CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css" rel="stylesheet">
+</head>
+
+<body>
+    {% include 'base/_navbar.html' %}
+
+    {% block hero %}{% endblock %}
+
+    <main class="container">
+        {% block content %}{% endblock %}
+    </main>
+
+    {% include 'base/_footer.html' %}
+    {% include 'base/_modals.html' %}
+
+    <!-- JS -->
+    <!-- <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'js/script.js' %}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
+    <script src="{% static 'js/calendar.js' %}"></script> -->
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

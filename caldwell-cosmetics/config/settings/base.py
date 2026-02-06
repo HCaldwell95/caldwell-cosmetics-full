@@ -26,11 +26,11 @@ DJANGO_APPS = [
 ]
 
 LOCAL_APPS = [
-    "apps.core",
-    "apps.pages",
-    "apps.treatments",
-    "apps.bookings",
-    "apps.accounts",
+    "apps.core.apps.CoreConfig",
+    "apps.pages.apps.PagesConfig",
+    "apps.treatments.apps.TreatmentsConfig",
+    "apps.bookings.apps.BookingsConfig",
+    "apps.accounts.apps.AccountsConfig",
 ]
 
 THIRD_PARTY_APPS = [
@@ -111,6 +111,8 @@ AUTH_PASSWORD_VALIDATORS = [
         "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
+
+AUTH_USER_MODEL = "accounts.User"
 
 LANGUAGE_CODE = "en-gb"
 TIME_ZONE = "Europe/London"

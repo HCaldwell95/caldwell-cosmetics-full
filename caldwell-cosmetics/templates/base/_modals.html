@@ -1,0 +1,27 @@
+{% load static %}
+
+<!-- Footer link confirmation modal -->
+<div id="footer-link-modal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <p>By clicking this link, you will be taken to an external site. Are you sure you want to continue?</p>
+        <button id="accept">Accept</button>
+        <button id="decline">Stay Here</button>
+    </div>
+</div>
+
+<!-- Error modal -->
+<div class="modal fade" id="errorModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Subscription Error</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="modal-body-content"></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
