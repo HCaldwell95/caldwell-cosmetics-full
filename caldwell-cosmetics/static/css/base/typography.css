@@ -37,3 +37,37 @@ a {
 a:hover {
     color: var(--color-secondary);
 }
+
+#glass-link {
+    color: var(--color-text-dark);
+}
+
+.button-glass-base {
+    font-weight: 500;
+    border-radius: 3px;
+    padding: 0.75rem 1.5rem;
+    background-color: rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(10px);
+    box-shadow: 1px 1px 10px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+}
+
+.button-gradient {
+    position: absolute;
+    background: linear-gradient( 
+        35deg, 
+        rgb(250, 209, 173) 0%, 
+        rgb(176, 140, 118) 100% 
+    );
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: -1;
+    border-radius: 10px;
+}
+
+.footer-content {
+    font-family: var(--font-roboto);
+    font-weight: 400;
+}

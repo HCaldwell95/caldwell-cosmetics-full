@@ -7,8 +7,15 @@
             <img src="{% static 'images/mini-logo.png' %}" alt="Caldwell Cosmetics Logo" class="logo-image">
         </a>
 
+        <!-- Mobile Menu Toggle -->
+        <button class="nav-toggle" aria-expanded="false" aria-label="Toggle navigation menu">
+            <span class="nav-toggle-bar"></span>
+            <span class="nav-toggle-bar"></span>
+            <span class="nav-toggle-bar"></span>
+        </button>
+
         <!-- Navigation -->
-        <nav>
+        <nav class="nav-menu">
             <ul class="nav-links">
                 {% with url_name=request.resolver_match.url_name %}
                 <li class="{% if not url_name or url_name == 'home_details' %}active{% endif %}">

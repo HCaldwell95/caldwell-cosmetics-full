@@ -20,7 +20,6 @@
         <div class="hero__overlay"></div>
         <div class="hero__content">
             <h1 class="hero__title">Caldwell Cosmetics</h1>
-            <p class="hero__tagline">Est. 2024</p>
             <div class="hero__description">
                 <p>Where natural beauty meets personalised care.</p>
                 <p class="hero__description-extended">
@@ -28,6 +27,7 @@
                     discovering the best version of yourself.
                 </p>
             </div>
+            <p class="hero__tagline">Est. 2024</p>
         </div>
     </div>
 </section>
@@ -60,7 +60,7 @@
             
             <div class="about__content">
                 <p class="about__intro">
-                    At Caldwell Cosmetics, we believe beauty starts from within—and we're here to help you feel confident, radiant, and truly yourself. 
+                    At Caldwell Cosmetics, we believe beauty starts from within - and we're here to help you feel confident, radiant, and truly yourself. 
                     Led by Rabia, a compassionate Nurse with over seven years of NHS experience, our clinic combines professional expertise with a genuine 
                     passion for holistic well-being.
                 </p>
@@ -77,7 +77,7 @@
                 
                 <div class="about__highlight">
                     <p>
-                        <strong>And there's more to come—Caldwell Cosmetics is growing!</strong> We're excited to be expanding our range of treatments to give you even more ways 
+                        <strong>And there's more to come - Caldwell Cosmetics is growing!</strong> We're excited to be expanding our range of treatments to give you even more ways 
                         to feel your best. From targeted skincare solutions to relaxing wellness services, our upcoming offerings will help you care for your skin, 
                         body, and mind.
                     </p>
@@ -112,7 +112,10 @@
                     Discover the right treatment for you by exploring our full range of services. We're here to guide you every step of the way with expert advice and personalised care.
                 </p>
                 
-                <a href="" class="btn btn--primary">View All Treatments</a>
+                <a href="" class="btn btn--primary button-glass-base">
+                    View All Treatments
+                    <div class="button-gradient"></div>
+                </a>
             </div>
         </div>
     </section>
@@ -120,7 +123,7 @@
     <!-- Gallery Carousel -->
     <section class="section section--gallery">
         <div class="container">
-            <div class="gallery-carousel" id="galleryCarousel" data-bs-ride="carousel" data-bs-interval="20000">
+            <div class="gallery-carousel" id="galleryCarousel">
                 <div class="gallery-carousel__inner">
                     
                     <!-- Slide 1 -->
@@ -226,15 +229,11 @@
                     </div>
                 </div>
                 
-                <!-- Carousel Controls -->
-                <button class="gallery-carousel__control gallery-carousel__control--prev" type="button" data-bs-target="#galleryCarousel" data-bs-slide="prev">
-                    <span class="gallery-carousel__control-icon" aria-hidden="true">‹</span>
-                    <span class="visually-hidden">Previous</span>
-                </button>
-                <button class="gallery-carousel__control gallery-carousel__control--next" type="button" data-bs-target="#galleryCarousel" data-bs-slide="next">
-                    <span class="gallery-carousel__control-icon" aria-hidden="true">›</span>
-                    <span class="visually-hidden">Next</span>
-                </button>
+                <!-- Carousel Progress Indicators (optional) -->
+                <div class="gallery-carousel__indicators">
+                    <button class="gallery-carousel__indicator gallery-carousel__indicator--active" aria-label="Go to slide 1"></button>
+                    <button class="gallery-carousel__indicator" aria-label="Go to slide 2"></button>
+                </div>
             </div>
         </div>
     </section>
@@ -312,4 +311,72 @@
     </section>
 
 </main>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Auto-sliding Gallery Carousel
+(function() {
+    const carousel = document.getElementById('galleryCarousel');
+    if (!carousel) return;
+
+    const items = carousel.querySelectorAll('.gallery-carousel__item');
+    const indicators = carousel.querySelectorAll('.gallery-carousel__indicator');
+    let currentIndex = 0;
+    const slideInterval = 5000; // 5 seconds per slide
+    let autoSlideTimer;
+
+    function showSlide(index) {
+        // Remove active class from all items and indicators
+        items.forEach(item => item.classList.remove('gallery-carousel__item--active'));
+        indicators.forEach(indicator => indicator.classList.remove('gallery-carousel__indicator--active'));
+
+        // Add active class to current item and indicator
+        items[index].classList.add('gallery-carousel__item--active');
+        if (indicators[index]) {
+            indicators[index].classList.add('gallery-carousel__indicator--active');
+        }
+    }
+
+    function nextSlide() {
+        currentIndex = (currentIndex + 1) % items.length;
+        showSlide(currentIndex);
+    }
+
+    function startAutoSlide() {
+        autoSlideTimer = setInterval(nextSlide, slideInterval);
+    }
+
+    function stopAutoSlide() {
+        clearInterval(autoSlideTimer);
+    }
+
+    // Optional: Click on indicators to jump to specific slide
+    indicators.forEach((indicator, index) => {
+        indicator.addEventListener('click', () => {
+            currentIndex = index;
+            showSlide(currentIndex);
+            // Restart auto-slide timer after manual navigation
+            stopAutoSlide();
+            startAutoSlide();
+        });
+    });
+
+    // Pause auto-slide when user hovers over carousel (optional)
+    carousel.addEventListener('mouseenter', stopAutoSlide);
+    carousel.addEventListener('mouseleave', startAutoSlide);
+
+    // Pause auto-slide when page is not visible (performance optimization)
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            stopAutoSlide();
+        } else {
+            startAutoSlide();
+        }
+    });
+
+    // Start the auto-slide
+    startAutoSlide();
+})();
+</script>
 {% endblock %}

@@ -1,8 +1,6 @@
 /* ============================================
-   HOME PAGE STYLES
+   HOME PAGE STYLES - FULLY RESPONSIVE
    ============================================ */
-
-
 
 /* ============================================
    MAIN CONTENT
@@ -17,7 +15,7 @@
    ============================================ */
 
 .section {
-    padding: var(--spacing-xl) 0;
+    padding: clamp(3rem, 8vw, 4rem) 0;
 }
 
 .section--about {
@@ -38,13 +36,13 @@
 
 .section--location {
     background-color: var(--color-background);
-    padding-bottom: 0;
+    padding-bottom: 5em;
 }
 
 .container {
     max-width: var(--max-width-content);
     margin: 0 auto;
-    padding: 0 var(--spacing-md);
+    padding: 0 clamp(1rem, 3vw, 2rem);
 }
 
 /* ============================================
@@ -53,11 +51,11 @@
 
 .section__header {
     text-align: center;
-    margin-bottom: var(--spacing-lg);
+    margin-bottom: clamp(2rem, 5vw, 3rem);
 }
 
 .section__title {
-    font-size: clamp(2rem, 4vw, 3rem);
+    font-size: clamp(1.8rem, 4vw, 3rem);
     font-weight: 400;
     color: var(--color-secondary);
     margin-bottom: var(--spacing-md);
@@ -69,7 +67,7 @@
 .section__title::after {
     content: '';
     display: block;
-    width: 60px;
+    width: clamp(40px, 8vw, 60px);
     height: 3px;
     background-color: var(--color-primary);
     margin: var(--spacing-sm) auto 0;
@@ -85,14 +83,14 @@
 }
 
 .about__content p {
-    font-size: 1.1rem;
+    font-size: clamp(1rem, 1.8vw, 1.1rem);
     line-height: 1.8;
     color: var(--color-text);
     margin-bottom: var(--spacing-md);
 }
 
 .about__intro {
-    font-size: 1.2rem !important;
+    font-size: clamp(1.05rem, 2vw, 1.2rem) !important;
     color: var(--color-text-light);
     font-weight: 300;
 }
@@ -100,7 +98,7 @@
 .about__highlight {
     background-color: var(--color-background-alt);
     border-left: 4px solid var(--color-primary);
-    padding: var(--spacing-md);
+    padding: clamp(1rem, 3vw, 2rem);
     margin: var(--spacing-lg) 0;
     border-radius: var(--border-radius);
 }
@@ -125,20 +123,20 @@
 }
 
 .treatments-overview__content p {
-    font-size: 1.1rem;
+    font-size: clamp(1rem, 1.8vw, 1.1rem);
     line-height: 1.8;
     color: var(--color-text);
     margin-bottom: var(--spacing-md);
 }
 
 /* ============================================
-   BUTTON STYLES
+   BUTTON STYLES - RESPONSIVE
    ============================================ */
 
 .btn {
     display: inline-block;
-    padding: var(--spacing-sm) var(--spacing-lg);
-    font-size: 1.8rem;
+    padding: clamp(0.75rem, 1.5vw, 1rem) clamp(1.5rem, 3vw, 3rem);
+    font-size: clamp(1rem, 1.8vw, 1.8rem);
     font-weight: 500;
     text-decoration: none;
     border-radius: var(--border-radius);
@@ -160,8 +158,24 @@
     color: #ffffff;
 }
 
+/* Mobile: Remove hover transform to prevent issues */
+@media (max-width: 768px) {
+    .btn--primary:hover {
+        transform: none;
+    }
+}
+
 /* ============================================
-   GALLERY CAROUSEL
+   GALLERY CAROUSEL - FULLY RESPONSIVE
+   ============================================ */
+
+/* ============================================
+   AUTO-SLIDING GALLERY CAROUSEL - CSS
+   Add this to your home.css or gallery section
+   ============================================ */
+
+/* ============================================
+   GALLERY CAROUSEL - FULLY RESPONSIVE
    ============================================ */
 
 .gallery-carousel {
@@ -178,22 +192,34 @@
 .gallery-carousel__item {
     display: none;
     width: 100%;
+    opacity: 0;
+    transition: opacity 0.6s ease-in-out;
 }
 
 .gallery-carousel__item--active {
     display: block;
+    opacity: 1;
 }
 
 .gallery-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: var(--spacing-md);
+    gap: clamp(1rem, 2vw, 2rem);
     padding: var(--spacing-sm);
 }
 
+/* Tablet and up: 2 columns */
 @media (min-width: 768px) {
     .gallery-grid {
         grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Mobile: 1 column */
+@media (max-width: 576px) {
+    .gallery-grid {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-sm);
     }
 }
 
@@ -211,6 +237,13 @@
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
 }
 
+/* Disable hover effect on touch devices */
+@media (hover: none) {
+    .gallery-grid__item:hover {
+        transform: none;
+    }
+}
+
 .gallery-grid__media {
     width: 100%;
     height: 100%;
@@ -219,64 +252,104 @@
 }
 
 /* ============================================
-   CAROUSEL CONTROLS
+   PROGRESS INDICATORS (Optional Dots)
    ============================================ */
 
-.gallery-carousel__control {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    background-color: rgba(255, 255, 255, 0.9);
-    border: none;
-    width: 50px;
-    height: 50px;
+.gallery-carousel__indicators {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 2rem;
+    padding: 0;
+}
+
+.gallery-carousel__indicator {
+    width: 12px;
+    height: 12px;
     border-radius: 50%;
+    border: 2px solid var(--color-primary);
+    background-color: transparent;
     cursor: pointer;
-    z-index: 10;
-    transition: all var(--transition-speed) ease;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+    padding: 0;
 }
 
-.gallery-carousel__control:hover {
-    background-color: rgba(255, 255, 255, 1);
-    transform: translateY(-50%) scale(1.1);
+.gallery-carousel__indicator:hover {
+    background-color: rgba(212, 163, 115, 0.5);
+    transform: scale(1.2);
 }
 
-.gallery-carousel__control--prev {
-    left: var(--spacing-md);
+.gallery-carousel__indicator--active {
+    background-color: var(--color-primary);
+    width: 32px;
+    border-radius: 6px;
 }
 
-.gallery-carousel__control--next {
-    right: var(--spacing-md);
+.gallery-carousel__indicator:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 3px;
 }
 
-.gallery-carousel__control-icon {
-    font-size: 2rem;
-    color: var(--color-secondary);
-    font-weight: bold;
-}
-
-@media (max-width: 768px) {
-    .gallery-carousel__control {
-        width: 40px;
-        height: 40px;
+/* Mobile indicators - slightly smaller */
+@media (max-width: 576px) {
+    .gallery-carousel__indicator {
+        width: 10px;
+        height: 10px;
     }
     
-    .gallery-carousel__control--prev {
-        left: var(--spacing-sm);
+    .gallery-carousel__indicator--active {
+        width: 28px;
     }
     
-    .gallery-carousel__control--next {
-        right: var(--spacing-sm);
-    }
-    
-    .gallery-carousel__control-icon {
-        font-size: 1.5rem;
+    .gallery-carousel__indicators {
+        gap: 10px;
+        margin-top: 1.5rem;
     }
 }
 
 /* ============================================
-   BOOKING PROCESS SECTION
+   ACCESSIBILITY
+   ============================================ */
+
+/* Respect user's motion preferences */
+@media (prefers-reduced-motion: reduce) {
+    .gallery-carousel__item {
+        transition: none;
+    }
+    
+    .gallery-grid__item:hover {
+        transform: none;
+    }
+}
+
+/* ============================================
+   ALTERNATIVE: Progress Bar (uncomment to use instead of dots)
+   ============================================ */
+
+.gallery-carousel__progress-bar {
+    width: 100%;
+    height: 4px;
+    background-color: rgba(212, 163, 115, 0.2);
+    border-radius: 2px;
+    margin-top: 2rem;
+    overflow: hidden;
+}
+
+.gallery-carousel__progress-fill {
+    height: 100%;
+    background-color: var(--color-primary);
+    width: 0%;
+    transition: width 0.3s ease;
+    animation: progressFill 5s linear;
+}
+
+@keyframes progressFill {
+    from { width: 0%; }
+    to { width: 100%; }
+}
+
+/* ============================================
+   BOOKING PROCESS SECTION - RESPONSIVE
    ============================================ */
 
 .booking-steps {
@@ -289,8 +362,8 @@
 
 .booking-steps__item {
     position: relative;
-    padding-left: var(--spacing-xl);
-    margin-bottom: var(--spacing-lg);
+    padding-left: clamp(3rem, 8vw, 4rem);
+    margin-bottom: clamp(1.5rem, 4vw, 3rem);
     counter-increment: step-counter;
 }
 
@@ -299,8 +372,8 @@
     position: absolute;
     left: 0;
     top: 0;
-    width: 40px;
-    height: 40px;
+    width: clamp(35px, 5vw, 40px);
+    height: clamp(35px, 5vw, 40px);
     background-color: var(--color-primary);
     color: #ffffff;
     border-radius: 50%;
@@ -308,13 +381,13 @@
     align-items: center;
     justify-content: center;
     font-weight: bold;
-    font-size: 1.2rem;
+    font-size: clamp(1rem, 1.5vw, 1.2rem);
 }
 
 .booking-steps__title {
     display: block;
     color: var(--color-secondary);
-    font-size: 1.2rem;
+    font-size: clamp(1.05rem, 1.8vw, 1.2rem);
     margin-bottom: var(--spacing-xs);
 }
 
@@ -322,23 +395,24 @@
     color: var(--color-text-light);
     line-height: 1.6;
     margin-bottom: 0;
+    font-size: clamp(0.95rem, 1.5vw, 1rem);
 }
 
 .booking-process__footer {
     text-align: center;
-    font-size: 1.2rem;
+    font-size: clamp(1.05rem, 1.8vw, 1.2rem);
     font-weight: 500;
     color: var(--color-secondary);
     margin-top: var(--spacing-lg);
 }
 
 /* ============================================
-   LOCATION MAP SECTION
+   LOCATION MAP SECTION - RESPONSIVE
    ============================================ */
 
 .location-map {
     width: 100%;
-    height: 450px;
+    height: clamp(300px, 50vw, 450px);
     border-radius: var(--border-radius);
     overflow: hidden;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
@@ -370,45 +444,25 @@
    RESPONSIVE ADJUSTMENTS
    ============================================ */
 
+/* Tablets (768px and below) */
 @media (max-width: 768px) {
     .section {
-        padding: var(--spacing-lg) 0;
-    }
-    
-    .hero {
-        height: 60vh;
-        min-height: 400px;
-    }
-    
-    .booking-steps__item {
-        padding-left: var(--spacing-lg);
-    }
-    
-    .booking-steps__item::before {
-        width: 35px;
-        height: 35px;
-        font-size: 1rem;
-    }
-    
-    .location-map {
-        height: 350px;
+        padding: clamp(2rem, 5vw, 3rem) 0;
     }
 }
 
+/* Mobile devices (576px and below) */
 @media (max-width: 576px) {
-    :root {
-        --spacing-md: 1.5rem;
-        --spacing-lg: 2rem;
-        --spacing-xl: 2.5rem;
+    .section {
+        padding: 2rem 0;
     }
-    
+
     .container {
-        padding: 0 var(--spacing-sm);
+        padding: 0 1rem;
     }
-    
-    .gallery-grid {
-        grid-template-columns: 1fr;
-        gap: var(--spacing-sm);
+
+    .about__highlight {
+        padding: 1rem;
     }
 }
 
@@ -433,6 +487,7 @@
    ACCESSIBILITY ENHANCEMENTS
    ============================================ */
 
+/* Respect reduced motion preference */
 @media (prefers-reduced-motion: reduce) {
     * {
         animation-duration: 0.01ms !important;
@@ -443,6 +498,11 @@
     .services-marquee__track {
         animation: none;
     }
+    
+    .gallery-grid__item:hover,
+    .btn--primary:hover {
+        transform: none;
+    }
 }
 
 /* Focus states for keyboard navigation */
@@ -450,4 +510,26 @@
 .gallery-carousel__control:focus-visible {
     outline: 3px solid var(--color-primary);
     outline-offset: 2px;
+}
+
+/* High contrast mode improvements */
+@media (prefers-contrast: high) {
+    .section__title::after {
+        height: 4px;
+    }
+    
+    .booking-steps__item::before {
+        border: 2px solid #fff;
+    }
+}
+
+/* ============================================
+   ORIENTATION-SPECIFIC ADJUSTMENTS
+   ============================================ */
+
+/* Landscape on mobile devices */
+@media (max-width: 768px) and (orientation: landscape) {
+    .section {
+        padding: 2rem 0;
+    }
 }

@@ -24,6 +24,9 @@
     /* Typography */
     --font-cormorant: 'Cormorant', serif;
     --font-italiana: 'Italiana', sans-serif;
+    --font-roboto: 'Roboto', sans-serif;
+    --font-lora: 'Lora', serif;
+    --fa-style-family-classic: "Font Awesome 6 Free";
     --font-weight-regular: 400;
     --font-weight-bold: 600;
     --font-size-base: 14px;
@@ -51,4 +54,8 @@
     --radius-sm: 4px;
     --radius-md: 8px;
     --radius-lg: 12px;
+
+    /* Glass Colours */
+    --glass-light: rgba(255, 255, 255, 0.2);
+    --glass-dark: rgba(0, 0, 0, 0.2);
 }

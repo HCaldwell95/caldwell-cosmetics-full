@@ -23,7 +23,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,300..700;1,300..700&family=Italiana&display=swap" rel="stylesheet">
-
+    <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&family=Permanent+Marker&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
     <!-- Font Awesome -->
     <script src="https://kit.fontawesome.com/62f7b1be0a.js" crossorigin="anonymous"></script>
 
@@ -41,13 +41,52 @@
     </main>
 
     {% include 'base/_footer.html' %}
-    {% include 'base/_modals.html' %}
 
     <!-- JS -->
     <!-- <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
     <script src="{% static 'js/script.js' %}"></script>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
     <script src="{% static 'js/calendar.js' %}"></script> -->
+
+    <script>
+        const toggle = document.querySelector('.nav-toggle');
+        const menu = document.querySelector('.nav-menu');
+
+        if (toggle && menu) {
+            toggle.addEventListener('click', () => {
+                toggle.classList.toggle('active');
+                menu.classList.toggle('active');
+                document.body.classList.toggle('menu-open');
+
+                const expanded = toggle.getAttribute('aria-expanded') === 'true';
+                toggle.setAttribute('aria-expanded', !expanded);
+            });
+
+            // Close menu when clicking a link
+            document.querySelectorAll('.nav-links a').forEach(link => {
+                link.addEventListener('click', () => {
+                    toggle.classList.remove('active');
+                    menu.classList.remove('active');
+                    document.body.classList.remove('menu-open');
+                    toggle.setAttribute('aria-expanded', false);
+                });
+            });
+
+            // Close menu when clicking outside
+            document.addEventListener('click', (e) => {
+                if (menu.classList.contains('active') && 
+                    !menu.contains(e.target) && 
+                    !toggle.contains(e.target)) {
+                    toggle.classList.remove('active');
+                    menu.classList.remove('active');
+                    document.body.classList.remove('menu-open');
+                    toggle.setAttribute('aria-expanded', false);
+                }
+            });
+        }
+    </script>
+
+
 
     {% block extra_js %}{% endblock %}
 </body>
