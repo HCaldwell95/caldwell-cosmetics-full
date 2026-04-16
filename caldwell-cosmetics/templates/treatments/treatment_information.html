@@ -1,0 +1,36 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}{{ treatment.name }} | Caldwell Cosmetics{% endblock %}
+
+{% block hero %}
+    <!-- Hero image section -->
+    <section class="hero" id="home-hero">
+        <div class="container-fluid p-0 position-relative">
+            <img src="{% static 'images/treatment-information-hero.jpg' %}" class="img-fluid" alt="A calm and clean studio wall with a mirror and plant">
+            <div class="color-overlay"></div>
+            <div class="position-absolute top-50 start-50 translate-middle text-center text-white hero-text-md">
+                <h2 id="treatments-cover-heading">Caldwell Cosmetics</h2>
+            </div>
+        </div>
+    </section>
+{% endblock %}
+
+{% block content %}
+<section class="treatment-details">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12 col-md-12">
+                {# Dynamic include of treatment-specific partial template based on slug #}
+                {% include treatment_template %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Fixed vertical banner -->
+<div class="fixed-banner">
+    <a href="{% url 'treatment_details' %}" class="banner-button">Back to Treatments</a>
+</div>
+
+{% endblock %}

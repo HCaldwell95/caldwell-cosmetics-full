@@ -1,0 +1,68 @@
+{% extends 'base/base.html' %}
+{% load static %}
+{% block title %}Treatments | Caldwell Cosmetics{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/treatments.css' %}">
+{% endblock %}
+
+{% block hero %}
+    {% include 'hero/treatments-hero.html' %}
+{% endblock %}
+
+{% block content %}
+
+    <!-- About Section -->
+    <section class="section section--about">
+        <div class="container">
+            <header class="section__header">
+                <h2 class="section__title">Our Treatments</h2>
+            </header>
+            
+            <div class="about__content">
+                <p class="about__intro">
+                    At Caldwell Cosmetics, we believe everyone deserves to feel confident in their skin. That's why we offer a wide range 
+                    of advanced aesthetic treatments designed not just to enhance your natural beauty, but to help you feel your absolute best.
+                </p>
+                
+                <p>
+                    From your very first consultation, our friendly and experienced team will take the time to understand your personal goals 
+                    and tailor every treatment to suit your unique needs.
+                </p>
+                
+                <div class="about__highlight">
+                    <p>
+                    Discover the right treatment for you by exploring our full range of services. We're here to guide you every step of the way with expert advice and personalised care.
+                </p>
+                </div>
+                
+                <p class="about__closing">
+                    Join us on your journey to glowing, confident skin—and discover how beautiful it feels to invest in yourself.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <section class="section section--gallery">
+        <div class="container">
+            <div class="row">
+                {% for treatment in treatments %}
+                <div class="col-lg-4 col-md-6 col-sm-12 mb-4 treatments__card">
+                    <a href="{% url 'treatments:treatment_card_details' treatment.slug %}" class="treatments__link">
+                        <div class="treatments__card-wrapper d-flex flex-column justify-content-end" style="background-image: url('{{ treatment.image.url }}');">
+                            <div class="treatments__card-body">
+                                <h2 class="treatments__card-heading italiana-regular">{{ treatment.name }}</h2>
+                                <div class="treatments__card-wrapper--button">
+                                    <span class="treatments__card-btn cormorant">Learn More</span>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+</main>
+
+{% endblock %}

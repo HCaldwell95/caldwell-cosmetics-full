@@ -18,11 +18,11 @@
         <nav class="nav-menu">
             <ul class="nav-links">
                 {% with url_name=request.resolver_match.url_name %}
-                <li class="{% if not url_name or url_name == 'home_details' %}active{% endif %}">
-                    <a href="" aria-label="Home">Home</a>
+                <li class="{% if not url_name or url_name == 'core:home' %}active{% endif %}">
+                    <a href="{% url 'core:home' %}" aria-label="Home">Home</a>
                 </li>
-                <li class="{% if url_name == 'treatment_details' %}active{% endif %}">
-                    <a href="" aria-label="Treatments">Treatments</a>
+                <li class="{% if url_name == 'treatments:treatments' %}active{% endif %}">
+                    <a href="{% url 'treatments:treatments' %}" aria-label="Treatments">Treatments</a>
                 </li>
                 <li>
                     <a href="" aria-label="Bookings">Bookings</a>

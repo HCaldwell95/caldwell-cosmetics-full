@@ -1,0 +1,289 @@
+/* ============================================
+   TREATMENTS INTRO SECTION
+   ============================================ */
+
+.treatments {
+    padding: clamp(3rem, 6vw, 5rem) 0 clamp(1.5rem, 3vw, 2.5rem);
+}
+
+.treatments .col-12 h2 {
+    font-family: var(--font-italiana);
+    font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+    font-weight: var(--font-weight-regular);
+    letter-spacing: 0.08em;
+    color: var(--color-text-dark);
+    margin-bottom: 0.75rem;
+}
+
+.treatments .col-12 hr {
+    border: none;
+    border-top: 2px solid var(--color-primary);
+    margin: 0 0 2rem 0;
+    opacity: 1;
+    width: 100%;
+}
+
+.treatments .col-12 p {
+    font-family: var(--font-cormorant);
+    font-size: clamp(1.05rem, 1.8vw, 1.2rem);
+    line-height: 1.9;
+    color: var(--color-text);
+    max-width: var(--max-width-text);
+}
+
+/* Override base.css .small-hr on this page */
+.treatments .small-hr {
+    border: none !important;
+    border-top: 1px solid var(--color-accent-peach) !important;
+    width: 100% !important;
+    margin: 0.5rem 0 0 !important;
+}
+
+/* ============================================
+   GALLERY / TREATMENT CARDS SECTION
+   ============================================ */
+
+.gallery {
+    padding: clamp(1rem, 3vw, 2rem) 0 clamp(4rem, 8vw, 6rem);
+}
+
+/* ============================================
+   TREATMENT CARD COLUMN
+   ============================================ */
+
+.treatments__card {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 24px;
+    height: 500px;
+    /* Staggered fade-up on load */
+    opacity: 0;
+    transform: translateY(20px);
+    animation: cardFadeUp 0.55s ease forwards;
+}
+
+.treatments__card:nth-child(1)  { animation-delay: 0.05s; }
+.treatments__card:nth-child(2)  { animation-delay: 0.13s; }
+.treatments__card:nth-child(3)  { animation-delay: 0.21s; }
+.treatments__card:nth-child(4)  { animation-delay: 0.29s; }
+.treatments__card:nth-child(5)  { animation-delay: 0.37s; }
+.treatments__card:nth-child(6)  { animation-delay: 0.45s; }
+.treatments__card:nth-child(7)  { animation-delay: 0.53s; }
+.treatments__card:nth-child(8)  { animation-delay: 0.61s; }
+.treatments__card:nth-child(9)  { animation-delay: 0.69s; }
+.treatments__card:nth-child(10) { animation-delay: 0.77s; }
+.treatments__card:nth-child(11) { animation-delay: 0.85s; }
+.treatments__card:nth-child(12) { animation-delay: 0.93s; }
+
+@keyframes cardFadeUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .treatments__card {
+        opacity: 1;
+        transform: none;
+        animation: none;
+    }
+}
+
+/* ============================================
+   CARD LINK WRAPPER
+   ============================================ */
+
+.treatments__link {
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    height: 100%;
+}
+
+/* ============================================
+   CARD IMAGE WRAPPER
+   ============================================ */
+
+.treatments__card-wrapper {
+    height: 380px;
+    flex: 1;
+    background-size: cover;
+    background-position: center;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    position: relative;
+    cursor: pointer;
+    transition: transform 0.4s ease, box-shadow 0.4s ease;
+    box-shadow: 0 4px 20px rgba(48, 33, 33, 0.1);
+}
+
+/* Dark gradient overlay — always present for text legibility */
+.treatments__card-wrapper::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        to top,
+        rgba(48, 33, 33, 0.88) 0%,
+        rgba(48, 33, 33, 0.3) 50%,
+        transparent 100%
+    );
+    transition: background 0.4s ease;
+    z-index: 1;
+}
+
+/* Warm golden shimmer — appears on hover */
+.treatments__card-wrapper::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        135deg,
+        rgba(212, 163, 115, 0.15) 0%,
+        transparent 60%
+    );
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    z-index: 2;
+}
+
+.treatments__card-wrapper:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 16px 40px rgba(48, 33, 33, 0.18);
+}
+
+.treatments__card-wrapper:hover::before {
+    background: linear-gradient(
+        to top,
+        rgba(48, 33, 33, 0.95) 0%,
+        rgba(48, 33, 33, 0.4) 55%,
+        transparent 100%
+    );
+}
+
+.treatments__card-wrapper:hover::after {
+    opacity: 1;
+}
+
+/* Disable lift on touch devices */
+@media (hover: none) {
+    .treatments__card-wrapper:hover {
+        transform: none;
+        box-shadow: 0 4px 20px rgba(48, 33, 33, 0.1);
+    }
+}
+
+/* ============================================
+   CARD BODY (text pinned to bottom)
+   ============================================ */
+
+.treatments__card-body {
+    position: relative;
+    z-index: 3;
+    padding: 1.4rem 1.5rem 1.5rem;
+    transition: transform 0.4s ease;
+}
+
+.treatments__card-wrapper:hover .treatments__card-body {
+    transform: translateY(-3px);
+}
+
+.treatments__card-heading {
+    font-family: var(--font-italiana);
+    font-size: clamp(1.3rem, 2vw, 1.75rem);
+    font-weight: var(--font-weight-regular);
+    color: #ffffff;
+    margin: 0 0 0.5rem 0;
+    line-height: 1.2;
+    letter-spacing: 0.03em;
+}
+
+/* ============================================
+   "LEARN MORE" — text link, not a button
+   ============================================ */
+
+.treatments__card-wrapper--button {
+    display: inline-flex;
+    align-items: center;
+}
+
+.treatments__card-btn {
+    /* Reset Bootstrap button styles */
+    all: unset;
+    display: inline-block;
+
+    font-family: var(--font-cormorant);
+    font-size: 0.85rem;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-accent-peach);
+
+    position: relative;
+    padding-bottom: 2px;
+    cursor: pointer;
+}
+
+/* Animated underline */
+.treatments__card-btn::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 0;
+    height: 1px;
+    background-color: var(--color-accent-peach);
+    transition: width 0.35s ease;
+}
+
+.treatments__card-wrapper:hover .treatments__card-btn::after {
+    width: 100%;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 991px) {
+    .treatments__card-wrapper {
+        height: 340px;
+    }
+}
+
+@media (max-width: 767px) {
+    .treatments__card-wrapper {
+        height: 300px;
+    }
+
+    .gallery {
+        padding-bottom: 3rem;
+    }
+}
+
+@media (max-width: 575px) {
+    .treatments__card-wrapper {
+        height: 280px;
+    }
+
+    .treatments {
+        padding-top: 2.5rem;
+    }
+}
+
+/* ============================================
+   PRINT
+   ============================================ */
+
+@media print {
+    #home-hero,
+    #scroll-container {
+        display: none;
+    }
+
+    .treatments__card-wrapper {
+        break-inside: avoid;
+        box-shadow: none;
+    }
+}

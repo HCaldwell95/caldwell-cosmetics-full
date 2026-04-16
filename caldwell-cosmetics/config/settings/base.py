@@ -1,11 +1,26 @@
-from pathlib import Path
 import os
+from pathlib import Path
+from dotenv import load_dotenv
+
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
 
 # --------------------------------------------------
 # BASE DIR
 # --------------------------------------------------
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
+
+# --------------------------------------------------
+# CLOUDINARY CONFIG
+# --------------------------------------------------
+
+cloudinary.config(
+    cloud_name=os.environ.get("CLOUDINARY_CLOUD_NAME"),
+    api_key=os.environ.get("CLOUDINARY_API_KEY"),
+    api_secret=os.environ.get("CLOUDINARY_API_SECRET")
+)
 
 # --------------------------------------------------
 # SECURITY
@@ -27,7 +42,6 @@ DJANGO_APPS = [
 
 LOCAL_APPS = [
     "apps.core.apps.CoreConfig",
-    "apps.pages.apps.PagesConfig",
     "apps.treatments.apps.TreatmentsConfig",
     "apps.bookings.apps.BookingsConfig",
     "apps.accounts.apps.AccountsConfig",
@@ -35,6 +49,8 @@ LOCAL_APPS = [
 
 THIRD_PARTY_APPS = [
     # e.g. "crispy_forms",
+    'cloudinary',
+    'cloudinary_storage',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS

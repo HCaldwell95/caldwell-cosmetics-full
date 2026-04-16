@@ -1,0 +1,65 @@
+{% extends "base/base.html" %}
+{% load static %}
+
+{% block title %}Cookies Policy | Caldwell Cosmetics{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/legal.css' %}">
+{% endblock %}
+
+{% block hero %}
+    {% include "hero/legal-hero.html" %}
+{% endblock %}
+
+{% block content %}
+<section class="legal-wrapper">
+    <div class="legal-card">
+
+        <div class="legal-header">
+            <h1>Cookies Policy</h1>
+            <p>Effective date: 1st April 2024</p>
+        </div>
+
+        <div class="legal-section">
+            <p>
+                This Cookies Policy explains how Caldwell Cosmetics uses cookies
+                to enhance your browsing experience.
+            </p>
+        </div>
+
+        <div class="legal-section">
+            <h2>What Are Cookies?</h2>
+            <p>
+                Cookies are small text files stored on your device that help websites
+                function properly and improve performance.
+            </p>
+        </div>
+
+        <div class="legal-section">
+            <h2>Types of Cookies We Use</h2>
+            <ul>
+                <li>Essential cookies (site functionality)</li>
+                <li>Analytics cookies (usage statistics)</li>
+                <li>Preference cookies (settings and choices)</li>
+            </ul>
+        </div>
+
+        <div class="legal-section">
+            <h2>Managing Cookies</h2>
+            <p>
+                You can control or disable cookies via your browser settings.
+                Disabling cookies may affect site functionality.
+            </p>
+        </div>
+
+        <div class="legal-section">
+            <h2>Contact</h2>
+            <p>
+                For cookie-related questions:
+                <br><strong>info@caldwellcosmetics.co.uk</strong>
+            </p>
+        </div>
+
+    </div>
+</section>
+{% endblock %}

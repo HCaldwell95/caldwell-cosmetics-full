@@ -1,0 +1,73 @@
+{% extends "base/base.html" %}
+{% load static %}
+
+{% block title %}Terms & Conditions | Caldwell Cosmetics{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/legal.css' %}">
+{% endblock %}
+
+{% block hero %}
+    {% include "hero/legal-hero.html" %}
+{% endblock %}
+
+{% block content %}
+<section class="legal-wrapper">
+    <div class="legal-card">
+
+        <div class="legal-header">
+            <h1>Terms & Conditions</h1>
+            <p>Effective date: 1st April 2024</p>
+        </div>
+
+        <div class="legal-section">
+            <p>
+                These Terms & Conditions govern the use of Caldwell Cosmetics' services,
+                including aesthetic treatments and product purchases.
+            </p>
+        </div>
+
+        <div class="legal-section">
+            <h2>Medical Treatments</h2>
+            <p>
+                All treatments are carried out by qualified professionals. Clients must
+                disclose full medical history prior to treatment. Results vary between individuals.
+            </p>
+        </div>
+
+        <div class="legal-section">
+            <h2>PRP & Injectables</h2>
+            <p>
+                Platelet Rich Plasma (PRP) treatments involve drawing blood, processing it
+                via centrifuge, and reinjecting platelets. Injectables are administered following
+                consultation and consent.
+            </p>
+        </div>
+
+        <div class="legal-section">
+            <h2>Bookings & Cancellations</h2>
+            <ul>
+                <li>Appointments require advance booking</li>
+                <li>24 hours notice is required for cancellations</li>
+                <li>No-shows may be charged</li>
+            </ul>
+        </div>
+
+        <div class="legal-section">
+            <h2>Products</h2>
+            <p>
+                Skincare products are sold based on professional consultation.
+                Refunds are subject to hygiene and consumer protection regulations.
+            </p>
+        </div>
+
+        <div class="legal-section">
+            <h2>Governing Law</h2>
+            <p>
+                These Terms are governed by the laws of England and Wales.
+            </p>
+        </div>
+
+    </div>
+</section>
+{% endblock %}
