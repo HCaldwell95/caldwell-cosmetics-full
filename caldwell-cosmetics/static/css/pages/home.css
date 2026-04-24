@@ -1,8 +1,4 @@
 /* ============================================
-   HOME PAGE STYLES - FULLY RESPONSIVE
-   ============================================ */
-
-/* ============================================
    MAIN CONTENT
    ============================================ */
 
@@ -18,31 +14,25 @@
     padding: clamp(3rem, 8vw, 4rem) 0;
 }
 
-.section--about {
-    background-color: var(--color-background);
+.container {
+    max-width: var(--max-width-content);
+    margin: 0 auto;
+    padding: 0 clamp(1rem, 3vw, 2rem);
 }
 
-.section--treatments-overview {
-    background-color: var(--color-background-alt);
-}
-
+/* Base Section Variants */
 .section--gallery {
     background-color: var(--color-background);
 }
 
 .section--booking-process {
     background-color: var(--color-background-alt);
+    border-radius: 20px;
 }
 
 .section--location {
     background-color: var(--color-background);
     padding-bottom: 5em;
-}
-
-.container {
-    max-width: var(--max-width-content);
-    margin: 0 auto;
-    padding: 0 clamp(1rem, 3vw, 2rem);
 }
 
 /* ============================================
@@ -61,7 +51,7 @@
     margin-bottom: var(--spacing-md);
     position: relative;
     display: inline-block;
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-jost);
 }
 
 .section__title::after {
@@ -74,12 +64,13 @@
 }
 
 /* ============================================
-   ABOUT SECTION
+   ABOUT (BASE CONTENT STYLES)
    ============================================ */
 
 .about__content {
     max-width: var(--max-width-text);
     margin: 0 auto;
+    text-align: left;
 }
 
 .about__content p {
@@ -113,7 +104,7 @@
 }
 
 /* ============================================
-   TREATMENTS OVERVIEW SECTION
+   TREATMENTS OVERVIEW (BASE CONTENT)
    ============================================ */
 
 .treatments-overview__content {
@@ -130,7 +121,7 @@
 }
 
 /* ============================================
-   BUTTON STYLES - RESPONSIVE
+   BUTTONS
    ============================================ */
 
 .btn {
@@ -143,7 +134,6 @@
     transition: all var(--transition-speed) ease;
     border: none;
     cursor: pointer;
-    margin-top: var(--spacing-md);
 }
 
 .btn--primary {
@@ -158,24 +148,8 @@
     color: #ffffff;
 }
 
-/* Mobile: Remove hover transform to prevent issues */
-@media (max-width: 768px) {
-    .btn--primary:hover {
-        transform: none;
-    }
-}
-
 /* ============================================
-   GALLERY CAROUSEL - FULLY RESPONSIVE
-   ============================================ */
-
-/* ============================================
-   AUTO-SLIDING GALLERY CAROUSEL - CSS
-   Add this to your home.css or gallery section
-   ============================================ */
-
-/* ============================================
-   GALLERY CAROUSEL - FULLY RESPONSIVE
+   GALLERY
    ============================================ */
 
 .gallery-carousel {
@@ -208,21 +182,6 @@
     padding: var(--spacing-sm);
 }
 
-/* Tablet and up: 2 columns */
-@media (min-width: 768px) {
-    .gallery-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-/* Mobile: 1 column */
-@media (max-width: 576px) {
-    .gallery-grid {
-        grid-template-columns: 1fr;
-        gap: var(--spacing-sm);
-    }
-}
-
 .gallery-grid__item {
     position: relative;
     aspect-ratio: 1 / 1;
@@ -237,13 +196,6 @@
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
 }
 
-/* Disable hover effect on touch devices */
-@media (hover: none) {
-    .gallery-grid__item:hover {
-        transform: none;
-    }
-}
-
 .gallery-grid__media {
     width: 100%;
     height: 100%;
@@ -251,16 +203,12 @@
     display: block;
 }
 
-/* ============================================
-   PROGRESS INDICATORS (Optional Dots)
-   ============================================ */
-
+/* Indicators */
 .gallery-carousel__indicators {
     display: flex;
     justify-content: center;
     gap: 12px;
     margin-top: 2rem;
-    padding: 0;
 }
 
 .gallery-carousel__indicator {
@@ -268,15 +216,8 @@
     height: 12px;
     border-radius: 50%;
     border: 2px solid var(--color-primary);
-    background-color: transparent;
     cursor: pointer;
     transition: all 0.3s ease;
-    padding: 0;
-}
-
-.gallery-carousel__indicator:hover {
-    background-color: rgba(212, 163, 115, 0.5);
-    transform: scale(1.2);
 }
 
 .gallery-carousel__indicator--active {
@@ -285,79 +226,15 @@
     border-radius: 6px;
 }
 
-.gallery-carousel__indicator:focus-visible {
-    outline: 2px solid var(--color-primary);
-    outline-offset: 3px;
-}
-
-/* Mobile indicators - slightly smaller */
-@media (max-width: 576px) {
-    .gallery-carousel__indicator {
-        width: 10px;
-        height: 10px;
-    }
-    
-    .gallery-carousel__indicator--active {
-        width: 28px;
-    }
-    
-    .gallery-carousel__indicators {
-        gap: 10px;
-        margin-top: 1.5rem;
-    }
-}
-
 /* ============================================
-   ACCESSIBILITY
-   ============================================ */
-
-/* Respect user's motion preferences */
-@media (prefers-reduced-motion: reduce) {
-    .gallery-carousel__item {
-        transition: none;
-    }
-    
-    .gallery-grid__item:hover {
-        transform: none;
-    }
-}
-
-/* ============================================
-   ALTERNATIVE: Progress Bar (uncomment to use instead of dots)
-   ============================================ */
-
-.gallery-carousel__progress-bar {
-    width: 100%;
-    height: 4px;
-    background-color: rgba(212, 163, 115, 0.2);
-    border-radius: 2px;
-    margin-top: 2rem;
-    overflow: hidden;
-}
-
-.gallery-carousel__progress-fill {
-    height: 100%;
-    background-color: var(--color-primary);
-    width: 0%;
-    transition: width 0.3s ease;
-    animation: progressFill 5s linear;
-}
-
-@keyframes progressFill {
-    from { width: 0%; }
-    to { width: 100%; }
-}
-
-/* ============================================
-   BOOKING PROCESS SECTION - RESPONSIVE
+   BOOKING PROCESS
    ============================================ */
 
 .booking-steps {
     max-width: var(--max-width-text);
     margin: 0 auto;
-    padding-left: 0;
-    counter-reset: step-counter;
     list-style: none;
+    counter-reset: step-counter;
 }
 
 .booking-steps__item {
@@ -371,43 +248,23 @@
     content: counter(step-counter);
     position: absolute;
     left: 0;
-    top: 0;
     width: clamp(35px, 5vw, 40px);
     height: clamp(35px, 5vw, 40px);
     background-color: var(--color-primary);
-    color: #ffffff;
+    color: #fff;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: bold;
-    font-size: clamp(1rem, 1.5vw, 1.2rem);
-}
-
-.booking-steps__title {
-    display: block;
-    color: var(--color-secondary);
-    font-size: clamp(1.05rem, 1.8vw, 1.2rem);
-    margin-bottom: var(--spacing-xs);
-}
-
-.booking-steps__description {
-    color: var(--color-text-light);
-    line-height: 1.6;
-    margin-bottom: 0;
-    font-size: clamp(0.95rem, 1.5vw, 1rem);
 }
 
 .booking-process__footer {
     text-align: center;
-    font-size: clamp(1.05rem, 1.8vw, 1.2rem);
-    font-weight: 500;
-    color: var(--color-secondary);
-    margin-top: var(--spacing-lg);
+    margin-top: clamp(2rem, 5vw, 3rem);
 }
 
 /* ============================================
-   LOCATION MAP SECTION - RESPONSIVE
+   LOCATION
    ============================================ */
 
 .location-map {
@@ -415,7 +272,6 @@
     height: clamp(300px, 50vw, 450px);
     border-radius: var(--border-radius);
     overflow: hidden;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .location-map__iframe {
@@ -425,36 +281,69 @@
 }
 
 /* ============================================
-   UTILITY CLASSES
+   UTILITIES
    ============================================ */
 
 .visually-hidden {
     position: absolute;
     width: 1px;
     height: 1px;
-    padding: 0;
     margin: -1px;
     overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
 }
 
 /* ============================================
-   RESPONSIVE ADJUSTMENTS
+   ACCESSIBILITY
    ============================================ */
 
-/* Tablets (768px and below) */
-@media (max-width: 768px) {
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+    }
+
+    .gallery-grid__item:hover,
+    .btn--primary:hover {
+        transform: none;
+    }
+}
+
+/* ============================================
+   PRINT
+   ============================================ */
+
+@media print {
+    .hero,
+    .services-marquee,
+    .gallery-carousel,
+    .location-map {
+        display: none;
+    }
+
+    .section {
+        page-break-inside: avoid;
+    }
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 992px) {
     .section {
         padding: clamp(2rem, 5vw, 3rem) 0;
     }
 }
 
-/* Mobile devices (576px and below) */
+@media (max-width: 768px) {
+    .gallery-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
 @media (max-width: 576px) {
-    .section {
-        padding: 2rem 0;
+    .gallery-grid {
+        grid-template-columns: 1fr;
     }
 
     .container {
@@ -467,69 +356,426 @@
 }
 
 /* ============================================
-   PRINT STYLES
+   CONSULTATION SECTION (Overlay Style)
    ============================================ */
 
-@media print {
-    .hero,
-    .services-marquee,
-    .gallery-carousel,
-    .location-map {
-        display: none;
-    }
+/* 1. Force the section to be Full Width */
+.section--consultation {
+    width: 100vw;
+    max-width: 100vw;
+    position: relative;
+    left: 50%;
+    right: 50%;
+    margin-left: -50vw;
+    margin-right: -50vw;
     
-    .section {
-        page-break-inside: avoid;
-    }
+    /* Ensure the section has height so the image is visible */
+    min-height: 650px; 
+    overflow: hidden; /* Prevents the image from spilling out */
+    background-color: #f0f0f0; /* Fallback color */
+    padding: var(--space-lg) 0;
+}
+
+/* The layout wrapper serves as the positioning context */
+.consultation-layout {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    min-height: 650px;
+}
+
+/* 2. Make the Image Side span the ENTIRE background */
+.consultation__image-side {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1; /* Sits at the bottom */
+}
+
+.consultation__image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    /* Adjust object-position to focus on the subject if needed */
+    object-position: center center; 
+}
+
+/* 3. Style the Info Box to float on top */
+.consultation__info-box {
+    position: absolute;
+    z-index: 2; /* Sits on top of the image */
+    
+    /* Vertical Center: 50% from top */
+    top: 50%;
+    
+    /* Horizontal Position: 
+       18% places the center of the box in the middle of the "Left Side". */
+    left: 18%; 
+    transform: translate(-50%, -50%);
+
+    /* Box Styling */
+    background-color: #efe5d6ed; /* The beige color */
+    padding: 3rem;
+    border-radius: 20px; /* Rounded corners */
+    max-width: 450px; /* Restricts width so it doesn't get too wide */
+    width: 90%; /* Prevents overflow on small screens */
+    text-align: center;
+    
+    /* Optional: Add a subtle shadow to make it pop */
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+}
+
+.consultation__title {
+    font-family: 'Cormorant Garamond', serif; /* Elegant font */
+    font-size: 2.5rem;
+    font-weight: 500;
+    color: #2c2c2c;
+    margin-bottom: 1.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    line-height: 1.1;
+}
+
+.consultation__text p {
+    font-family: 'Jost', sans-serif; /* Clean modern font */
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: #4a4a4a;
+    margin: 0;
 }
 
 /* ============================================
-   ACCESSIBILITY ENHANCEMENTS
+   MOBILE RESPONSIVENESS
    ============================================ */
 
-/* Respect reduced motion preference */
-@media (prefers-reduced-motion: reduce) {
-    * {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
+@media (max-width: 900px) {
+    .section--consultation {
+        min-height: auto;
     }
-    
-    .services-marquee__track {
-        animation: none;
+
+    .consultation-layout {
+        display: flex;
+        flex-direction: column;
     }
-    
-    .gallery-grid__item:hover,
-    .btn--primary:hover {
+
+    /* Stack the image on top of the box */
+    .consultation__image-side {
+        position: relative;
+        height: 400px; /* Fixed height for image on mobile */
+    }
+
+    .consultation__info-box {
+        position: relative; /* No longer absolute floating */
+        top: auto;
+        left: auto;
         transform: none;
-    }
-}
-
-/* Focus states for keyboard navigation */
-.btn:focus-visible,
-.gallery-carousel__control:focus-visible {
-    outline: 3px solid var(--color-primary);
-    outline-offset: 2px;
-}
-
-/* High contrast mode improvements */
-@media (prefers-contrast: high) {
-    .section__title::after {
-        height: 4px;
-    }
-    
-    .booking-steps__item::before {
-        border: 2px solid #fff;
+        width: 90%;
+        max-width: 100%;
+        margin: -50px auto 2rem auto; /* Pull up slightly to overlap image */
+        border-radius: 20px;
     }
 }
 
 /* ============================================
-   ORIENTATION-SPECIFIC ADJUSTMENTS
+   PROFESSIONAL ABOUT SECTION
    ============================================ */
 
-/* Landscape on mobile devices */
-@media (max-width: 768px) and (orientation: landscape) {
-    .section {
-        padding: 2rem 0;
+.section--about {
+    background-color: #ffffff;
+    padding: clamp(4rem, 8vw, 6rem) 0;
+    width: 80vw;
+    max-width: 80vw;
+    position: relative;
+    left: 50%;
+    right: 50%;
+    margin-left: -40vw;
+    margin-right: -40vw;
+}
+
+.about-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Text Left, Image Right */
+    gap: clamp(3rem, 6vw, 6rem);
+    align-items: center;
+    width: 100vw;
+    max-width: 80vw;
+    position: relative;
+    left: 50%;
+    right: 50%;
+    margin-left: -40vw;
+    margin-right: -40vw;
+}
+
+/* --- LEFT SIDE: Content --- */
+
+.about__subtitle {
+    display: block;
+    color: var(--color-primary);
+    font-family: var(--font-montserrat);
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-bottom: 0.5rem;
+}
+
+.about__title {
+    font-family: var(--font-jost);
+    font-size: clamp(2.2rem, 4vw, 3.5rem);
+    font-weight: 400;
+    line-height: 1.2;
+    color: var(--color-secondary);
+    margin-bottom: 1.5rem;
+}
+
+.about__text p {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: var(--color-text-light);
+    margin-bottom: 1.5rem;
+}
+
+.about__text strong {
+    color: var(--color-secondary); /* Make names stand out */
+    font-weight: 600;
+}
+
+/* --- Highlight Box (The "We're Growing" part) --- */
+.about__highlight-box {
+    margin-top: 2rem;
+    padding: 2rem;
+    background-color: #fdfbf7; /* Very light beige */
+    border-left: 4px solid var(--color-primary); /* Gold accent bar */
+    border-radius: 4px;
+}
+
+.about__highlight-box h3 {
+    font-family: var(--font-jost);
+    font-size: 1.25rem;
+    color: var(--color-secondary);
+    margin-bottom: 0.5rem;
+}
+
+.about__highlight-box p {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--color-text-light);
+    margin: 0;
+}
+
+/* --- RIGHT SIDE: Image --- */
+.about__visual {
+    position: relative;
+}
+
+.about__image {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: var(--border-radius);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+    transition: transform 0.4s ease;
+}
+
+.about__visual:hover .about__image {
+    transform: scale(1.01);
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+
+@media (max-width: 992px) {
+    .about-layout {
+        grid-template-columns: 1fr; /* Stack vertically */
+        gap: 3rem;
+        text-align: center; /* Center text on mobile */
     }
+
+    .about__content {
+        text-align: center;
+        order: 2; /* Text goes second on mobile */
+    }
+
+    .about__visual {
+        order: 1; /* Image goes first on mobile (visual impact) */
+    }
+
+    .about__highlight-box {
+        text-align: left; /* Keep highlight box left aligned for readability */
+    }
+}
+
+/* ============================================
+   PROFESSIONAL TREATMENTS OVERVIEW
+   ============================================ */
+
+.section--treatments-overview {
+    background-color: #ffffff; /* Clean white background */
+    padding: clamp(4rem, 8vw, 6rem) 0; /* Generous vertical spacing */
+}
+
+.treatments-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* 50% Image, 50% Text */
+    gap: clamp(3rem, 6vw, 6rem); /* Large gap for professional look */
+    align-items: center;
+}
+
+/* --- LEFT SIDE: Image --- */
+.treatments__visual {
+    position: relative;
+}
+
+.treatments__image {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: var(--border-radius);
+    /* Professional shadow to lift the image */
+    box-shadow: 0 20px 40px rgba(0,0,0,0.08); 
+    transition: transform 0.4s ease;
+}
+
+.treatments__visual:hover .treatments__image {
+    transform: scale(1.01); /* Subtle movement on hover */
+}
+
+/* Small badge in corner of image (adds detail) */
+.treatments__badge {
+    position: absolute;
+    top: 20px;
+    left: -20px;
+    background-color: var(--color-primary);
+    color: white;
+    padding: 0.5rem 1.5rem;
+    font-family: var(--font-montserrat);
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    border-radius: 4px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+/* --- RIGHT SIDE: Content --- */
+.treatments__content {
+    text-align: left; /* Left aligned text is easier to read and looks more modern */
+}
+
+.treatments__subtitle {
+    display: block;
+    color: var(--color-primary);
+    font-family: var(--font-montserrat);
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-bottom: 0.5rem;
+}
+
+.treatments__title {
+    font-family: var(--font-jost); /* Or your serif font */
+    font-size: clamp(2.2rem, 4vw, 3.5rem);
+    font-weight: 400;
+    line-height: 1.2;
+    color: var(--color-secondary);
+    margin-bottom: 1.5rem;
+}
+
+.treatments__text p {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: var(--color-text-light);
+    margin-bottom: 1.5rem;
+}
+
+/* --- Highlights List --- */
+.treatments__highlights {
+    list-style: none;
+    padding: 0;
+    margin-bottom: 2.5rem;
+    display: flex;
+    gap: 1.5rem;
+}
+
+.treatments__highlights li {
+    position: relative;
+    padding-left: 1.5rem;
+    font-size: 0.95rem;
+    color: var(--color-text);
+    font-family: var(--font-montserrat);
+    font-weight: 500;
+}
+
+.treatments__highlights li::before {
+    content: '•';
+    position: absolute;
+    left: 0;
+    color: var(--color-primary);
+    font-size: 1.2rem;
+    top: -3px;
+}
+
+/* --- Button Styling --- */
+.btn--treatments {
+    display: inline-block;
+    background-color: var(--color-secondary); /* Dark Grey/Black */
+    color: #ffffff;
+    padding: 1rem 2.5rem;
+    font-family: var(--font-montserrat);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    transition: all 0.3s ease;
+    border-radius: 4px; /* Slightly sharper corners for professional look */
+}
+
+.btn--treatments:hover {
+    background-color: var(--color-primary); /* Gold on hover */
+    color: #ffffff;
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(212, 163, 115, 0.2);
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+
+@media (max-width: 992px) {
+    .treatments-layout {
+        grid-template-columns: 1fr; /* Stack vertically */
+        gap: 3rem;
+        text-align: center; /* Center content on mobile */
+    }
+
+    .treatments__content {
+        text-align: center;
+    }
+
+    .treatments__highlights {
+        justify-content: center;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .treatments__highlights li::before {
+        display: none; /* Remove dots on mobile for simpler look */
+    }
+
+    .treatments__badge {
+        left: 50%;
+        transform: translateX(-50%);
+        top: -15px;
+    }
+}
+
+/* ============================================
+   MISC
+   ============================================ */
+
+.lightwidget-widget {
+    padding: 2em 0;
 }

@@ -3,34 +3,91 @@
 
 {% block title %}{{ treatment.name }} | Caldwell Cosmetics{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/treatment_info.css' %}">
+{% endblock %}
+
 {% block hero %}
-    <!-- Hero image section -->
-    <section class="hero" id="home-hero">
-        <div class="container-fluid p-0 position-relative">
-            <img src="{% static 'images/treatment-information-hero.jpg' %}" class="img-fluid" alt="A calm and clean studio wall with a mirror and plant">
-            <div class="color-overlay"></div>
-            <div class="position-absolute top-50 start-50 translate-middle text-center text-white hero-text-md">
-                <h2 id="treatments-cover-heading">Caldwell Cosmetics</h2>
-            </div>
-        </div>
-    </section>
+    {% include 'hero/treatment-info-hero.html' %}
 {% endblock %}
 
 {% block content %}
-<section class="treatment-details">
+
+<!-- Breadcrumb -->
+<nav class="treatment-breadcrumb-nav">
     <div class="container">
-        <div class="row">
-            <div class="col-lg-12 col-md-12">
-                {# Dynamic include of treatment-specific partial template based on slug #}
-                {% include treatment_template %}
+        <a href="/">Home</a> /
+        <a href="{% url 'treatments:treatments' %}">Treatments</a> /
+        <span>{{ treatment.name }}</span>
+    </div>
+</nav>
+
+<!-- HERO SECTION -->
+<section class="treatment-hero-section">
+    <div class="container">
+        <div class="treatment-hero-grid">
+
+            <!-- LEFT -->
+            <div class="treatment-hero-content">
+                <h1>{{ treatment.name }}</h1>
+
+                {% if treatment.summary %}
+                    <p class="treatment-intro">{{ treatment.summary }}</p>
+                {% endif %}
+
             </div>
+
+            <!-- RIGHT -->
+            <div class="treatment-hero-image">
+                {% if treatment.image %}
+                    <img src="{{ treatment.image.url }}" alt="{{ treatment.name }}">
+                {% endif %}
+            </div>
+
         </div>
     </div>
 </section>
 
-<!-- Fixed vertical banner -->
-<div class="fixed-banner">
-    <a href="{% url 'treatment_details' %}" class="banner-button">Back to Treatments</a>
-</div>
+<!-- MAIN CONTENT -->
+<section id="details" class="treatment-details">
+    <div class="container">
+
+        <div class="treatment-content-grid">
+
+            <!-- MAIN CONTENT -->
+            <div>
+                {% include treatment_template %}
+            </div>
+
+            <!-- SIDEBAR -->
+            <aside class="treatment-sidebar">
+
+                <div class="sidebar-card">
+                    <h3>Book This Treatment</h3>
+                    <p>Start your journey with {{ treatment.name }} today.</p>
+                    <a href="#" class="btn btn-primary btn-block">Book Now</a>
+                </div>
+
+                <div class="sidebar-card">
+                    <h3>Why Choose Us?</h3>
+                    <ul>
+                        <li>✓ Qualified practitioner</li>
+                        <li>✓ Medical-grade equipment</li>
+                        <li>✓ Personalised treatments</li>
+                        <li>✓ Relaxing environment</li>
+                    </ul>
+                </div>
+
+                <div class="sidebar-card">
+                    <a href="{% url 'treatments:treatments' %}">
+                        ← Back to Treatments
+                    </a>
+                </div>
+
+            </aside>
+
+        </div>
+    </div>
+</section>
 
 {% endblock %}

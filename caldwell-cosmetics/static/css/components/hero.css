@@ -1,117 +1,190 @@
 /* ============================================
-   HERO SECTION - FULLY RESPONSIVE
-   ============================================ */
+CSS VARIABLES & RESET
+(Maintaining your existing palette)
+============================================ */
+:root {
+    --font-cormorant: 'Cormorant Garamond', serif;
+    --font-lora: 'Lora', serif;
+    --font-montserrat: 'Montserrat', sans-serif;
+    
+    --color-gold: #f9e1b4;
+    --color-gold-dark: #d4af37;
+    --color-text-dark: #333333;
+    --color-text-light: #666666;
+    --color-bg-beige: #fdfbf7; /* Soft cream for the left box */
+    --color-accent-pink: #d27c8b;
+    
+    --spacing-xs: 0.5rem;
+    --spacing-sm: 1rem;
+    --spacing-md: 2rem;
+    --spacing-lg: 4rem;
+    --spacing-xl: 6rem;
 
-.hero {
-    padding: 0;
-    width: 100%;
-    overflow: hidden;
+    --container-width: 1400px;
 }
 
-.hero__container {
+
+body {
+    font-family: var(--font-lora);
+    color: var(--color-text-dark);
+    background-color: #ffffff;
+    overflow-x: hidden;
+    line-height: 1.6;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+    transition: opacity 0.3s ease;
+}
+
+/* ============================================
+    NEW HERO SECTION - SPLIT LAYOUT
+    ============================================ */
+.hero {
     position: relative;
     width: 100%;
-    height: 80vh;
-    min-height: 500px;
-    max-height: 750px;
+    /* Height is managed by children, but ensures it takes viewport space */
+    min-height: 85vh; 
+    display: flex;
+    align-items: stretch;
+    background-color: var(--color-bg-beige);
+    padding: 0;
+}
+
+/* The Left Box - Content Wrapper */
+.hero__box {
+    flex: 0 0 45%; /* Takes up 45% of width on desktop */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 5% 8%;
+    background-color: #fdfbf7a8;
+    z-index: 2;
+    position: relative;
+    /* Subtle texture or gradient could go here */
+    box-shadow: 5px 0 30px rgba(0,0,0,0.05);
+}
+
+/* The Right Side - Spanning Image */
+.hero__image-container {
+    flex: 1; /* Takes up remaining space */
+    position: relative;
     overflow: hidden;
+    min-height: 500px;
 }
 
 .hero__image {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    object-position: center;
+    object-position: center 20%; /* Adjusted to focus on face */
+    display: block;
+    position: absolute;
 }
 
-.hero__overlay {
-    content: "";
+/* Optional: Subtle overlay on image side only */
+.hero__image-overlay {
     position: absolute;
     top: 0;
     left: 0;
-    background-color: rgba(95, 95, 95, 0.4);
-    height: 100%;
     width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.1);
+    pointer-events: none;
 }
 
-.hero__content {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    text-align: center;
-    color: #ffffff;
-    width: 90%;
-    max-width: 900px;
-    z-index: 2;
-    padding: 20px;
+/* ============================================
+    HERO TYPOGRAPHY & CONTENT
+    ============================================ */
+.hero__tagline {
+    font-family: var(--font-montserrat);
+    font-size: 0.85rem;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--color-accent-pink);
+    margin-bottom: var(--spacing-sm);
+    display: inline-block;
+    border-bottom: 1px solid var(--color-accent-pink);
+    padding-bottom: 5px;
 }
 
 .hero__title {
-    margin-top: 0.5em;
-    padding-top: 0.5em;
-    /* Responsive font sizing - much smaller on mobile */
-    font-size: clamp(2rem, 8vw, 6.5rem);
-    font-weight: var(--font-weight-regular);
-    /* Responsive letter spacing - reduces on mobile */
-    letter-spacing: clamp(2px, 1.5vw, 10mm);
-    text-transform: uppercase;
-    color: #f9e1b4;
-    /* Simplified text shadow for better mobile performance */
-    text-shadow: 
-        1px 1px 0px #ffa90461, 
-        -3px 0 25px #000, 
-        3px 0px 3px #606060, 
-        0px 0px 15px #73674b, 
-        15px 10px 10px black, 
-        0 0 40px #737373, 
-        0 0 40px #d27c8b, 
-        0 0 60px pink;
-    margin-bottom: 0.5em;
+    font-family: var(--font-cormorant);
+    font-size: clamp(3rem, 5vw, 5.5rem);
+    line-height: 1;
+    font-weight: 400;
+    color: #2c2c2c;
+    margin-bottom: var(--spacing-md);
+    /* Adjusted text shadow for legibility on light background 
+        instead of the heavy black shadow from the dark version */
+    text-shadow: 1px 1px 0px rgba(217, 184, 117, 0.2); 
 }
 
-.hero__tagline {
-    font-size: clamp(0.9rem, 2.5vw, 1.5rem);
-    font-weight: 300;
-    letter-spacing: clamp(0.1em, 0.2vw, 0.2em);
-    margin-bottom: var(--spacing-md);
-    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+/* Highlighting specific words if needed, mimicking the Gold */
+.hero__title span {
+    color: var(--color-gold-dark);
+    font-style: italic;
 }
 
 .hero__description {
-    font-size: clamp(1rem, 2vw, 1.25rem);
-    line-height: 1.6;
-    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
-    text-transform: capitalize;
+    font-size: clamp(1.05rem, 1.2vw, 1.35rem);
+    color: var(--color-text-light);
+    margin-bottom: var(--spacing-md);
+    max-width: 500px;
 }
 
 .hero__description p {
     margin-bottom: var(--spacing-sm);
 }
 
-.hero__description-extended {
-    display: none;
+/* CTA Button Style (Added based on reference image) */
+.btn {
+    display: inline-block;
+    padding: 1rem 2.5rem;
+    font-family: var(--font-montserrat);
+    font-size: 0.9rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    background-color: #2c2c2c;
+    color: #fff;
+    border: 1px solid #2c2c2c;
+    transition: all 0.3s ease;
+    cursor: pointer;
 }
 
-/* Show extended description on larger screens */
-@media (min-width: 992px) {
-    .hero__description-extended {
-        display: block;
-    }
+.btn:hover {
+    background-color: transparent;
+    color: #2c2c2c;
+    transform: translateY(-2px);
+}
+
+.btn--outline {
+    background-color: transparent;
+    color: #2c2c2c;
+    margin-left: var(--spacing-sm);
+}
+
+.btn--outline:hover {
+    background-color: #2c2c2c;
+    color: #fff;
 }
 
 /* ============================================
-   SERVICES MARQUEE - RESPONSIVE
-   ============================================ */
-
+    SERVICES MARQUEE (Unchanged logic, but styled to fit new layout)
+    ============================================ */
 .services-marquee {
     background-color: #eed2be;
     color: var(--color-text-dark);
-    padding: clamp(0.5rem, 2vw, 1rem) 0;
+    padding: clamp(0.5rem, 1vw, 1rem) 0;
     overflow: hidden;
     position: relative;
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    border-top: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.05);
+    z-index: 5; /* Sits above hero overlap if any */
 }
 
 .services-marquee__track {
@@ -120,111 +193,154 @@
     animation: marquee 30s linear infinite;
 }
 
+.services-marquee__track:hover {
+    animation-play-state: paused;
+}
+
 .services-marquee__item {
     display: inline-block;
     padding: 0 var(--spacing-md);
-    font-size: clamp(0.85rem, 1.5vw, 1rem);
+    font-size: clamp(0.85rem, 1.2vw, 1rem);
     font-weight: 500;
     letter-spacing: 0.05em;
+    text-decoration: none;
+    color: inherit;
+    text-transform: uppercase;
+    font-family: var(--font-montserrat);
 }
 
 .services-marquee__item::after {
     content: '|';
     margin-left: var(--spacing-md);
-    opacity: 0.5;
+    opacity: 0.4;
 }
 
+/* ============================================
+    ANIMATIONS
+    ============================================ */
 @keyframes marquee {
-    0% {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+}
+
+@keyframes fadeInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+    to {
+        opacity: 1;
         transform: translateX(0);
     }
-    100% {
-        transform: translateX(-50%);
+}
+
+@keyframes fadeInRight {
+    from {
+        opacity: 0;
+        transform: scale(1.05);
     }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.animate-in {
+    animation: fadeInLeft 1s ease-out forwards;
+}
+
+.hero__image-container {
+    animation: fadeInRight 1.5s ease-out forwards;
 }
 
 /* ============================================
-   RESPONSIVE BREAKPOINTS
-   ============================================ */
+    RESPONSIVE DESIGN
+    ============================================ */
 
-/* Tablets and below (768px) */
-@media (max-width: 768px) {
-    .hero__container {
-        height: 60vh;
-        min-height: 400px;
-        max-height: 600px;
+/* Tablets & Below */
+@media (max-width: 992px) {
+    .hero {
+        flex-direction: column; /* Stack vertically */
+        min-height: auto;
     }
 
-    .hero__title {
-        margin-top: 0.3em;
-        padding-top: 0.3em;
-        /* Simplified shadow for mobile performance */
-        text-shadow: 
-            1px 1px 0px #ffa90461, 
-            0 0 15px #000, 
-            0 0 25px #606060;
-    }
-
-    .hero__content {
-        width: 95%;
-        padding: 15px;
-    }
-}
-
-/* Mobile devices (575px) */
-@media (max-width: 575px) {
-    .hero__container {
-        height: 50vh;
-        min-height: 350px;
-        max-height: 500px;
-    }
-
-    .hero__title {
-        /* Even more compact on small mobile */
-        margin-top: 0.2em;
-        padding-top: 0.2em;
-        line-height: 1.1;
-    }
-
-    .services-marquee__item {
-        padding: 0 var(--spacing-sm);
-    }
-
-    .services-marquee__item::after {
-        margin-left: var(--spacing-sm);
-    }
-}
-
-/* Extra small devices (475px) */
-@media (max-width: 475px) {
-    .hero__container {
+    /* Image goes on top for visual impact on mobile */
+    .hero__image-container {
+        flex: none;
+        width: 100%;
+        height: 40vh;
         min-height: 300px;
+        order: 1; /* Image first */
+    }
+
+    /* Box goes below */
+    .hero__box {
+        flex: none;
+        width: 100%;
+        order: 2; /* Text second */
+        padding: 3rem 1.5rem;
+        align-items: center;
+        text-align: center;
+        box-shadow: none;
+    }
+
+    .hero__description {
+        margin-left: auto;
+        margin-right: auto;
     }
 
     .hero__title {
-        /* Further reduce for very small screens */
-        letter-spacing: clamp(1px, 1vw, 3mm);
+        font-size: clamp(2.5rem, 8vw, 4rem);
     }
 }
 
-/* ============================================
-   ACCESSIBILITY
-   ============================================ */
-
-/* Respect user's motion preferences */
-@media (prefers-reduced-motion: reduce) {
-    .services-marquee__track {
-        animation: none;
-    }
-}
-
-/* High contrast mode support */
-@media (prefers-contrast: high) {
-    .hero__overlay {
-        background-color: rgba(0, 0, 0, 0.6);
+/* Mobile Adjustments */
+@media (max-width: 575px) {
+    .hero__box {
+        padding: 2.5rem 1rem;
     }
     
     .hero__title {
-        text-shadow: 2px 2px 4px #000;
+        margin-bottom: 1rem;
+    }
+
+    .btn {
+        width: 100%;
+        margin-bottom: 1rem;
+        margin-left: 0;
+    }
+}
+
+/* ============================================
+   MEDIA QUERY: 1440px AND ABOVE
+   ============================================ */
+@media (min-width: 1440px) {
+    .hero__cta {
+        /* Switch from row to column layout */
+        flex-direction: column;
+        
+        /* Center the buttons within the column */
+        align-items: center;
+        
+        /* Optional: Add spacing to the top of the button group if needed */
+        margin-top: 2rem;
+    }
+
+    .btn {
+        /* Remove any horizontal margins (like margin-left) from side-by-side layout */
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        
+        /* Add vertical space between the stacked buttons */
+        margin-bottom: 1rem;
+        
+        /* Enforce a wide, balanced width for the buttons on the large screen */
+        min-width: 280px; 
+        text-align: center;
+    }
+
+    /* Remove the bottom margin from the last button so it doesn't float */
+    .btn--outline {
+        margin-bottom: 0;
     }
 }

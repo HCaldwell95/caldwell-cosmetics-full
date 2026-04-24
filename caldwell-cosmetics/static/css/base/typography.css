@@ -1,5 +1,5 @@
 body {
-    font-family: var(--font-cormorant);
+    font-family: var(--font-montserrat);
     color: var(--color-text-dark);
     background-color: var(--color-background-light);
     line-height: 1.6;
@@ -41,6 +41,33 @@ a:hover {
 #glass-link {
     color: var(--color-text-dark);
 }
+
+/* Rule Lines */
+
+/* Editorial-style rule: two fading lines with a centered dot */
+.rule {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.rule-line {
+    flex: 1;
+    height: 1px;
+    background: var(--color-primary);
+    opacity: 0.2;
+}
+
+.rule-accent {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--color-primary);
+    flex-shrink: 0;
+    opacity: 0.4;
+}
+
+/* Buttons */
 
 .button-glass-base {
     font-weight: 500;

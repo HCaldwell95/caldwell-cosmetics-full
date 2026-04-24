@@ -1,0 +1,433 @@
+/* ============================================
+   TREATMENT INFORMATION STYLES
+   Styled to match The Recovery Den aesthetic
+   ============================================ */
+
+/* ---- Shared Variables ---- */
+:root {
+  --rd-orange: #e8621a;
+  --rd-orange-dark: #c8511a;
+  --rd-dark: #252e37;
+  --rd-dark-mid: #384553;
+  --rd-text: #333333;
+  --rd-text-muted: #555555;
+  --rd-bg: #f8f9fa;
+  --rd-bg-mid: #e9ecef;
+  --rd-white: #ffffff;
+  --rd-green: #28a745;
+  --rd-radius: 8px;
+  --rd-radius-lg: 12px;
+  --rd-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --rd-shadow-md: 0 10px 40px rgba(0, 0, 0, 0.10);
+}
+
+/* ============================================
+   BREADCRUMB
+   ============================================ */
+
+.treatment-breadcrumb-nav {
+  background: var(--rd-bg);
+  padding: 1rem 0;
+  font-size: 0.875rem;
+  color: var(--rd-text-muted);
+}
+
+.treatment-breadcrumb-nav a {
+  color: var(--rd-orange);
+  text-decoration: none;
+}
+
+.treatment-breadcrumb-nav a:hover {
+  text-decoration: underline;
+}
+
+.treatment-breadcrumb-nav span {
+  color: var(--rd-text-muted);
+}
+
+/* ============================================
+   HERO SECTION
+   ============================================ */
+
+.treatment-hero-section {
+  padding: 3rem 0;
+  background: linear-gradient(135deg, var(--rd-bg) 0%, var(--rd-bg-mid) 100%);
+}
+
+.treatment-hero-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+  align-items: center;
+}
+
+/* LEFT: Content */
+.treatment-hero-content h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--rd-dark);
+  margin-bottom: 1rem;
+  line-height: 1.2;
+}
+
+.treatment-intro {
+  font-size: 1.1rem;
+  color: var(--rd-text-muted);
+  margin-bottom: 1.75rem;
+  line-height: 1.65;
+}
+
+/* Highlight checklist (mirrors Recovery Den green ticks) */
+.treatment-highlights {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-bottom: 2rem;
+}
+
+.treatment-highlight-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--rd-dark);
+  font-size: 0.95rem;
+}
+
+.treatment-highlight-item::before {
+  content: "";
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2328a745' stroke-width='2.5'%3E%3Cpolyline points='20 6 9 17 4 12'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-size: contain;
+  flex-shrink: 0;
+}
+
+/* CTA buttons */
+.treatment-cta-buttons {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.btn {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--rd-radius);
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-decoration: none;
+  transition: background 0.25s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  border: 2px solid transparent;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background: var(--rd-orange);
+  color: #fff;
+  border-color: var(--rd-orange);
+}
+
+.btn-primary:hover {
+  background: var(--rd-orange-dark);
+  border-color: var(--rd-orange-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(232, 98, 26, 0.35);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--rd-orange);
+  border-color: var(--rd-orange);
+}
+
+.btn-secondary:hover {
+  background: var(--rd-orange);
+  color: #fff;
+}
+
+.btn-block {
+  width: 100%;
+  text-align: center;
+  display: block;
+}
+
+/* RIGHT: Image */
+.treatment-hero-image {
+  border-radius: var(--rd-radius-lg);
+  overflow: hidden;
+  box-shadow: var(--rd-shadow-md);
+}
+
+.treatment-hero-image img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* ============================================
+   MAIN CONTENT AREA
+   ============================================ */
+
+.treatment-details {
+  background: var(--rd-bg);
+}
+
+.treatment-content-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 3rem;
+  align-items: start;
+}
+
+/* ---- Content Sections (cards) ---- */
+.treatment-section {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* Each logical block is a white card */
+.treatment-section > *,
+.content-block {
+  background: var(--rd-white);
+  padding: 2rem;
+  border-radius: var(--rd-radius);
+  box-shadow: var(--rd-shadow-sm);
+}
+
+/* Headings inside content */
+.treatment-section h2,
+.content-block h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--rd-dark);
+  margin-bottom: 1.25rem;
+}
+
+.treatment-section h3,
+.content-block h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--rd-dark);
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Paragraphs */
+.treatment-section p,
+.content-block p {
+  color: var(--rd-text-muted);
+  line-height: 1.8;
+  margin-bottom: 0.85rem;
+}
+
+/* ---- Lists (ol/ul inside content) ---- */
+.core-page-ol,
+.core-page-ul {
+  padding-left: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin: 0.75rem 0 1rem;
+}
+
+.core-page-ol li,
+.core-page-ul li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  background: var(--rd-bg);
+  border-radius: var(--rd-radius);
+  color: var(--rd-text-muted);
+  line-height: 1.6;
+  transition: transform 0.2s ease;
+}
+
+.core-page-ol li:hover,
+.core-page-ul li:hover {
+  transform: translateX(4px);
+}
+
+.core-page-ol {
+  counter-reset: ol-counter;
+}
+
+.core-page-ol li {
+  counter-increment: ol-counter;
+}
+
+.core-page-ol li::before {
+  content: counter(ol-counter);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: var(--rd-orange);
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.core-page-ul li::before {
+  content: "";
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2328a745' stroke-width='2.5'%3E%3Cpath d='M22 11.08V12a10 10 0 1 1-5.93-9.14'%3E%3C/path%3E%3Cpolyline points='22 4 12 14.01 9 11.01'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-size: contain;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* ============================================
+   SIDEBAR
+   ============================================ */
+
+.treatment-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  top: 1.5rem;
+}
+
+.sidebar-card {
+  background: var(--rd-white);
+  padding: 1.5rem;
+  border-radius: var(--rd-radius);
+  box-shadow: var(--rd-shadow-sm);
+}
+
+.sidebar-card h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--rd-dark);
+  margin-bottom: 0.75rem;
+}
+
+.sidebar-card p {
+  color: var(--rd-text-muted);
+  font-size: 0.95rem;
+  margin-bottom: 1rem;
+  line-height: 1.6;
+}
+
+/* Booking card: dark gradient (matches Recovery Den) */
+.sidebar-card:first-child {
+  background: linear-gradient(135deg, var(--rd-dark-mid) 0%, var(--rd-dark) 100%);
+}
+
+.sidebar-card:first-child h3,
+.sidebar-card:first-child p {
+  color: var(--rd-white);
+}
+
+/* Trust / checklist card */
+.sidebar-card ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar-card ul li {
+  padding: 0.4rem 0;
+  color: var(--rd-text-muted);
+  font-size: 0.95rem;
+}
+
+/* Back link card */
+.sidebar-card a:not(.btn) {
+  color: var(--rd-orange);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.sidebar-card a:not(.btn):hover {
+  text-decoration: underline;
+}
+
+
+
+/* ============================================
+   GRADIENT HEADING (anti-wrinkle template)
+   ============================================ */
+
+.gradient-text {
+  background: linear-gradient(135deg, var(--rd-orange) 0%, var(--rd-orange-dark) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ============================================
+   CORE PAGE SECTION WRAPPER
+   ============================================ */
+
+.core-page-section {
+  padding: 4rem 0;
+  background: var(--rd-bg);
+}
+
+.treatment-details h1 {
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: var(--rd-dark);
+  margin-bottom: 0.5rem;
+}
+
+.treatment-details h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--rd-dark);
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+}
+
+.treatment-details h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--rd-dark);
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.treatment-details p {
+  color: var(--rd-text-muted);
+  line-height: 1.8;
+  margin-bottom: 0.85rem;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 991px) {
+  .treatment-hero-grid,
+  .treatment-content-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .treatment-sidebar {
+    position: static;
+  }
+
+  .treatment-hero-content h1 {
+    font-size: 2rem;
+  }
+
+  .treatment-cta-buttons {
+    flex-direction: column;
+  }
+
+  .treatment-info-cta h3 {
+    font-size: 1.6rem;
+  }
+}

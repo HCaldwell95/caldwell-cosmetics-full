@@ -139,6 +139,7 @@
     font-size: clamp(0.9rem, 1.2vw, 1.2rem);
     transition: all 0.3s ease;
     white-space: nowrap;
+    margin-top: 0px;
 }
 
 .book-btn:hover {
@@ -167,6 +168,10 @@ body {
 
     .nav-header {
         height: 105px;
+    }
+
+    .book-btn {
+        margin-top: 20px;
     }
 }
 

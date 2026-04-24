@@ -20,12 +20,15 @@
     --color-accent-dark: #302121; /* Darker variant */
     --color-text-dark: #302321; /* Dark Brown for text and links */
     --color-heading: black;
-
+    --color-scrollbar: #eed2be; /* Custom scrollbar color */
     /* Typography */
     --font-cormorant: 'Cormorant', serif;
     --font-italiana: 'Italiana', sans-serif;
     --font-roboto: 'Roboto', sans-serif;
     --font-lora: 'Lora', serif;
+    --font-jost: 'Jost', sans-serif;
+    --font-montserrat: 'Montserrat', sans-serif;
+    --font-nunito-sans: 'Nunito-Sans', sans-serif;
     --fa-style-family-classic: "Font Awesome 6 Free";
     --font-weight-regular: 400;
     --font-weight-bold: 600;

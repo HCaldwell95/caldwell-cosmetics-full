@@ -72,13 +72,14 @@
 }
 
 .legal-card ul {
-    margin: 15px 0 25px 20px;
+    margin: 15px 0 25px 0px;
 }
 
 .legal-card ul li {
     margin-bottom: 10px;
     line-height: 1.6;
     color: #444;
+    list-style-type: circle;
 }
 
 /* ---------- Emphasis ---------- */

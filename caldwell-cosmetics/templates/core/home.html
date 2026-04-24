@@ -13,189 +13,121 @@
 
 {% block content %}
 <main class="main-content">
-    
     <!-- About Section -->
     <section class="section section--about">
         <div class="container">
-            <header class="section__header">
-                <h2 class="section__title">About Us</h2>
-            </header>
-            
-            <div class="about__content">
-                <p class="about__intro">
-                    At Caldwell Cosmetics, we believe beauty starts from within - and we're here to help you feel confident, radiant, and truly yourself. 
-                    Led by Rabia, a compassionate Nurse with over seven years of NHS experience, our clinic combines professional expertise with a genuine 
-                    passion for holistic well-being.
-                </p>
+            <div class="about-layout">
                 
-                <p>
-                    We specialise in personalised skin treatments designed to bring out your natural glow, all within a calm, welcoming space that encourages 
-                    self-care and confidence. Every detail of your visit is thoughtfully considered, creating an experience that feels as good as it looks.
-                </p>
-                
-                <p>
-                    Whether you're beginning your skincare journey or looking to enhance your current routine, we're here to support you with expert advice, 
-                    tailored treatments, and a warm, personal touch.
-                </p>
-                
-                <div class="about__highlight">
+                <!-- Left Side: Content -->
+                <div class="about__content">
+                    <span class="about__subtitle">About Us</span>
+                    <h2 class="about__title">Our Philosophy</h2>
+                    
+                    <div class="about__text">
+                        <p>
+                            At Caldwell Cosmetics, we believe beauty starts from within - and we're here to help you feel confident, radiant, and truly yourself.
+                        </p>
+                        
+                        <p>
+                            <strong>Meet Rabia, our Lead Nurse.</strong> With over seven years of NHS experience, Rabia combines professional expertise with a genuine passion for holistic well-being. Her compassionate approach ensures that every treatment is safe, effective, and perfectly tailored to you.
+                        </p>
+                        
+                        <p>
+                            We specialise in personalised skin treatments designed to bring out your natural glow, all within a calm, welcoming space that encourages self-care. Every detail of your visit is thoughtfully considered, creating an experience that feels as good as it looks.
+                        </p>
+                    </div>
+
+                    <!-- A Highlight Box for the expansion news -->
+                    <div class="about__highlight-box">
+                        <h3>We're Growing!</h3>
+                        <p>
+                            Caldwell Cosmetics is expanding. We're excited to announce upcoming treatments and wellness services to help you care for your skin, body, and mind.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Right Side: Image -->
+                <div class="about__visual">
+                    <img 
+                        src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?q=80&w=2000&auto=format&fit=crop" 
+                        alt="Caldwell Cosmetics professional environment" 
+                        class="about__image"
+                    >
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Consultation Feature Section -->
+    <section class="section section--consultation">
+        <div class="consultation-layout">
+            <!-- Left Side: Image -->
+            <div class="consultation__image-side">
+                <img 
+                    src="https://res.cloudinary.com/ddj2rpxcb/image/upload/v1776944169/studio_ubcdom.jpg" 
+                    alt="Aesthetic consultation with a professional" 
+                    class="consultation__image"
+                >
+            </div>
+
+            <!-- Right Side: Info Box -->
+            <div class="consultation__info-box">
+                <h2 class="consultation__title">Consultation</h2>
+                <div class="consultation__text">
                     <p>
-                        <strong>And there's more to come - Caldwell Cosmetics is growing!</strong> We're excited to be expanding our range of treatments to give you even more ways 
-                        to feel your best. From targeted skincare solutions to relaxing wellness services, our upcoming offerings will help you care for your skin, 
-                        body, and mind.
+                        Caldwell Cosmetics will provide a deep consultation for every patient before any treatment. 
+                        We will discuss the results you wish to achieve and choose the best treatment plan for you.
                     </p>
                 </div>
-                
-                <p class="about__closing">
-                    Join us on your journey to glowing, confident skin—and discover how beautiful it feels to invest in yourself.
-                </p>
             </div>
         </div>
     </section>
 
-    <!-- Treatments Overview -->
+    <!-- Treatments Overview - Professional Split Layout -->
     <section class="section section--treatments-overview">
         <div class="container">
-            <header class="section__header">
-                <h2 class="section__title">Our Treatments</h2>
-            </header>
-            
-            <div class="treatments-overview__content">
-                <p>
-                    At Caldwell Cosmetics, we believe everyone deserves to feel confident in their skin. That's why we offer a wide range 
-                    of advanced aesthetic treatments designed not just to enhance your natural beauty, but to help you feel your absolute best.
-                </p>
+            <div class="treatments-layout">
                 
-                <p>
-                    From your very first consultation, our friendly and experienced team will take the time to understand your personal goals 
-                    and tailor every treatment to suit your unique needs.
-                </p>
-                
-                <p>
-                    Discover the right treatment for you by exploring our full range of services. We're here to guide you every step of the way with expert advice and personalised care.
-                </p>
-                
-                <a href="" class="btn btn--primary button-glass-base">
-                    View All Treatments
-                    <div class="button-gradient"></div>
-                </a>
-            </div>
-        </div>
-    </section>
-
-    <!-- Gallery Carousel -->
-    <section class="section section--gallery">
-        <div class="container">
-            <div class="gallery-carousel" id="galleryCarousel">
-                <div class="gallery-carousel__inner">
-                    
-                    <!-- Slide 1 -->
-                    <div class="gallery-carousel__item gallery-carousel__item--active">
-                        <div class="gallery-grid">
-                            <div class="gallery-grid__item">
-                                <video 
-                                    src="https://res.cloudinary.com/ddj2rpxcb/video/upload/v1755382637/M5hmG5Xv_a0ivsm.mp4" 
-                                    class="gallery-grid__media" 
-                                    autoplay 
-                                    muted 
-                                    loop 
-                                    playsinline
-                                    aria-label="Treatment demonstration video"
-                                >
-                                    Your browser does not support the video tag.
-                                </video>
-                            </div>
-                            
-                            <div class="gallery-grid__item">
-                                <img 
-                                    src="https://res.cloudinary.com/ddj2rpxcb/image/upload/v1750199188/M339WHoP_h1foad.jpg" 
-                                    class="gallery-grid__media" 
-                                    alt="Client wearing protective goggles during treatment"
-                                    loading="lazy"
-                                >
-                            </div>
-                            
-                            <div class="gallery-grid__item">
-                                <img 
-                                    src="https://res.cloudinary.com/ddj2rpxcb/image/upload/v1750199217/PfUXDT_K_h3fxzz.jpg" 
-                                    class="gallery-grid__media" 
-                                    alt="Professional skin consultation session"
-                                    loading="lazy"
-                                >
-                            </div>
-                            
-                            <div class="gallery-grid__item">
-                                <video 
-                                    src="https://res.cloudinary.com/ddj2rpxcb/video/upload/v1755382637/Tglo7yac_y9xhic.mp4" 
-                                    class="gallery-grid__media" 
-                                    autoplay 
-                                    muted 
-                                    loop 
-                                    playsinline
-                                    aria-label="Skincare treatment demonstration"
-                                >
-                                    Your browser does not support the video tag.
-                                </video>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Slide 2 -->
-                    <div class="gallery-carousel__item">
-                        <div class="gallery-grid">
-                            <div class="gallery-grid__item">
-                                <video 
-                                    src="https://res.cloudinary.com/ddj2rpxcb/video/upload/v1755382639/hJesY0oz_dckp8q.mp4" 
-                                    class="gallery-grid__media" 
-                                    autoplay 
-                                    muted 
-                                    loop 
-                                    playsinline
-                                    aria-label="Treatment procedure video"
-                                >
-                                    Your browser does not support the video tag.
-                                </video>
-                            </div>
-                            
-                            <div class="gallery-grid__item">
-                                <img 
-                                    src="https://res.cloudinary.com/ddj2rpxcb/image/upload/v1750199969/OVgW8loX_jh7dia.jpg" 
-                                    class="gallery-grid__media" 
-                                    alt="Treatment room with Where The Magic Happens signage"
-                                    loading="lazy"
-                                >
-                            </div>
-                            
-                            <div class="gallery-grid__item">
-                                <img 
-                                    src="https://res.cloudinary.com/ddj2rpxcb/image/upload/v1750199297/WlsG5qsb_zpn2pl.jpg" 
-                                    class="gallery-grid__media" 
-                                    alt="Clinic interior featuring motivational signage"
-                                    loading="lazy"
-                                >
-                            </div>
-                            
-                            <div class="gallery-grid__item">
-                                <video 
-                                    src="https://res.cloudinary.com/ddj2rpxcb/video/upload/v1755382637/HQZkuraG_akptes.mp4" 
-                                    class="gallery-grid__media" 
-                                    autoplay 
-                                    muted 
-                                    loop 
-                                    playsinline
-                                    aria-label="Advanced treatment technique video"
-                                >
-                                    Your browser does not support the video tag.
-                                </video>
-                            </div>
-                        </div>
-                    </div>
+                <!-- Left Side: Visual/Photo -->
+                <div class="treatments__visual">
+                    <img 
+                        src="https://images.unsplash.com/photo-1629909615184-74f495363b67?q=80&w=2000&auto=format&fit=crop" 
+                        alt="Caldwell Cosmetics Treatment Room Interior" 
+                        class="treatments__image"
+                    >
+                    <!-- Optional: Decorative Element -->
+                    <div class="treatments__badge">Est. 2024</div>
                 </div>
-                
-                <!-- Carousel Progress Indicators (optional) -->
-                <div class="gallery-carousel__indicators">
-                    <button class="gallery-carousel__indicator gallery-carousel__indicator--active" aria-label="Go to slide 1"></button>
-                    <button class="gallery-carousel__indicator" aria-label="Go to slide 2"></button>
+
+                <!-- Right Side: Content -->
+                <div class="treatments__content">
+                    <span class="treatments__subtitle">Expert Care</span>
+                    <h2 class="treatments__title">Our Treatments</h2>
+                    
+                    <div class="treatments__text">
+                        <p>
+                            At Caldwell Cosmetics, we believe everyone deserves to feel confident in their skin. 
+                            That's why we offer a wide range of advanced aesthetic treatments designed not just 
+                            to enhance your natural beauty, but to help you feel your absolute best.
+                        </p>
+                        
+                        <p>
+                            From your very first consultation, our friendly and experienced team will take the time 
+                            to understand your personal goals and tailor every treatment to suit your unique needs.
+                        </p>
+                    </div>
+
+                    <!-- List of key benefits (adds professionalism) -->
+                    <ul class="treatments__highlights">
+                        <li>Personalised Consultations</li>
+                        <li>Advanced Technology</li>
+                        <li>Holistic Approach</li>
+                    </ul>
+
+                    <a href="{% url 'treatments:treatments' %}" class="btn btn--treatments">
+                        View All Treatments
+                    </a>
                 </div>
             </div>
         </div>
@@ -255,7 +187,7 @@
     </section>
 
     <!-- Location Map -->
-    <section class="section section--location">
+    <!-- <section class="section section--location">
         <div class="container">
             <header class="section__header">
                 <h2 class="section__title">Find Us</h2>
@@ -271,8 +203,11 @@
                 ></iframe>
             </div>
         </div>
-    </section>
+    </section> -->
 
+
+    <!-- LightWidget WIDGET -->
+    <script src="https://cdn.lightwidget.com/widgets/lightwidget.js"></script><iframe src="https://cdn.lightwidget.com/widgets/cb00fd4d70bc55e4b07345cef7824451.html" scrolling="no" allowtransparency="true" class="lightwidget-widget" style="width:100%;border:0;overflow:hidden;"></iframe>
 </main>
 {% endblock %}
 
