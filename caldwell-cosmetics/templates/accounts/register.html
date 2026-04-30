@@ -1,0 +1,87 @@
+{% extends "base/base.html" %}
+{% load static %}
+
+{% block title %}Create Account | Caldwell Cosmetics{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/accounts.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <h1 class="auth-card__title">Create Your Account</h1>
+        <p class="auth-card__subtitle">Join Caldwell Cosmetics to manage your appointments and treatments.</p>
+
+        <form method="post" novalidate>
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+                <div class="form-errors">
+                    {% for error in form.non_field_errors %}
+                        <p class="form-error">{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <div class="form-row form-row--split">
+                <div class="form-group">
+                    <label for="{{ form.first_name.id_for_label }}">First name</label>
+                    {{ form.first_name }}
+                    {% if form.first_name.errors %}
+                        <p class="field-error">{{ form.first_name.errors|join:", " }}</p>
+                    {% endif %}
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.last_name.id_for_label }}">Last name</label>
+                    {{ form.last_name }}
+                    {% if form.last_name.errors %}
+                        <p class="field-error">{{ form.last_name.errors|join:", " }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.email.id_for_label }}">Email address</label>
+                {{ form.email }}
+                {% if form.email.errors %}
+                    <p class="field-error">{{ form.email.errors|join:", " }}</p>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.password1.id_for_label }}">Password</label>
+                {{ form.password1 }}
+                {% if form.password1.errors %}
+                    <p class="field-error">{{ form.password1.errors|join:", " }}</p>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.password2.id_for_label }}">Confirm password</label>
+                {{ form.password2 }}
+                {% if form.password2.errors %}
+                    <p class="field-error">{{ form.password2.errors|join:", " }}</p>
+                {% endif %}
+            </div>
+
+            <div class="form-group form-group--checkbox">
+                {{ form.gdpr_consent }}
+                <label for="{{ form.gdpr_consent.id_for_label }}">
+                    {{ form.gdpr_consent.label }}
+                    <a href="{% url 'core:privacy' %}" target="_blank">Read our Privacy Policy</a>.
+                </label>
+                {% if form.gdpr_consent.errors %}
+                    <p class="field-error">{{ form.gdpr_consent.errors|join:", " }}</p>
+                {% endif %}
+            </div>
+
+            <button type="submit" class="btn btn--primary btn--full">Create Account</button>
+        </form>
+
+        <p class="auth-card__footer">
+            Already have an account? <a href="{% url 'accounts:login' %}">Sign in</a>
+        </p>
+    </div>
+</div>
+{% endblock %}

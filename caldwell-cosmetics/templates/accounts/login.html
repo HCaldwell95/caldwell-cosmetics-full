@@ -1,0 +1,57 @@
+{% extends "base/base.html" %}
+{% load static %}
+
+{% block title %}Sign In | Caldwell Cosmetics{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/accounts.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <h1 class="auth-card__title">Welcome Back</h1>
+        <p class="auth-card__subtitle">Sign in to your Caldwell Cosmetics account.</p>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert--{{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="post" novalidate>
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+                <div class="form-errors">
+                    {% for error in form.non_field_errors %}
+                        <p class="form-error">{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <div class="form-group">
+                <label for="{{ form.username.id_for_label }}">Email address</label>
+                {{ form.username }}
+                {% if form.username.errors %}
+                    <p class="field-error">{{ form.username.errors|join:", " }}</p>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.password.id_for_label }}">Password</label>
+                {{ form.password }}
+                {% if form.password.errors %}
+                    <p class="field-error">{{ form.password.errors|join:", " }}</p>
+                {% endif %}
+            </div>
+
+            <button type="submit" class="btn btn--primary btn--full">Sign In</button>
+        </form>
+
+        <p class="auth-card__footer">
+            Don't have an account? <a href="{% url 'accounts:register' %}">Create one</a>
+        </p>
+    </div>
+</div>
+{% endblock %}

@@ -1,8 +1,274 @@
 {% extends "base/base.html" %}
+{% load static %}
 
-{% block title %}Bookings{% endblock %}
+{% block title %}Book an Appointment | Caldwell Cosmetics{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/bookings.css' %}">
+{% endblock %}
 
 {% block content %}
-<h1>Bookings</h1>
-<p>Bookings app is working 🎉</p>
+
+<div class="booking-page">
+
+    <!-- Page Header -->
+    <div class="booking-header">
+        <span class="booking-header__eyebrow">Reserve Your Visit</span>
+        <h1 class="booking-header__title">Book an Appointment</h1>
+        <p class="booking-header__subtitle">Select your treatment, choose a date, and pick a time that suits you.</p>
+    </div>
+
+    <!-- Step Indicator -->
+    <div class="booking-steps-indicator">
+        <div class="step-indicator step-indicator--active" id="step-ind-1">
+            <span class="step-indicator__number">1</span>
+            <span class="step-indicator__label">Treatment</span>
+        </div>
+        <div class="step-indicator__line"></div>
+        <div class="step-indicator" id="step-ind-2">
+            <span class="step-indicator__number">2</span>
+            <span class="step-indicator__label">Date & Time</span>
+        </div>
+        <div class="step-indicator__line"></div>
+        <div class="step-indicator" id="step-ind-3">
+            <span class="step-indicator__number">3</span>
+            <span class="step-indicator__label">Confirm</span>
+        </div>
+    </div>
+
+    <div class="booking-container">
+
+        <!-- ========== STEP 1: Treatment Selection ========== -->
+        <div class="booking-step" id="step-1">
+            <h2 class="booking-step__title">Choose Your Treatment</h2>
+
+            <!-- Category Tabs -->
+            <div class="category-tabs" id="categoryTabs">
+                {% for category in categories %}
+                <button
+                    class="category-tab {% if forloop.first %}category-tab--active{% endif %}"
+                    data-category="{{ category.id }}"
+                >
+                    {{ category.name }}
+                </button>
+                {% endfor %}
+            </div>
+
+            <!-- Treatment Cards -->
+            <div class="treatments-grid" id="treatmentsGrid">
+                {% for treatment in treatments %}
+                <div
+                    class="treatment-card"
+                    data-category="{{ treatment.category.id }}"
+                    data-treatment-id="{{ treatment.id }}"
+                    data-treatment-name="{{ treatment.name }}"
+                    data-duration="{{ treatment.duration_minutes }}"
+                    data-price="{{ treatment.price }}"
+                    data-requires-deposit="{{ treatment.requires_deposit|yesno:'true,false' }}"
+                    data-deposit-amount="{{ treatment.deposit_amount|default:0 }}"
+                >
+                    <div class="treatment-card__body">
+                        <h3 class="treatment-card__name">{{ treatment.name }}</h3>
+                        <p class="treatment-card__desc">{{ treatment.description }}</p>
+                        <div class="treatment-card__meta">
+                            <span class="treatment-card__duration">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                {{ treatment.duration_minutes }} min
+                            </span>
+                            <span class="treatment-card__price">£{{ treatment.price }}</span>
+                        </div>
+                        {% if treatment.requires_deposit %}
+                        <span class="treatment-card__deposit-badge">Deposit required</span>
+                        {% endif %}
+                    </div>
+                    <button class="treatment-card__select-btn" onclick="selectTreatment(this.closest('.treatment-card'))">
+                        Select
+                    </button>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- ========== STEP 2: Calendar + Time Slots ========== -->
+        <div class="booking-step booking-step--hidden" id="step-2">
+
+            <button class="booking-back-btn" onclick="goToStep(1)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+                Back to treatments
+            </button>
+
+            <!-- Selected treatment summary strip -->
+            <div class="selected-treatment-strip" id="selectedTreatmentStrip">
+                <div class="selected-treatment-strip__info">
+                    <span class="selected-treatment-strip__label">Selected treatment</span>
+                    <span class="selected-treatment-strip__name" id="stripTreatmentName">—</span>
+                </div>
+                <div class="selected-treatment-strip__meta">
+                    <span id="stripDuration">—</span>
+                    <span class="selected-treatment-strip__divider">·</span>
+                    <span id="stripPrice">—</span>
+                </div>
+            </div>
+
+            <h2 class="booking-step__title">Choose a Date & Time</h2>
+
+            <div class="calendar-layout">
+
+                <!-- Calendar Panel -->
+                <div class="calendar-panel">
+                    <div class="calendar-nav">
+                        <button class="calendar-nav__btn" id="prevMonth" aria-label="Previous month">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+                        </button>
+                        <span class="calendar-nav__month" id="currentMonth"></span>
+                        <button class="calendar-nav__btn" id="nextMonth" aria-label="Next month">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                        </button>
+                    </div>
+
+                    <!-- Day headers -->
+                    <div class="calendar-grid calendar-grid--headers">
+                        <div class="calendar-header-cell">Sun</div>
+                        <div class="calendar-header-cell">Mon</div>
+                        <div class="calendar-header-cell">Tue</div>
+                        <div class="calendar-header-cell">Wed</div>
+                        <div class="calendar-header-cell">Thu</div>
+                        <div class="calendar-header-cell">Fri</div>
+                        <div class="calendar-header-cell">Sat</div>
+                    </div>
+
+                    <!-- Calendar days (JS-rendered) -->
+                    <div class="calendar-grid" id="calendar"></div>
+
+                    <!-- Opening hours info -->
+                    <div class="clinic-hours">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        <div>
+                            <p class="clinic-hours__row"><strong>Mon – Wed</strong> &nbsp;09:30 – 14:30</p>
+                            <p class="clinic-hours__row clinic-hours__row--closed"><strong>Thu – Sun</strong> &nbsp;Closed</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Time Slot Sidebar (revealed on date select) -->
+                <div class="timeslot-panel" id="timeslotPanel">
+                    <div class="timeslot-panel__empty" id="timeslotEmpty">
+                        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                        <p>Select a date to see<br>available times</p>
+                    </div>
+
+                    <div class="timeslot-panel__content" id="timeslotContent" style="display:none;">
+                        <h3 class="timeslot-panel__date" id="timeslotDate"></h3>
+                        <p class="timeslot-panel__hint">Choose a start time</p>
+                        <div class="timeslot-grid" id="timeslotGrid"></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ========== STEP 3: Confirmation ========== -->
+        <div class="booking-step booking-step--hidden" id="step-3">
+
+            <button class="booking-back-btn" onclick="goToStep(2)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+                Back to calendar
+            </button>
+
+            <h2 class="booking-step__title">Confirm Your Booking</h2>
+
+            <div class="confirm-layout">
+
+                <!-- Booking Summary -->
+                <div class="confirm-summary">
+                    <h3 class="confirm-summary__title">Booking Summary</h3>
+                    <dl class="confirm-dl">
+                        <dt>Treatment</dt>
+                        <dd id="confirmTreatment">—</dd>
+                        <dt>Date</dt>
+                        <dd id="confirmDate">—</dd>
+                        <dt>Time</dt>
+                        <dd id="confirmTime">—</dd>
+                        <dt>Duration</dt>
+                        <dd id="confirmDuration">—</dd>
+                        <dt>Price</dt>
+                        <dd id="confirmPrice">—</dd>
+                    </dl>
+
+                    <!-- Deposit notice (shown conditionally) -->
+                    <div class="deposit-notice" id="depositNotice" style="display:none;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                        <p>A deposit of <strong id="depositAmount">—</strong> is required to secure this booking. You will be redirected to payment after confirming.</p>
+                    </div>
+                </div>
+
+                <!-- Booking Form -->
+                <div class="confirm-form-wrap">
+                    <form method="post" action="{% url 'bookings:create' %}" id="bookingForm">
+                        {% csrf_token %}
+                        <input type="hidden" name="treatment_id" id="hiddenTreatmentId">
+                        <input type="hidden" name="date" id="hiddenDate">
+                        <input type="hidden" name="start_time" id="hiddenTime">
+
+                        {% if user.is_authenticated %}
+                            <!-- Pre-fill from profile, show read-only -->
+                            <div class="confirm-user-info">
+                                <p class="confirm-user-info__label">Booking as</p>
+                                <p class="confirm-user-info__name">{{ user.get_full_name }}</p>
+                                <p class="confirm-user-info__email">{{ user.email }}</p>
+                            </div>
+                        {% else %}
+                            <div class="form-group">
+                                <label for="guest_name">Full name</label>
+                                <input type="text" id="guest_name" name="guest_name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="guest_email">Email address</label>
+                                <input type="email" id="guest_email" name="guest_email" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="guest_phone">Phone number</label>
+                                <input type="tel" id="guest_phone" name="guest_phone" required>
+                            </div>
+                        {% endif %}
+
+                        <div class="form-group">
+                            <label for="notes">Special requests <span class="form-optional">(optional)</span></label>
+                            <textarea id="notes" name="notes" rows="3" placeholder="Any allergies, skin concerns, or notes for your appointment…"></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn--primary btn--full booking-confirm-btn" id="confirmBtn">
+                            Confirm Booking
+                        </button>
+
+                        <p class="booking-form__terms">
+                            By confirming you agree to our
+                            <a href="{% url 'core:privacy' %}">cancellation policy</a>.
+                            We'll send a confirmation to your email.
+                        </p>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ========== SUCCESS STATE ========== -->
+        <div class="booking-step booking-step--hidden booking-success" id="step-success">
+            <div class="booking-success__icon">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <h2 class="booking-success__title">Booking Confirmed</h2>
+            <p class="booking-success__body">Thank you — your appointment is in the diary. A confirmation has been sent to your email address.</p>
+            <div class="booking-success__actions">
+                <a href="{% url 'accounts:profile' %}" class="btn btn--primary">View My Appointments</a>
+                <a href="{% url 'core:home' %}" class="btn btn--ghost">Return Home</a>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{{ booked_slots_json|json_script:"booked-slots-data" }}
+<script src="{% static 'js/booking.js' %}"></script>
+
+
 {% endblock %}

@@ -25,11 +25,17 @@
                     <a href="{% url 'treatments:treatments' %}" aria-label="Treatments">Treatments</a>
                 </li>
                 <li>
-                    <a href="" aria-label="Bookings">Bookings</a>
+                    <a href="{% url 'bookings:overview' %}" aria-label="Bookings">Bookings</a>
                 </li>
-                <li>
-                    <a href="" aria-label="Sign In / Up">Sign In / Up</a>
+                {% if user.is_authenticated %}
+                <li class="{% if url_name == 'accounts:profile' %}active{% endif %}">
+                    <a href="{% url 'accounts:profile' %}" aria-label="My Profile">My Profile</a>
                 </li>
+                {% else %}
+                <li class="{% if url_name == 'accounts:login' or url_name == 'accounts:register' %}active{% endif %}">
+                    <a href="{% url 'accounts:login' %}" aria-label="Sign In / Up">Sign In / Up</a>
+                </li>
+                {% endif %}
                 <li>
                     <button type="button" class="btn book-btn"
                         onclick="location.href='https://portal.aestheticnursesoftware.com/book-online/8300'" 
