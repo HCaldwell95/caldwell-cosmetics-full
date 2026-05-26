@@ -26,8 +26,6 @@
     <!-- Font Awesome -->
     <script src="https://kit.fontawesome.com/62f7b1be0a.js" crossorigin="anonymous"></script>
 
-    <!-- FullCalendar CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css" rel="stylesheet">
 </head>
 
 <body>
@@ -40,12 +38,6 @@
     </main>
 
     {% include 'base/_footer.html' %}
-
-    <!-- JS -->
-    <!-- <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
-    <script src="{% static 'js/script.js' %}"></script>
-    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
-    <script src="{% static 'js/calendar.js' %}"></script> -->
 
     <script>
         const toggle = document.querySelector('.nav-toggle');
@@ -85,8 +77,7 @@
         }
     </script>
 
-
-
     {% block extra_js %}{% endblock %}
+
 </body>
 </html>

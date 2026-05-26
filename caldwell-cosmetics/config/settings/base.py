@@ -45,6 +45,8 @@ LOCAL_APPS = [
     "apps.treatments.apps.TreatmentsConfig",
     "apps.bookings.apps.BookingsConfig",
     "apps.accounts.apps.AccountsConfig",
+    'apps.dashboard.apps.DashboardConfig',
+    'apps.forms_system.apps.FormsSystemConfig',
 ]
 
 THIRD_PARTY_APPS = [

@@ -3,7 +3,7 @@
 {% block title %}Treatments | Caldwell Cosmetics{% endblock %}
 
 {% block extra_css %}
-    <link rel="stylesheet" href="{% static 'css/pages/treatments.css' %}">
+<link rel="stylesheet" href="{% static 'css/pages/treatments.css' %}">
 {% endblock %}
 
 {% block hero %}
@@ -12,30 +12,39 @@
 
 {% block content %}
 <main>
-    <!-- Treatment Cards -->
+ 
     <section class="gallery">
         <h1 class="hidden-heading">Treatments</h1>
+ 
         <div class="container">
             <div class="row">
-                {% for treatment in treatments %}
-                <div class="col-lg-4 col-md-6 col-sm-12 mb-4 treatments__card">
-                    <a href="{% url 'treatments:treatment_detail' treatment.slug %}"
-                       class="treatments__link"
-                       aria-label="Learn more about {{ treatment.name }}">
-                        <div class="treatments__card-wrapper"
-                             style="background-image: url('{{ treatment.image.url }}');">
-                            <div class="treatments__card-body">
-                                <h2 class="treatments__card-heading italiana-regular">
-                                    {{ treatment.name }}
-                                </h2>
-                                <span class="treatments__card-btn cormorant">
-                                    Learn More
-                                    <span class="treatments__card-arrow" aria-hidden="true">→</span>
-                                </span>
+                {% for category in categories %}
+                    <div class="col-lg-4 col-md-6 col-sm-12 mb-4 treatments__card">
+                        <a href="{% url 'treatments:category_detail' category.slug %}"
+                           class="treatments__link">
+ 
+                            <div class="treatments__card-wrapper"
+                                 style="background-image: url('{{ category.image.url }}');">
+ 
+                                <div class="treatments__card-body">
+ 
+                                    <h2 class="treatments__card-heading italiana-regular">
+                                        {{ category.name }}
+                                    </h2>
+ 
+                                    {% if category.summary %}
+                                        <p class="treatments__card-summary cormorant">
+                                            {{ category.summary }}
+                                        </p>
+                                    {% endif %}
+ 
+                                    <span class="treatments__card-btn cormorant">
+                                        Explore →
+                                    </span>
+                                </div>
                             </div>
-                        </div>
-                    </a>
-                </div>
+                        </a>
+                    </div>
                 {% endfor %}
             </div>
         </div>

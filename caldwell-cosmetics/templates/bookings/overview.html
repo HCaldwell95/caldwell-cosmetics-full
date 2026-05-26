@@ -3,7 +3,7 @@
 
 {% block title %}Book an Appointment | Caldwell Cosmetics{% endblock %}
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/pages/bookings.css' %}">
+<link rel="stylesheet" href="{% static 'css/pages/bookings.css' %}?v=2">
 {% endblock %}
 
 {% block content %}
@@ -36,6 +36,18 @@
     </div>
 
     <div class="booking-container">
+
+        <!-- Error banner (shown when a slot was taken between load and submit) -->
+        {% if error_message %}
+        <div class="booking-error-banner">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            {{ error_message }}
+        </div>
+        {% endif %}
 
         <!-- ========== STEP 1: Treatment Selection ========== -->
         <div class="booking-step" id="step-1">
@@ -206,8 +218,8 @@
                     <form method="post" action="{% url 'bookings:create' %}" id="bookingForm">
                         {% csrf_token %}
                         <input type="hidden" name="treatment_id" id="hiddenTreatmentId">
-                        <input type="hidden" name="date" id="hiddenDate">
-                        <input type="hidden" name="start_time" id="hiddenTime">
+                        <input type="hidden" name="date"         id="hiddenDate">
+                        <input type="hidden" name="start_time"   id="hiddenStartTime">
 
                         {% if user.is_authenticated %}
                             <!-- Pre-fill from profile, show read-only -->
@@ -242,7 +254,7 @@
 
                         <p class="booking-form__terms">
                             By confirming you agree to our
-                            <a href="{% url 'core:privacy' %}">cancellation policy</a>.
+                            <a href="{% url 'core:terms' %}">cancellation policy</a>.
                             We'll send a confirmation to your email.
                         </p>
                     </form>
@@ -268,7 +280,35 @@
 </div>
 
 {{ booked_slots_json|json_script:"booked-slots-data" }}
-<script src="{% static 'js/booking.js' %}"></script>
+
+<script>
+    const BOOKING_SUCCESS = {{ show_success|yesno:"true,false" }};
+
+    if (BOOKING_SUCCESS) {
+        window.history.replaceState({}, document.title, "/bookings/");
+    }
+
+    // DEBUG — remove after confirming booked slots are visible
+    (function () {
+        const raw = document.getElementById('booked-slots-data');
+        if (!raw) { console.error('[Bookings] booked-slots-data element not found'); return; }
+        try {
+            const slots = JSON.parse(raw.textContent);
+            console.log('[Bookings] allSlots keys (treatment IDs):', Object.keys(slots));
+            for (const [tid, dates] of Object.entries(slots)) {
+                for (const [date, data] of Object.entries(dates)) {
+                    if (data.booked && data.booked.length > 0) {
+                        console.log(`[Bookings] Treatment ${tid} on ${date} has booked slots:`, data.booked);
+                    }
+                }
+            }
+        } catch (e) {
+            console.error('[Bookings] Failed to parse booked-slots-data:', e);
+        }
+    })();
+</script>
+
+<script src="{% static 'js/booking.js' %}?v=2"></script>
 
 
 {% endblock %}

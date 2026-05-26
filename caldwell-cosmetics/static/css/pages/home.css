@@ -779,3 +779,286 @@
 .lightwidget-widget {
     padding: 2em 0;
 }
+
+/* ============================================
+   TREATMENTS INTERACTIVE EXPLORER
+   ============================================ */
+
+.section--treatments-overview .section__header {
+    margin-bottom: 2rem;
+}
+
+/* --- Scrolling Pill Strip --- */
+.tx-strip-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+    background-color: var(--color-background-alt, #fdfbf7);
+    border-radius: 50px;
+    padding: 8px 10px;
+}
+
+.tx-strip__arrow {
+    background: transparent;
+    border: 1.5px solid var(--color-primary);
+    color: var(--color-primary);
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    font-size: 1.3rem;
+    line-height: 1;
+    cursor: pointer;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.tx-strip__arrow:hover {
+    background-color: var(--color-primary);
+    color: #fff;
+}
+
+.tx-strip__arrow:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.tx-strip__arrow:disabled:hover {
+    background: transparent;
+    color: var(--color-primary);
+}
+
+.tx-strip__viewport {
+    flex: 1;
+    overflow: hidden;
+}
+
+.tx-strip__track {
+    display: flex;
+    gap: 8px;
+    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform;
+}
+
+/* --- Pill Buttons --- */
+.tx-pill {
+    background: transparent;
+    border: 1.5px solid var(--color-primary);
+    color: var(--color-secondary);
+    font-family: var(--font-montserrat);
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 0.5rem 1.25rem;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.22s ease;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.tx-pill:hover {
+    background-color: var(--color-primary);
+    color: #fff;
+}
+
+.tx-pill--active {
+    background-color: var(--color-primary);
+    color: #fff;
+}
+
+/* --- Explorer Container --- */
+.tx-explorer {
+    background-color: #fdfbf7;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.07);
+}
+
+/* --- Slide Viewport --- */
+.tx-slides-viewport {
+    overflow: hidden;
+    width: 100%;
+}
+
+.tx-slides-track {
+    display: flex;
+    transition: transform 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform;
+}
+
+/* --- Individual Slide --- */
+.tx-slide {
+    min-width: 100%;
+    box-sizing: border-box;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-height: 360px;
+}
+
+.tx-slide--no-image {
+    grid-template-columns: 1fr;
+}
+
+.tx-slide__content {
+    padding: clamp(2rem, 5vw, 3.5rem) clamp(1.5rem, 4vw, 3.5rem);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.tx-slide__treatment-name {
+    display: block;
+    color: var(--color-primary);
+    font-family: var(--font-montserrat);
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    margin-bottom: 0.2rem;
+}
+
+.tx-slide__heading {
+    font-family: var(--font-jost);
+    font-size: clamp(1.7rem, 3.5vw, 2.6rem);
+    font-weight: 400;
+    color: var(--color-secondary);
+    line-height: 1.2;
+    margin: 0 0 1rem 0;
+}
+
+.tx-slide__body {
+    font-size: 1rem;
+    line-height: 1.8;
+    color: var(--color-text-light);
+}
+
+.tx-slide__body p {
+    margin: 0 0 0.75rem 0;
+}
+
+.tx-slide__body p:last-child {
+    margin-bottom: 0;
+}
+
+.tx-slide__body ul {
+    padding-left: 1.2rem;
+    margin: 0.5rem 0 0 0;
+}
+
+.tx-slide__body li {
+    margin-bottom: 0.4rem;
+}
+
+/* --- Slide Image Panel --- */
+.tx-slide__image-panel {
+    position: relative;
+    overflow: hidden;
+}
+
+.tx-slide__image-panel img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.tx-slide__image-panel--placeholder {
+    background: linear-gradient(135deg, #efe5d6 0%, #f7f0e8 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* --- Navigation --- */
+.tx-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.25rem;
+    padding: 1.25rem 2rem;
+    border-top: 1px solid rgba(0,0,0,0.06);
+    background-color: #fdfbf7;
+}
+
+.tx-nav__arrow {
+    background: transparent;
+    border: 1.5px solid var(--color-primary);
+    color: var(--color-primary);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    font-size: 1.1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.tx-nav__arrow:hover {
+    background-color: var(--color-primary);
+    color: #fff;
+}
+
+.tx-nav__arrow:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.tx-nav__arrow:disabled:hover {
+    background: transparent;
+    color: var(--color-primary);
+}
+
+.tx-nav__dots {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.tx-nav__dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #d9cfc4;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    transition: all 0.25s ease;
+}
+
+.tx-nav__dot--active {
+    background-color: var(--color-primary);
+    width: 24px;
+    border-radius: 4px;
+}
+
+/* --- CTA --- */
+.tx-cta {
+    text-align: center;
+    margin-top: 2.5rem;
+}
+
+/* --- Responsive --- */
+@media (max-width: 768px) {
+    .tx-slide {
+        grid-template-columns: 1fr;
+        min-height: auto;
+    }
+
+    .tx-slide__image-panel {
+        height: 220px;
+        order: -1;
+    }
+
+    .tx-strip-wrapper {
+        border-radius: 12px;
+    }
+}

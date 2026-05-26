@@ -3,6 +3,8 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView as DjangoLoginView
 from django.shortcuts import get_object_or_404, redirect, render
+from django.http import JsonResponse
+from django.utils import timezone
 
 from .forms import LoginForm, ProfileEditForm, RegistrationForm
 from .models import Profile
@@ -74,3 +76,39 @@ def profile_edit(request):
         return redirect("accounts:profile")
 
     return render(request, "accounts/profile_edit.html", {"form": form, "profile": profile})
+
+@login_required
+def profile_bookings(request):
+    from apps.bookings.models import Booking
+ 
+    today = timezone.now().date()
+ 
+    qs = (
+        Booking.objects
+        .filter(user=request.user)
+        .select_related('treatment__category')
+        .order_by('date', 'start_time')
+    )
+ 
+    upcoming = []
+    past     = []
+ 
+    for b in qs:
+        entry = {
+            'id':               b.pk,
+            'treatment':        b.treatment.name,
+            'category_colour':  b.treatment.category.colour,
+            'date':             b.date.strftime('%A %d %B %Y'),
+            'start_time':       b.start_time.strftime('%H:%M'),
+            'duration':         b.treatment.duration_minutes,
+            'status':           b.status,
+        }
+        if b.date >= today and b.status == Booking.STATUS_CONFIRMED:
+            upcoming.append(entry)
+        else:
+            past.append(entry)
+ 
+    # Most recent past first
+    past.reverse()
+ 
+    return JsonResponse({'upcoming': upcoming, 'past': past})

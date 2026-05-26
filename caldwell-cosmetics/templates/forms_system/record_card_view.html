@@ -1,0 +1,216 @@
+{% extends "base/base.html" %}
+{% load static %}
+
+{% block title %}Record Card #{{ card.treatment_number }} | Caldwell Cosmetics{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/forms_system.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="cform-page cform-page--wide">
+
+    <!-- HEADER -->
+    <div class="cform-header">
+        <span class="cform-header__eyebrow">Completed Record Card</span>
+        <h1 class="cform-header__title">
+            Dynamix Record Card — {{ card.user.full_name }}
+        </h1>
+        <p class="cform-header__sub">
+            Treatment #{{ card.treatment_number }} • {{ card.date }} {{ card.time }}
+        </p>
+    </div>
+
+    <!-- MAIN SECTION -->
+    <div class="cform-section cform-section--readonly">
+
+        <h2 class="cform-section__title">Record Card Details</h2>
+
+        <div class="cform-grid cform-grid--3">
+
+            <div>
+                <label class="cform-label">Date</label>
+                <p class="cform-readonly-value">{{ card.date }}</p>
+            </div>
+
+            <div>
+                <label class="cform-label">Time</label>
+                <p class="cform-readonly-value">{{ card.time }}</p>
+            </div>
+
+            <div>
+                <label class="cform-label">Treatment For</label>
+                <p class="cform-readonly-value">
+                    {{ card.treatment_for|default:"—" }}
+                </p>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- DEVICE -->
+    <div class="cform-section">
+
+        <h2 class="cform-section__title">Device Selection</h2>
+
+        <div class="cform-check-grid">
+
+            {% if card.device_remove_650 %}<div class="cform-readonly-value">✔ ReMove 650</div>{% endif %}
+            {% if card.device_rebright_585 %}<div class="cform-readonly-value">✔ ReBright 585</div>{% endif %}
+            {% if card.device_remove_lp1064 %}<div class="cform-readonly-value">✔ ReMove LP1064</div>{% endif %}
+            {% if card.device_resurface %}<div class="cform-readonly-value">✔ ResurFACE</div>{% endif %}
+            {% if card.device_remodel %}<div class="cform-readonly-value">✔ ReModel</div>{% endif %}
+            {% if card.device_illumifacial %}<div class="cform-readonly-value">✔ illumiFacial</div>{% endif %}
+            {% if card.device_remove_q1064 %}<div class="cform-readonly-value">✔ ReMove Q1064</div>{% endif %}
+            {% if card.device_remove_q532 %}<div class="cform-readonly-value">✔ ReMove Q532</div>{% endif %}
+
+        </div>
+    </div>
+
+    <!-- CHANGES -->
+    <div class="cform-section">
+
+        <h2 class="cform-section__title">Changes Since Last Visit</h2>
+
+        <dl class="cform-summary-dl">
+
+            <dt>Consultation Form</dt>
+            <dd>{% if card.changes_consultation_form %}Yes{% else %}No{% endif %}</dd>
+
+            <dt>Medication</dt>
+            <dd>{% if card.changes_medication %}Yes{% else %}No{% endif %}</dd>
+
+            <dt>UV Exposure</dt>
+            <dd>{% if card.changes_uv_exposure %}Yes{% else %}No{% endif %}</dd>
+
+            <dt>Consent Change</dt>
+            <dd>{% if card.consent_settings_change %}Yes{% else %}No{% endif %}</dd>
+
+        </dl>
+
+        {% if card.client_feedback %}
+        <div style="margin-top: 1rem;">
+            <label class="cform-label">Client Feedback</label>
+            <p class="cform-readonly-value">{{ card.client_feedback }}</p>
+        </div>
+        {% endif %}
+
+    </div>
+
+    <!-- TREATMENT TABLE -->
+    <div class="cform-section">
+
+        <h2 class="cform-section__title">Treatment Areas</h2>
+
+        <div class="record-card-table record-card-table--prev">
+
+            <div class="record-card-table__head">
+                <span>Area</span>
+                <span>Skin Type</span>
+                <span>Spot</span>
+                <span>Fluence</span>
+                <span>Pulses</span>
+                <span>Delay</span>
+                <span>Shots</span>
+                <span>Cost</span>
+            </div>
+
+            {% for i in "12345" %}
+
+                {% if i == "1" and card.area_1 %}
+                <div class="record-card-table__row">
+                    <span>{{ card.area_1 }}</span>
+                    <span>{{ card.skin_type_1 }}</span>
+                    <span>{{ card.spot_size_1 }}</span>
+                    <span>{{ card.fluence_1 }}</span>
+                    <span>{{ card.pulses_1 }}</span>
+                    <span>{{ card.delay_1 }}</span>
+                    <span>{{ card.shots_1 }}</span>
+                    <span>{% if card.cost_1 %}£{{ card.cost_1 }}{% else %}—{% endif %}</span>
+                </div>
+                {% endif %}
+
+                {% if i == "2" and card.area_2 %}
+                <div class="record-card-table__row">
+                    <span>{{ card.area_2 }}</span>
+                    <span>{{ card.skin_type_2 }}</span>
+                    <span>{{ card.spot_size_2 }}</span>
+                    <span>{{ card.fluence_2 }}</span>
+                    <span>{{ card.pulses_2 }}</span>
+                    <span>{{ card.delay_2 }}</span>
+                    <span>{{ card.shots_2 }}</span>
+                    <span>{% if card.cost_2 %}£{{ card.cost_2 }}{% else %}—{% endif %}</span>
+                </div>
+                {% endif %}
+
+                {% if i == "3" and card.area_3 %}
+                <div class="record-card-table__row">
+                    <span>{{ card.area_3 }}</span>
+                    <span>{{ card.skin_type_3 }}</span>
+                    <span>{{ card.spot_size_3 }}</span>
+                    <span>{{ card.fluence_3 }}</span>
+                    <span>{{ card.pulses_3 }}</span>
+                    <span>{{ card.delay_3 }}</span>
+                    <span>{{ card.shots_3 }}</span>
+                    <span>{% if card.cost_3 %}£{{ card.cost_3 }}{% else %}—{% endif %}</span>
+                </div>
+                {% endif %}
+
+                {% if i == "4" and card.area_4 %}
+                <div class="record-card-table__row">
+                    <span>{{ card.area_4 }}</span>
+                    <span>{{ card.skin_type_4 }}</span>
+                    <span>{{ card.spot_size_4 }}</span>
+                    <span>{{ card.fluence_4 }}</span>
+                    <span>{{ card.pulses_4 }}</span>
+                    <span>{{ card.delay_4 }}</span>
+                    <span>{{ card.shots_4 }}</span>
+                    <span>{% if card.cost_4 %}£{{ card.cost_4 }}{% else %}—{% endif %}</span>
+                </div>
+                {% endif %}
+
+                {% if i == "5" and card.area_5 %}
+                <div class="record-card-table__row">
+                    <span>{{ card.area_5 }}</span>
+                    <span>{{ card.skin_type_5 }}</span>
+                    <span>{{ card.spot_size_5 }}</span>
+                    <span>{{ card.fluence_5 }}</span>
+                    <span>{{ card.pulses_5 }}</span>
+                    <span>{{ card.delay_5 }}</span>
+                    <span>{{ card.shots_5 }}</span>
+                    <span>{% if card.cost_5 %}£{{ card.cost_5 }}{% else %}—{% endif %}</span>
+                </div>
+                {% endif %}
+
+            {% endfor %}
+
+        </div>
+    </div>
+
+    <!-- OPERATOR NOTES -->
+    {% if card.operator_comments %}
+    <div class="cform-section">
+        <h2 class="cform-section__title">Operator Comments</h2>
+        <p class="cform-readonly-value">{{ card.operator_comments }}</p>
+    </div>
+    {% endif %}
+
+    <!-- SIGNATURE -->
+    <div class="cform-section">
+
+        <h2 class="cform-section__title">Re-Consent Signature</h2>
+
+        {% if card.reconsent_signature %}
+            <img class="cform-sig-preview" src="{{ card.reconsent_signature }}" alt="Signature">
+        {% else %}
+            <p class="cform-readonly-value">No signature captured</p>
+        {% endif %}
+
+        <p class="cform-sig-name">
+            Signed at {{ card.reconsent_signed_at|date:"j F Y H:i" }}
+        </p>
+
+    </div>
+
+</div>
+{% endblock %}

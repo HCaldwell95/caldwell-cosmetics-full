@@ -76,6 +76,16 @@
         </section>
 
         <section class="profile-card profile-card--wide">
+            <h2 class="profile-card__title">My Forms</h2>
+            <p class="profile-card__subtitle text-muted" style="margin-bottom:0.75rem;font-size:0.875rem;">
+                Complete your consent forms before your appointment. A green badge means complete, red means action required.
+            </p>
+            <div class="profile-forms-bar" id="profileFormsBar">
+                <span class="text-muted" style="font-size:0.875rem;">Loading…</span>
+            </div>
+        </section>
+
+        <section class="profile-card profile-card--wide">
             <h2 class="profile-card__title">Pre-Paid Treatments</h2>
             {% for bundle in profile.user.bundles.all %}
                 {% if bundle.status == 'active' %}
@@ -96,12 +106,22 @@
 
         <section class="profile-card profile-card--wide">
             <h2 class="profile-card__title">Upcoming Appointments</h2>
-            <p class="text-muted">Booking system coming soon.</p>
+            <div id="upcomingBookings">
+                <p class="text-muted" style="font-size:0.875rem;">Loading…</p>
+            </div>
         </section>
 
         <section class="profile-card profile-card--wide">
-            <h2 class="profile-card__title">Treatment History</h2>
-            <p class="text-muted">Your past treatments will appear here once the booking system is live.</p>
+            <div class="profile-history-header">
+                <h2 class="profile-card__title" style="margin:0;">Treatment History</h2>
+                <button class="profile-history-toggle" id="historyToggle" aria-expanded="false">
+                    Show history
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+            </div>
+            <div id="pastBookings" style="display:none;">
+                <p class="text-muted" style="font-size:0.875rem;">Loading…</p>
+            </div>
         </section>
 
     </div>
@@ -114,5 +134,97 @@
     </div>
 
 </div>
+
+<script>
+// Forms status
+(function () {
+    const bar    = document.getElementById('profileFormsBar');
+    const userId = {{ request.user.pk }};
+
+    fetch(`/forms/status/${userId}/`)
+        .then(r => r.json())
+        .then(data => {
+            function pill(label, complete, url) {
+                const cls = complete ? 'profile-form-pill--complete' : 'profile-form-pill--incomplete';
+                return `<a href="${url}" class="profile-form-pill ${cls}">
+                    <span class="profile-form-pill__dot"></span>${label}
+                </a>`;
+            }
+
+            const pills = [
+                pill('Consultation Form', data.consultation.completed, '/forms/consultation/'),
+                pill('Photography Consent', data.photography.completed, '/forms/photography/'),
+                pill(
+                    data.botox.fully_complete ? 'Botox Consent ✓'
+                        : data.botox.client_signed ? 'Botox Consent (Awaiting Practitioner)'
+                        : 'Botox Consent',
+                    data.botox.fully_complete,
+                    '/forms/botox/'
+                ),
+            ];
+
+            bar.innerHTML = pills.join('');
+        })
+        .catch(() => {
+            bar.innerHTML = '<span class="text-muted">Could not load form status.</span>';
+        });
+})();
+
+// Bookings
+(function () {
+    const upcomingEl = document.getElementById('upcomingBookings');
+    const pastEl     = document.getElementById('pastBookings');
+    const toggle     = document.getElementById('historyToggle');
+
+    fetch('/accounts/bookings/')
+        .then(r => r.json())
+        .then(data => {
+            if (!data.upcoming.length) {
+                upcomingEl.innerHTML = `
+                    <p class="text-muted" style="font-size:0.875rem;">You have no upcoming appointments.
+                    <a href="/bookings/" style="color:var(--color-primary);text-decoration:none;font-weight:500;">Book now &rarr;</a></p>`;
+            } else {
+                upcomingEl.innerHTML = data.upcoming.map(b => `
+                    <div class="profile-booking-row">
+                        <span class="profile-booking-dot" style="background:${b.category_colour || 'var(--color-primary)'}"></span>
+                        <div class="profile-booking-row__info">
+                            <span class="profile-booking-row__treatment">${b.treatment}</span>
+                            <span class="profile-booking-row__meta">${b.date} &middot; ${b.start_time} &middot; ${b.duration} min</span>
+                        </div>
+                        <span class="badge badge--success">Confirmed</span>
+                    </div>`).join('');
+            }
+
+            if (!data.past.length) {
+                pastEl.innerHTML = `<p class="text-muted" style="font-size:0.875rem;">No previous appointments found.</p>`;
+            } else {
+                pastEl.innerHTML = data.past.map(b => `
+                    <div class="profile-booking-row profile-booking-row--past">
+                        <span class="profile-booking-dot" style="background:${b.category_colour || 'var(--color-primary)'}"></span>
+                        <div class="profile-booking-row__info">
+                            <span class="profile-booking-row__treatment">${b.treatment}</span>
+                            <span class="profile-booking-row__meta">${b.date} &middot; ${b.start_time}</span>
+                        </div>
+                        <span class="badge ${b.status === 'cancelled' ? 'badge--pending' : ''}"
+                              style="${b.status !== 'cancelled' ? 'background:#f0ece5;color:var(--color-text-light);border-color:#e5e0d8;' : ''}">
+                            ${b.status === 'cancelled' ? 'Cancelled' : 'Completed'}
+                        </span>
+                    </div>`).join('');
+            }
+        })
+        .catch(() => {
+            upcomingEl.innerHTML = '<p class="text-muted" style="font-size:0.875rem;">Could not load appointments.</p>';
+        });
+
+    toggle.addEventListener('click', function () {
+        const open = pastEl.style.display !== 'none';
+        pastEl.style.display = open ? 'none' : 'block';
+        toggle.setAttribute('aria-expanded', String(!open));
+        const label = open ? 'Show history' : 'Hide history';
+        const rotation = open ? '' : 'rotate(180deg)';
+        toggle.innerHTML = `${label}<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="transform:${rotation}"><polyline points="6 9 12 15 18 9"/></svg>`;
+    });
+})();
+</script>
 
 {% endblock %}

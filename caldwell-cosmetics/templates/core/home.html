@@ -80,105 +80,54 @@
         </div>
     </section>
 
-    <!-- Treatments Overview - Professional Split Layout -->
+    <!-- Treatments Overview - Interactive Explorer -->
     <section class="section section--treatments-overview">
         <div class="container">
-            <div class="treatments-layout">
-                
-                <!-- Left Side: Visual/Photo -->
-                <div class="treatments__visual">
-                    <img 
-                        src="https://images.unsplash.com/photo-1629909615184-74f495363b67?q=80&w=2000&auto=format&fit=crop" 
-                        alt="Caldwell Cosmetics Treatment Room Interior" 
-                        class="treatments__image"
-                    >
-                    <!-- Optional: Decorative Element -->
-                    <div class="treatments__badge">Est. 2024</div>
-                </div>
 
-                <!-- Right Side: Content -->
-                <div class="treatments__content">
-                    <span class="treatments__subtitle">Expert Care</span>
-                    <h2 class="treatments__title">Our Treatments</h2>
-                    
-                    <div class="treatments__text">
-                        <p>
-                            At Caldwell Cosmetics, we believe everyone deserves to feel confident in their skin. 
-                            That's why we offer a wide range of advanced aesthetic treatments designed not just 
-                            to enhance your natural beauty, but to help you feel your absolute best.
-                        </p>
-                        
-                        <p>
-                            From your very first consultation, our friendly and experienced team will take the time 
-                            to understand your personal goals and tailor every treatment to suit your unique needs.
-                        </p>
+            <header class="section__header">
+                <span class="treatments__subtitle">Expert Care</span>
+                <h2 class="treatments__title">Our Treatments</h2>
+            </header>
+
+            <!-- Treatment Selector — Scrolling Strip -->
+            <div class="tx-strip-wrapper">
+                <button class="tx-strip__arrow tx-strip__arrow--prev" id="txStripPrev" aria-label="Previous treatments">&#8249;</button>
+                <div class="tx-strip__viewport" id="txStripViewport">
+                    <div class="tx-strip__track" id="txStripTrack" role="tablist" aria-label="Select a treatment">
+                        <button class="tx-pill tx-pill--active" data-treatment="consultations" role="tab" aria-selected="true">Consultations</button>
+                        <button class="tx-pill" data-treatment="ipl-hair" role="tab" aria-selected="false">IPL Hair Removal</button>
+                        <button class="tx-pill" data-treatment="ipl-pigment" role="tab" aria-selected="false">IPL Pigment Removal</button>
+                        <button class="tx-pill" data-treatment="vascular" role="tab" aria-selected="false">Vascular Lesion Removal</button>
+                        <button class="tx-pill" data-treatment="rosacea" role="tab" aria-selected="false">IPL Rosacea</button>
+                        <button class="tx-pill" data-treatment="acne" role="tab" aria-selected="false">IPL Acne</button>
+                        <button class="tx-pill" data-treatment="botox" role="tab" aria-selected="false">Botox</button>
+                        <button class="tx-pill" data-treatment="prp-hair" role="tab" aria-selected="false">PRP Hair Rejuvenation</button>
+                        <button class="tx-pill" data-treatment="prp-skin" role="tab" aria-selected="false">PRP Skin Rejuvenation</button>
+                        <button class="tx-pill" data-treatment="resurfacing" role="tab" aria-selected="false">Skin Resurfacing</button>
+                        <button class="tx-pill" data-treatment="nanoneedling" role="tab" aria-selected="false">Nanoneedling</button>
+                        <button class="tx-pill" data-treatment="skin-plan" role="tab" aria-selected="false">Skin Plan Analysis</button>
+                        <button class="tx-pill" data-treatment="map-my-mole" role="tab" aria-selected="false">Map My Mole</button>
                     </div>
+                </div>
+                <button class="tx-strip__arrow tx-strip__arrow--next" id="txStripNext" aria-label="Next treatments">&#8250;</button>
+            </div>
 
-                    <!-- List of key benefits (adds professionalism) -->
-                    <ul class="treatments__highlights">
-                        <li>Personalised Consultations</li>
-                        <li>Advanced Technology</li>
-                        <li>Holistic Approach</li>
-                    </ul>
-
-                    <a href="{% url 'treatments:treatments' %}" class="btn btn--treatments">
-                        View All Treatments
-                    </a>
+            <!-- Slide Explorer -->
+            <div class="tx-explorer" id="txExplorer">
+                <div class="tx-slides-viewport">
+                    <div class="tx-slides-track" id="txSlidesTrack"></div>
+                </div>
+                <div class="tx-nav">
+                    <button class="tx-nav__arrow tx-nav__arrow--prev" id="txPrev" aria-label="Previous slide">&#8592;</button>
+                    <div class="tx-nav__dots" id="txDots"></div>
+                    <button class="tx-nav__arrow tx-nav__arrow--next" id="txNext" aria-label="Next slide">&#8594;</button>
                 </div>
             </div>
-        </div>
-    </section>
 
-    <!-- Booking Process -->
-    <section class="section section--booking-process">
-        <div class="container">
-            <header class="section__header">
-                <h2 class="section__title">How to Book a Treatment</h2>
-            </header>
-            
-            <ol class="booking-steps">
-                <li class="booking-steps__item">
-                    <strong class="booking-steps__title">Click the Book Now! link</strong>
-                    <p class="booking-steps__description">This will take you to our external booking platform, Aesthetic Nurse Software</p>
-                </li>
-                
-                <li class="booking-steps__item">
-                    <strong class="booking-steps__title">Book an Appointment</strong>
-                    <p class="booking-steps__description">Click on "Schedule a Treatment" button.</p>
-                </li>
-                
-                <li class="booking-steps__item">
-                    <strong class="booking-steps__title">Select Your Treatment</strong>
-                    <p class="booking-steps__description">Click on the treatment you wish to book, read the brief description to ensure you select the right service.</p>
-                </li>
-                
-                <li class="booking-steps__item">
-                    <strong class="booking-steps__title">Choose Your Preferred Date & Time</strong>
-                    <p class="booking-steps__description">The calendar will show available slots in real time. Select a date that suits you and a specific time from the options displayed.</p>
-                </li>
-                
-                <li class="booking-steps__item">
-                    <strong class="booking-steps__title">Provide Your Details</strong>
-                    <p class="booking-steps__description">Fill in your full name, email address, and contact number. If it's your first booking, you may need to create a quick account with a password. Some treatments may require additional information (e.g., medical history, skin concerns).</p>
-                </li>
-                
-                <li class="booking-steps__item">
-                    <strong class="booking-steps__title">Payment</strong>
-                    <p class="booking-steps__description">Some treatments may require payment upfront or a deposit. Follow the secure payment instructions. You will receive a confirmation receipt once your payment is successful.</p>
-                </li>
-                
-                <li class="booking-steps__item">
-                    <strong class="booking-steps__title">Confirmation & Reminders</strong>
-                    <p class="booking-steps__description">You will receive an email and/or SMS confirmation with your booking details when the appointment has been confirmed. The system may send reminders 24-48 hours before your appointment. If you need to reschedule or cancel, call text or email.</p>
-                </li>
-                
-                <li class="booking-steps__item">
-                    <strong class="booking-steps__title">Tips for a Smooth Booking Experience</strong>
-                    <p class="booking-steps__description">Ensure you have a stable internet connection when booking. Check your spam/junk folder if you don't see your confirmation email.</p>
-                </li>
-            </ol>
-            
-            <p class="booking-process__footer">It's a quick and easy process!</p>
+            <div class="tx-cta">
+                <a href="{% url 'treatments:treatments' %}" class="btn btn--treatments">View All Treatments</a>
+            </div>
+
         </div>
     </section>
 
@@ -203,74 +152,322 @@
 
 
     <!-- LightWidget WIDGET -->
-    <script src="https://cdn.lightwidget.com/widgets/lightwidget.js"></script><iframe src="https://cdn.lightwidget.com/widgets/cb00fd4d70bc55e4b07345cef7824451.html" scrolling="no" allowtransparency="true" class="lightwidget-widget" style="width:100%;border:0;overflow:hidden;"></iframe>
+    <script src="https://cdn.lightwidget.com/widgets/lightwidget.js"></script>
+    <iframe src="https://cdn.lightwidget.com/widgets/cb00fd4d70bc55e4b07345cef7824451.html" scrolling="no" allowtransparency="true" class="lightwidget-widget" style="width:100%;border:0;overflow:hidden;"></iframe>
 </main>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-// Auto-sliding Gallery Carousel
-(function() {
-    const carousel = document.getElementById('galleryCarousel');
-    if (!carousel) return;
+(function () {
 
-    const items = carousel.querySelectorAll('.gallery-carousel__item');
-    const indicators = carousel.querySelectorAll('.gallery-carousel__indicator');
-    let currentIndex = 0;
-    const slideInterval = 5000; // 5 seconds per slide
-    let autoSlideTimer;
+    /* -------------------------------------------------------
+       IMAGE MAP — one image per treatment, shown on every slide.
+       Swap these URLs for your own Cloudinary images when ready.
+    ------------------------------------------------------- */
+    const TREATMENT_IMAGES = {
+        "consultations":  "https://res.cloudinary.com/ddj2rpxcb/image/upload/v1776944169/studio_ubcdom.jpg",
+        "ipl-hair":       "https://images.unsplash.com/photo-1629909613654-28e377c37b09?q=80&w=1200&auto=format&fit=crop",
+        "ipl-pigment":    "https://images.unsplash.com/photo-1512290923902-8a9f81dc236c?q=80&w=1200&auto=format&fit=crop",
+        "vascular":       "https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?q=80&w=1200&auto=format&fit=crop",
+        "rosacea":        "https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?q=80&w=1200&auto=format&fit=crop",
+        "acne":           "https://images.unsplash.com/photo-1576091160550-2173dba999ef?q=80&w=1200&auto=format&fit=crop",
+        "botox":          "https://res.cloudinary.com/ddj2rpxcb/image/upload/v1777062108/IMG_3622_oxfw5y.jpg?q=80&w=1200&auto=format&fit=crop",
+        "prp-hair":       "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?q=80&w=1200&auto=format&fit=crop",
+        "prp-skin":       "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?q=80&w=1200&auto=format&fit=crop",
+        "resurfacing":    "https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?q=80&w=1200&auto=format&fit=crop",
+        "nanoneedling":   "https://images.unsplash.com/photo-1629909613654-28e377c37b09?q=80&w=1200&auto=format&fit=crop",
+        "skin-plan":      "https://images.unsplash.com/photo-1512290923902-8a9f81dc236c?q=80&w=1200&auto=format&fit=crop",
+        "map-my-mole":    "https://images.unsplash.com/photo-1576091160550-2173dba999ef?q=80&w=1200&auto=format&fit=crop"
+    };
 
-    function showSlide(index) {
-        // Remove active class from all items and indicators
-        items.forEach(item => item.classList.remove('gallery-carousel__item--active'));
-        indicators.forEach(indicator => indicator.classList.remove('gallery-carousel__indicator--active'));
-
-        // Add active class to current item and indicator
-        items[index].classList.add('gallery-carousel__item--active');
-        if (indicators[index]) {
-            indicators[index].classList.add('gallery-carousel__indicator--active');
+    const TREATMENTS = {
+        "consultations": {
+            name: "Consultations",
+            slides: [
+                { label: "What it is", body: "<p>A thorough, one-to-one consultation with Rabia, our Lead Nurse. This is the essential first step before any treatment at Caldwell Cosmetics — a dedicated space to discuss your skin, your goals, and your medical history in complete confidence.</p>" },
+                { label: "What it achieves", body: "<p>A personalised treatment plan built specifically for you. The consultation ensures every recommendation is safe, appropriate, and aligned with what you want to achieve — no generic advice, no pressure.</p>" },
+                { label: "What happens in the session", body: "<p>Rabia will ask about your skin concerns, health history, lifestyle, and desired outcomes. She'll assess your skin and explain which treatments may be suitable, how they work, and what realistic results look like.</p>" },
+                { label: "Treatment course", body: "<p>A single consultation is typically all that's needed before beginning a treatment. Ongoing reviews may be scheduled depending on your programme.</p>" },
+                { label: "Beforecare", body: "<p>No specific preparation is required. Come with clean skin if possible, and bring a list of any medications or supplements you take.</p>" },
+                { label: "Aftercare", body: "<p>You'll leave with a clear written treatment plan and any pre-treatment instructions relevant to your chosen service. There's no downtime.</p>" }
+            ]
+        },
+        "ipl-hair": {
+            name: "IPL Hair Removal",
+            slides: [
+                { label: "What it is", body: "<p>Intense Pulsed Light (IPL) hair removal uses broad-spectrum light energy to target and disable hair follicles, significantly reducing hair growth over a course of treatments.</p>" },
+                { label: "What it achieves", body: "<p>Long-lasting reduction in unwanted hair on the face and body. Most clients achieve up to 80–90% permanent reduction after a full course, leaving skin smooth and hair-free.</p>" },
+                { label: "What happens in the session", body: "<p>A cool gel is applied to the treatment area. The IPL handpiece is pressed against the skin and pulses of light are delivered. The sensation is often described as a warm flick. Sessions typically last 15–60 minutes depending on the area.</p>" },
+                { label: "Treatment course", body: "<p>A minimum of 6–8 sessions spaced 4–6 weeks apart is recommended for optimal results. Annual top-up sessions may be advised.</p>" },
+                { label: "Beforecare", body: "<ul><li>Avoid sun exposure and tanning for 4 weeks before treatment</li><li>Shave the treatment area 24 hours before your appointment</li><li>Do not wax, thread, or use epilators for 4 weeks prior</li><li>Arrive with clean, product-free skin</li></ul>" },
+                { label: "Aftercare", body: "<ul><li>Avoid sun exposure and apply SPF 50+ daily</li><li>Do not use heat (saunas, hot baths) for 48 hours</li><li>Hair will shed over the following 1–3 weeks — do not pick or wax</li><li>Apply a soothing aloe vera gel if the skin feels sensitive</li></ul>" }
+            ]
+        },
+        "ipl-pigment": {
+            name: "IPL Pigment Removal",
+            slides: [
+                { label: "What it is", body: "<p>IPL Pigment Removal targets areas of hyperpigmentation — including sunspots, age spots, and uneven skin tone — using targeted light pulses to break down excess melanin in the skin.</p>" },
+                { label: "What it achieves", body: "<p>A more even, clearer complexion. Brown spots and areas of discolouration fade significantly, revealing brighter, more uniform skin tone with minimal downtime.</p>" },
+                { label: "What happens in the session", body: "<p>Protective eyewear is worn throughout. A cool gel is applied and the IPL device is moved across the pigmented areas. You may notice the spots temporarily darken — this is a sign the treatment is working. Sessions last around 30–45 minutes.</p>" },
+                { label: "Treatment course", body: "<p>Typically 3–6 sessions, spaced 4 weeks apart. The number varies depending on the depth and severity of pigmentation.</p>" },
+                { label: "Beforecare", body: "<ul><li>Avoid sun exposure for 4 weeks prior and use SPF 50+ daily</li><li>Discontinue retinoids and AHAs/BHAs 5–7 days before treatment</li><li>Arrive with no makeup or skincare products on the skin</li></ul>" },
+                { label: "Aftercare", body: "<ul><li>Expect spots to appear darker for 5–10 days before they flake away naturally — do not pick</li><li>Apply SPF 50+ every morning without exception</li><li>Keep skin hydrated with a gentle, fragrance-free moisturiser</li><li>Avoid retinoids and exfoliants for 1 week post-treatment</li></ul>" }
+            ]
+        },
+        "vascular": {
+            name: "Vascular Lesion Removal",
+            slides: [
+                { label: "What it is", body: "<p>A targeted IPL treatment designed to reduce the appearance of vascular lesions — including thread veins, spider veins, broken capillaries, and port wine stains — by heating and collapsing unwanted blood vessels.</p>" },
+                { label: "What it achieves", body: "<p>Clearer, more even skin with a reduction or complete removal of visible redness and thread veins. Results become fully visible once the treated vessels are naturally reabsorbed by the body.</p>" },
+                { label: "What happens in the session", body: "<p>The IPL device delivers precise pulses of light to the targeted vessels. You may feel a mild stinging or heat sensation. The area may appear slightly red immediately after treatment, which typically resolves within a few hours. Sessions last 20–45 minutes.</p>" },
+                { label: "Treatment course", body: "<p>Most clients see significant improvement in 2–4 sessions, spaced 4–6 weeks apart. Larger or deeper vessels may require additional treatments.</p>" },
+                { label: "Beforecare", body: "<ul><li>Avoid sun exposure and self-tan for 4 weeks prior</li><li>Do not take aspirin or anti-inflammatory medication unless prescribed</li><li>Come to your appointment with clean, product-free skin</li></ul>" },
+                { label: "Aftercare", body: "<ul><li>Avoid heat, exercise, and alcohol for 48 hours</li><li>Redness or bruising may appear — this is normal and will subside</li><li>Protect treated areas with SPF 50+</li><li>Do not apply makeup for 24 hours after facial treatments</li></ul>" }
+            ]
+        },
+        "rosacea": {
+            name: "IPL Rosacea Treatment",
+            slides: [
+                { label: "What it is", body: "<p>IPL Rosacea Treatment uses carefully calibrated light energy to reduce the persistent redness, flushing, and visible blood vessels associated with rosacea — a common but often distressing skin condition.</p>" },
+                { label: "What it achieves", body: "<p>Visible reduction in facial redness, fewer visible vessels, and a calmer, more even complexion. Many clients report improved confidence alongside the physical results.</p>" },
+                { label: "What happens in the session", body: "<p>Protective eyewear is applied and a cool gel is spread across the face. The IPL handpiece targets areas of redness with gentle pulses. Sessions last approximately 30 minutes.</p>" },
+                { label: "Treatment course", body: "<p>3–6 sessions, spaced 4 weeks apart, are recommended for best results. Maintenance treatments may be advised seasonally.</p>" },
+                { label: "Beforecare", body: "<ul><li>Avoid any trigger activities (alcohol, spicy food, sun) for 48 hours before treatment</li><li>Discontinue topical retinoids 5–7 days before treatment</li><li>Inform Rabia of any medications you are taking for rosacea</li></ul>" },
+                { label: "Aftercare", body: "<ul><li>Redness and warmth in the skin are expected for 24–48 hours</li><li>Apply a gentle, fragrance-free moisturiser and avoid active skincare for 1 week</li><li>Stay out of the sun and apply SPF 50+ consistently</li></ul>" }
+            ]
+        },
+        "acne": {
+            name: "IPL Acne Treatment",
+            slides: [
+                { label: "What it is", body: "<p>IPL Acne Treatment targets the bacteria responsible for acne breakouts and reduces the inflammation that causes redness and spots — without harsh chemicals or medication. It's suitable for mild-to-moderate acne.</p>" },
+                { label: "What it achieves", body: "<p>A reduction in active breakouts, decreased redness and inflammation, and an improvement in overall skin clarity. With a full course, many clients also see a reduction in post-acne marks.</p>" },
+                { label: "What happens in the session", body: "<p>The IPL device emits light wavelengths that penetrate the skin and destroy acne-causing bacteria whilst soothing inflammation. Sessions typically take 20–40 minutes.</p>" },
+                { label: "Treatment course", body: "<p>6–8 sessions, spaced 1–2 weeks apart initially, then moving to monthly maintenance. Results build progressively over the course.</p>" },
+                { label: "Beforecare", body: "<ul><li>Avoid sun exposure and use SPF 50+ for 4 weeks before treatment</li><li>Do not use Roaccutane within 6 months of treatment</li><li>Come to your appointment with clean, makeup-free skin</li><li>Avoid exfoliating acids for 5 days prior</li></ul>" },
+                { label: "Aftercare", body: "<ul><li>Skin may appear temporarily flushed — this usually resolves within a few hours</li><li>Avoid touching or picking at the skin</li><li>Use only gentle, non-comedogenic products for 5–7 days post-treatment</li><li>Apply SPF 50+ every day</li></ul>" }
+            ]
+        },
+        "botox": {
+            name: "Botox",
+            slides: [
+                { label: "What it is", body: "<p>Botulinum toxin (Botox) is a prescription-only injectable treatment administered by Rabia, our qualified Nurse. It temporarily relaxes targeted facial muscles to smooth dynamic lines and wrinkles caused by repeated expressions.</p>" },
+                { label: "What it achieves", body: "<p>A refreshed, naturally rested appearance. Common treatment areas include forehead lines, frown lines between the brows, and crow's feet. Results are subtle and natural-looking when performed by an experienced practitioner.</p>" },
+                { label: "What happens in the session", body: "<p>After a thorough consultation, a small amount of Botox is injected into precise muscle points using a very fine needle. The procedure takes around 15–30 minutes. Most clients find it very comfortable.</p>" },
+                { label: "Treatment course", body: "<p>Results appear within 3–14 days and typically last 3–4 months. Regular maintenance every 3–4 months helps sustain results long-term.</p>" },
+                { label: "Beforecare", body: "<ul><li>Avoid alcohol for 24–48 hours before treatment</li><li>Avoid blood-thinning medications for 1 week prior unless prescribed</li><li>Do not have any facial treatments within 2 weeks</li><li>Arrive with clean skin, free of makeup</li></ul>" },
+                { label: "Aftercare", body: "<ul><li>Do not rub or massage the treated areas for 24 hours</li><li>Avoid lying down flat for 4 hours after treatment</li><li>Avoid strenuous exercise, heat, and alcohol for 24 hours</li><li>You may experience mild redness or small bumps at injection sites — these resolve quickly</li></ul>" }
+            ]
+        },
+        "prp-hair": {
+            name: "PRP Hair Rejuvenation",
+            slides: [
+                { label: "What it is", body: "<p>Platelet-Rich Plasma (PRP) for hair rejuvenation uses your own blood to stimulate dormant hair follicles. A small sample of your blood is processed to concentrate the growth-factor-rich plasma, which is then injected into the scalp.</p>" },
+                { label: "What it achieves", body: "<p>Improved hair density, reduced hair shedding, and stimulated regrowth in areas of thinning. PRP is particularly effective for androgenic alopecia and general hair thinning.</p>" },
+                { label: "What happens in the session", body: "<p>A small blood sample is taken from your arm and placed in a centrifuge to separate the platelet-rich plasma. The scalp is then prepared and the PRP is carefully injected across the treatment area. Sessions take approximately 60–75 minutes.</p>" },
+                { label: "Treatment course", body: "<p>An initial course of 3 sessions, spaced 4–6 weeks apart, is recommended. Maintenance sessions every 4–6 months help sustain results.</p>" },
+                { label: "Beforecare", body: "<ul><li>Stay well-hydrated in the days leading up to your appointment</li><li>Eat a light meal before your session — do not come on an empty stomach</li><li>Avoid alcohol for 24 hours prior</li><li>Wash your hair the morning of your appointment</li></ul>" },
+                { label: "Aftercare", body: "<ul><li>Avoid washing your hair for 24 hours post-treatment</li><li>Do not apply heat styling tools for 48 hours</li><li>Some mild scalp tenderness, redness, or swelling is normal and will resolve within 1–3 days</li></ul>" }
+            ]
+        },
+        "prp-skin": {
+            name: "PRP Skin Rejuvenation",
+            slides: [
+                { label: "What it is", body: "<p>PRP Skin Rejuvenation harnesses the healing and regenerative power of your own platelet-rich plasma to boost collagen production, improve skin texture, and restore a youthful glow.</p>" },
+                { label: "What it achieves", body: "<p>Improved skin tone and texture, reduced fine lines and wrinkles, minimised pores, and a brighter, more radiant complexion. It also helps with acne scarring and uneven pigmentation.</p>" },
+                { label: "What happens in the session", body: "<p>Blood is drawn, processed to extract the PRP, and then either injected into targeted areas of the face or applied topically in combination with microneedling. Topical anaesthetic is used to ensure comfort. Sessions last around 60–90 minutes.</p>" },
+                { label: "Treatment course", body: "<p>3 sessions, spaced 4–6 weeks apart, form the recommended initial course. Results continue to improve over 3–6 months as collagen production is stimulated.</p>" },
+                { label: "Beforecare", body: "<ul><li>Drink plenty of water for 48 hours before treatment</li><li>Avoid retinoids and active acids for 5–7 days prior</li><li>Do not take anti-inflammatory medication for 1 week before unless prescribed</li><li>Arrive with clean, makeup-free skin</li></ul>" },
+                { label: "Aftercare", body: "<ul><li>Redness, swelling, and mild bruising are expected and will resolve within 3–5 days</li><li>Avoid makeup for 24 hours</li><li>Keep skin clean and moisturised with gentle products only</li><li>Avoid sun exposure and use SPF 50+ for at least 2 weeks</li></ul>" }
+            ]
+        },
+        "resurfacing": {
+            name: "Skin Resurfacing",
+            slides: [
+                { label: "What it is", body: "<p>Skin resurfacing treatments use controlled energy to remove the outer layers of damaged skin and stimulate the production of fresh, healthy skin cells and collagen beneath.</p>" },
+                { label: "What it achieves", body: "<p>Smoother, firmer, more evenly toned skin. Effective for reducing fine lines, acne scars, enlarged pores, sun damage, and general dullness.</p>" },
+                { label: "What happens in the session", body: "<p>The skin is cleansed and prepared. The resurfacing treatment is applied with precision to the target areas. Depending on the depth of treatment, a topical anaesthetic may be used. Sessions last 30–90 minutes.</p>" },
+                { label: "Treatment course", body: "<p>Lighter resurfacing treatments may require 4–6 sessions monthly. Deeper treatments may deliver significant results in 1–3 sessions. Your plan will be outlined at consultation.</p>" },
+                { label: "Beforecare", body: "<ul><li>Avoid sun exposure for 4 weeks and use SPF 50+ daily</li><li>Discontinue retinoids, exfoliating acids, and vitamin C serums 1 week before</li><li>Do not wax or have other facial treatments for 2 weeks prior</li></ul>" },
+                { label: "Aftercare", body: "<ul><li>Expect redness, peeling, or flaking for 3–10 days — this is the skin renewing</li><li>Do not pick or peel the skin manually</li><li>Avoid direct sun and apply SPF 50+ rigorously for at least 4 weeks</li></ul>" }
+            ]
+        },
+        "nanoneedling": {
+            name: "Nanoneedling",
+            slides: [
+                { label: "What it is", body: "<p>Nanoneedling is a non-invasive skin treatment that uses a device tipped with hundreds of tiny pyramid-shaped silicone tips to create superficial micro-channels in the skin's surface, allowing active serums to penetrate far more effectively.</p>" },
+                { label: "What it achieves", body: "<p>Improved hydration, brighter and more even skin tone, reduced appearance of fine lines, and enhanced absorption of targeted serums. A gentle option for those seeking rejuvenation without downtime.</p>" },
+                { label: "What happens in the session", body: "<p>The skin is cleansed and a targeted serum is applied. The nanoneedling device is gently moved across the face, pushing the serum deeper into the skin. The treatment feels like gentle sandpaper — most clients find it very comfortable. Sessions last approximately 30–45 minutes.</p>" },
+                { label: "Treatment course", body: "<p>Best results are seen with a course of 4–6 sessions, spaced 2–4 weeks apart. Nanoneedling can also be used as an ongoing maintenance treatment.</p>" },
+                { label: "Beforecare", body: "<ul><li>Arrive with clean, makeup-free skin</li><li>Avoid exfoliating acids for 48 hours prior</li><li>Inform Rabia of any active skin conditions or sensitivities</li></ul>" },
+                { label: "Aftercare", body: "<ul><li>Some clients experience mild flushing for a few hours — minimal downtime overall</li><li>Avoid makeup for 12–24 hours to let the channels close</li><li>Apply a gentle moisturiser and SPF 50+</li></ul>" }
+            ]
+        },
+        "skin-plan": {
+            name: "Skin Plan Analysis",
+            slides: [
+                { label: "What it is", body: "<p>A comprehensive skin analysis service using professional tools and clinical assessment to build a detailed picture of your skin's current condition — including hydration levels, pigmentation, sensitivity, texture, and pore health.</p>" },
+                { label: "What it achieves", body: "<p>A complete understanding of your skin and a personalised, evidence-based skincare and treatment plan. This removes guesswork and helps you invest in the products and treatments that will actually make a difference for your specific skin.</p>" },
+                { label: "What happens in the session", body: "<p>Rabia will carry out an in-depth assessment of your skin using clinical tools and detailed questioning about your lifestyle, diet, sleep, and skincare habits. You'll leave with a written, personalised skin plan. Sessions last 45–60 minutes.</p>" },
+                { label: "Treatment course", body: "<p>Usually a one-off session, with optional follow-up reviews at 3–6 months to track progress and adjust the plan as your skin evolves.</p>" },
+                { label: "Beforecare", body: "<ul><li>Arrive with clean skin and no makeup — this allows for the most accurate analysis</li><li>Bring a list of your current skincare products if possible</li></ul>" },
+                { label: "Aftercare", body: "<p>No aftercare required. You'll receive a written skin plan to take away. Rabia will advise on next steps and any treatments or products she recommends.</p>" }
+            ]
+        },
+        "map-my-mole": {
+            name: "Map My Mole",
+            slides: [
+                { label: "What it is", body: "<p>Map My Mole is a professional mole mapping and skin lesion monitoring service. Using dermoscopy and clinical assessment, Rabia will systematically examine, document, and monitor the moles and lesions across your body for any changes over time.</p>" },
+                { label: "What it achieves", body: "<p>Early identification of any moles or lesions that may require further investigation, peace of mind through regular monitoring, and a documented baseline to track any future changes.</p>" },
+                { label: "What happens in the session", body: "<p>Using a dermatoscope and clinical expertise, Rabia will examine your moles and skin lesions thoroughly. Each mole is documented with notes and imagery. You'll receive a full report and clear guidance on any findings. Sessions last approximately 45–60 minutes.</p>" },
+                { label: "Treatment course", body: "<p>An initial mapping session followed by annual review appointments to monitor for changes. If any lesion requires urgent review, you'll be referred to the appropriate medical professional promptly.</p>" },
+                { label: "Beforecare", body: "<ul><li>Wear clothing that allows easy access to all body areas you'd like assessed</li><li>Remove nail varnish if you'd like your nails assessed</li><li>Do not apply fake tan or body makeup on the day</li></ul>" },
+                { label: "Aftercare", body: "<ul><li>No aftercare required — this is a non-invasive assessment</li><li>You'll receive a written report of findings</li><li>Any moles of concern will be discussed with clear next steps and appropriate referrals if needed</li></ul>" }
+            ]
         }
+    };
+
+    /* -------------------------------------------------------
+       STATE
+    ------------------------------------------------------- */
+    let currentTreatment = "consultations";
+    let currentSlide = 0;
+
+    const track = document.getElementById("txSlidesTrack");
+    const dotsContainer = document.getElementById("txDots");
+    const prevBtn = document.getElementById("txPrev");
+    const nextBtn = document.getElementById("txNext");
+    const pills = document.querySelectorAll(".tx-pill");
+    const stripTrack = document.getElementById("txStripTrack");
+    const stripPrev = document.getElementById("txStripPrev");
+    const stripNext = document.getElementById("txStripNext");
+
+    /* -------------------------------------------------------
+       STRIP SCROLLING
+    ------------------------------------------------------- */
+    let stripOffset = 0;
+
+    function getStripScrollAmount() {
+        const pill = stripTrack.querySelector(".tx-pill");
+        return pill ? pill.offsetWidth + 8 : 160;
     }
 
-    function nextSlide() {
-        currentIndex = (currentIndex + 1) % items.length;
-        showSlide(currentIndex);
+    function scrollStrip(direction) {
+        const scrollAmt = getStripScrollAmount() * 2;
+        const maxScroll = stripTrack.scrollWidth - stripTrack.parentElement.offsetWidth;
+        stripOffset = Math.max(0, Math.min(stripOffset + direction * scrollAmt, maxScroll));
+        stripTrack.style.transform = `translateX(-${stripOffset}px)`;
+        stripPrev.disabled = stripOffset <= 0;
+        stripNext.disabled = stripOffset >= maxScroll;
     }
 
-    function startAutoSlide() {
-        autoSlideTimer = setInterval(nextSlide, slideInterval);
+    function scrollStripToActivePill() {
+        const activePill = stripTrack.querySelector(".tx-pill--active");
+        if (!activePill) return;
+        const viewport = stripTrack.parentElement;
+        const pillLeft = activePill.offsetLeft;
+        const pillRight = pillLeft + activePill.offsetWidth;
+        const viewWidth = viewport.offsetWidth;
+        if (pillLeft < stripOffset) {
+            stripOffset = Math.max(0, pillLeft - 8);
+        } else if (pillRight > stripOffset + viewWidth) {
+            stripOffset = pillRight - viewWidth + 8;
+        }
+        stripTrack.style.transform = `translateX(-${stripOffset}px)`;
+        const maxScroll = stripTrack.scrollWidth - viewWidth;
+        stripPrev.disabled = stripOffset <= 0;
+        stripNext.disabled = maxScroll <= 0 || stripOffset >= maxScroll;
     }
 
-    function stopAutoSlide() {
-        clearInterval(autoSlideTimer);
-    }
+    stripPrev.addEventListener("click", () => scrollStrip(-1));
+    stripNext.addEventListener("click", () => scrollStrip(1));
 
-    // Optional: Click on indicators to jump to specific slide
-    indicators.forEach((indicator, index) => {
-        indicator.addEventListener('click', () => {
-            currentIndex = index;
-            showSlide(currentIndex);
-            // Restart auto-slide timer after manual navigation
-            stopAutoSlide();
-            startAutoSlide();
+    // Init strip arrow states
+    stripPrev.disabled = true;
+    setTimeout(() => {
+        const maxScroll = stripTrack.scrollWidth - stripTrack.parentElement.offsetWidth;
+        stripNext.disabled = maxScroll <= 0;
+    }, 100);
+
+    /* -------------------------------------------------------
+       BUILD SLIDES
+    ------------------------------------------------------- */
+    function buildSlides(treatmentKey) {
+        const treatment = TREATMENTS[treatmentKey];
+        const image = TREATMENT_IMAGES[treatmentKey];
+        track.innerHTML = "";
+        dotsContainer.innerHTML = "";
+
+        treatment.slides.forEach((slide, i) => {
+            const el = document.createElement("div");
+            el.className = "tx-slide" + (image ? "" : " tx-slide--no-image");
+            el.setAttribute("role", "tabpanel");
+
+            el.innerHTML = `
+                <div class="tx-slide__content">
+                    <span class="tx-slide__treatment-name">${treatment.name}</span>
+                    <h3 class="tx-slide__heading">${slide.label}</h3>
+                    <div class="tx-slide__body">${slide.body}</div>
+                </div>
+                ${image ? `
+                <div class="tx-slide__image-panel">
+                    <img src="${image}" alt="${treatment.name} at Caldwell Cosmetics" loading="lazy">
+                </div>` : ""}
+            `;
+            track.appendChild(el);
+
+            const dot = document.createElement("button");
+            dot.className = "tx-nav__dot" + (i === 0 ? " tx-nav__dot--active" : "");
+            dot.setAttribute("aria-label", `${slide.label}`);
+            dot.addEventListener("click", () => goToSlide(i));
+            dotsContainer.appendChild(dot);
         });
+    }
+
+    /* -------------------------------------------------------
+       SLIDE NAVIGATION
+    ------------------------------------------------------- */
+    function goToSlide(index) {
+        const count = TREATMENTS[currentTreatment].slides.length;
+        currentSlide = Math.max(0, Math.min(index, count - 1));
+        track.style.transform = `translateX(-${currentSlide * 100}%)`;
+        dotsContainer.querySelectorAll(".tx-nav__dot").forEach((d, i) => {
+            d.classList.toggle("tx-nav__dot--active", i === currentSlide);
+        });
+        prevBtn.disabled = currentSlide === 0;
+        nextBtn.disabled = currentSlide === count - 1;
+    }
+
+    /* -------------------------------------------------------
+       TREATMENT SWITCHING
+    ------------------------------------------------------- */
+    function switchTreatment(key) {
+        currentTreatment = key;
+        currentSlide = 0;
+        buildSlides(key);
+        goToSlide(0);
+        pills.forEach(pill => {
+            const active = pill.dataset.treatment === key;
+            pill.classList.toggle("tx-pill--active", active);
+            pill.setAttribute("aria-selected", active ? "true" : "false");
+        });
+        scrollStripToActivePill();
+    }
+
+    pills.forEach(pill => {
+        pill.addEventListener("click", () => switchTreatment(pill.dataset.treatment));
     });
 
-    // Pause auto-slide when user hovers over carousel (optional)
-    carousel.addEventListener('mouseenter', stopAutoSlide);
-    carousel.addEventListener('mouseleave', startAutoSlide);
+    prevBtn.addEventListener("click", () => goToSlide(currentSlide - 1));
+    nextBtn.addEventListener("click", () => goToSlide(currentSlide + 1));
 
-    // Pause auto-slide when page is not visible (performance optimization)
-    document.addEventListener('visibilitychange', () => {
-        if (document.hidden) {
-            stopAutoSlide();
-        } else {
-            startAutoSlide();
-        }
+    document.getElementById("txExplorer").addEventListener("keydown", e => {
+        if (e.key === "ArrowRight") goToSlide(currentSlide + 1);
+        if (e.key === "ArrowLeft") goToSlide(currentSlide - 1);
     });
 
-    // Start the auto-slide
-    startAutoSlide();
+    switchTreatment("consultations");
+
 })();
 </script>
 {% endblock %}

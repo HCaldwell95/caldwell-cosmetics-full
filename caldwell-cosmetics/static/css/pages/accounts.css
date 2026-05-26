@@ -919,3 +919,144 @@
         transition: none;
     }
 }
+
+/* =====================================================
+   Profile page — forms status bar
+   ===================================================== */
+
+.profile-forms-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+}
+
+.profile-form-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 5px 12px;
+    border-radius: 20px;
+    cursor: pointer;
+    border: none;
+    transition: opacity 0.15s;
+    text-decoration: none;
+}
+
+.profile-form-pill:hover { opacity: 0.85; }
+
+.profile-form-pill--complete {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.profile-form-pill--incomplete {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.profile-form-pill__dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0.7;
+}
+
+/* ============================================
+   PROFILE — BOOKING ROWS
+   ============================================ */
+
+.profile-history-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.profile-history-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: var(--font-montserrat);
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-primary);
+    padding: 0;
+    transition: color 0.2s ease;
+}
+
+.profile-history-toggle svg {
+    transition: transform 0.2s ease;
+}
+
+.profile-history-toggle:hover {
+    color: var(--color-primary-dark);
+}
+
+.profile-booking-row {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+    padding: 0.875rem 0;
+    border-bottom: 1px solid #f0ece5;
+}
+
+.profile-booking-row:last-child {
+    border-bottom: none;
+}
+
+.profile-booking-row--past {
+    opacity: 0.7;
+}
+
+.profile-booking-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.profile-booking-row__info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    flex: 1;
+    min-width: 0;
+}
+
+.profile-booking-row__treatment {
+    font-family: var(--font-jost);
+    font-size: 0.95rem;
+    font-weight: 400;
+    color: var(--color-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.profile-booking-row__meta {
+    font-family: var(--font-montserrat);
+    font-size: 0.78rem;
+    color: var(--color-text-light);
+}
+
+@media (max-width: 480px) {
+    .profile-booking-row {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .profile-history-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+}

@@ -1,19 +1,74 @@
-<!-- Hero Section -->
-<section class="hero">
-    <div class="hero__container">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Importing Google Fonts that match your existing font variables -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Lora:ital,wght@0,400;0,500;1,400&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+    <!-- 
+      NEW HERO SECTION
+      Layout: Split Screen. Left = Content Box. Right = Spanning Image.
+    -->
+    <section class="hero">
+
         <img 
-            src="https://res.cloudinary.com/ddj2rpxcb/image/upload/v1777016752/treatments-hero_qvehzb.png" 
+            src="https://res.cloudinary.com/ddj2rpxcb/image/upload/v1749706048/treatments-hero_n3ktwr.jpg" 
             class="hero__image" 
-            alt="Sand falling through fingers"
+            alt="Natural beauty - close up of woman with blue eyes"
             loading="eager"
         >
-        <div class="hero__overlay"></div>
-        <div class="hero__content">
-            <h1 class="hero__title">Caldwell Cosmetics</h1>
-            <p class="hero__tagline">Est. 2024</p>
+        
+        <!-- LEFT SIDE: Content Box -->
+        <div class="hero__image-container">
+            <!-- Added a subtle overlay for depth -->
+            <div class="hero__image-overlay"></div>
         </div>
-    </div>
-</section>
+        
+        <!-- RIGHT SIDE: Spanning Image -->
+        <div class="hero__box animate-in">
+            
+            <!-- Tagline / Est. Date -->
+            <p class="hero__tagline">Est. 2024</p>
+
+            <!-- Main Title -->
+            <h1 class="hero__title">
+                Caldwell<br>
+                <span>Cosmetics</span>
+            </h1>
+
+            <!-- Description -->
+            <div class="hero__description">
+                <p>Where natural beauty meets personalised care.</p>
+                <p>
+                    Join us in celebrating the beauty of simplicity, promoting wellness, and 
+                    discovering the best version of yourself.
+                </p>
+            </div>
+
+            <!-- Call to Action Buttons (Inspired by reference image) -->
+            <div class="hero__cta">
+                <a href="#book" class="btn">Schedule Appointment</a>
+            </div>
+        </div>
+    </section>
+</body>
 
 <!-- Services Marquee -->
-<div class="services-marquee"></div>
+<div class="services-marquee">
+    <div class="services-marquee__track">
+        <a class="services-marquee__item" href="/services/ipl-hair-reduction">IPL Hair Reduction</a>
+        <a class="services-marquee__item" href="/services/skin-rejuvenation">Skin Rejuvenation</a>
+        <a class="services-marquee__item" href="/services/platelet-rich-plasma-prp">Platelet Rich Plasma (PRP)</a>
+        <a class="services-marquee__item" href="{% url 'treatments:treatment_detail' 'anti-wrinkle-treatments' %}">Anti Wrinkle Injections</a>
+        <a class="services-marquee__item" href="/services/hair-rejuvenation">Hair Rejuvenation</a>
+        <a class="services-marquee__item" href="/services/illumifacial">illumiFacial®</a>
+        <a class="services-marquee__item" href="/services/acne-treatments">Acne Treatments</a>
+        <a class="services-marquee__item" href="/services/facial-veins-or-pigment-removal">Facial Veins or Pigment Removal</a>
+        <a class="services-marquee__item" href="/services/consultations">Consultations</a>
+    </div>
+</div>
