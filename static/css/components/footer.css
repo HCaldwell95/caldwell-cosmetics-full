@@ -267,10 +267,10 @@ footer {
 
 /* Medium screens - tablet landscape (769px to 991px) */
 /* ============================================
-   TABLET (769px–1024px)
+   TABLET (769px–1023px)
    ============================================ */
 
-@media (min-width: 769px) and (max-width: 1024px) {
+@media (min-width: 769px) and (max-width: 1023px) {
     footer {
         padding: 3.5rem 2.5rem 2.5rem;
     }
