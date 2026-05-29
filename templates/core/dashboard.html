@@ -33,19 +33,18 @@
     <!-- Calendar toolbar -->
     <div class="dash-toolbar">
         <div class="dash-toolbar__nav">
-            <button class="dash-nav-btn" id="calPrev" aria-label="Previous">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
-            </button>
+            <button class="dash-nav-btn" id="calPrev" aria-label="Previous">…</button>
             <span class="dash-toolbar__period" id="calPeriodLabel"></span>
-            <button class="dash-nav-btn" id="calNext" aria-label="Next">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-            </button>
+            <button class="dash-nav-btn" id="calNext" aria-label="Next">…</button>
         </div>
-        <div class="dash-toolbar__views">
-            <button class="dash-view-btn dash-view-btn--active" data-view="month">Month</button>
-            <button class="dash-view-btn" data-view="week">Week</button>
+        <!-- ADD THIS WRAPPER -->
+        <div class="dash-toolbar__bottom">
+            <div class="dash-toolbar__views">
+                <button class="dash-view-btn dash-view-btn--active" data-view="month">Month</button>
+                <button class="dash-view-btn" data-view="week">Week</button>
+            </div>
+            <button class="dash-today-btn" id="calToday">Today</button>
         </div>
-        <button class="dash-today-btn" id="calToday">Today</button>
     </div>
 
     <!-- Calendar -->

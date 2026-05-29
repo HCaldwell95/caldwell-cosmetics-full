@@ -1095,3 +1095,105 @@
 .nav-header {
   position: absolute;
 }
+
+/* =====================================================
+   Mobile responsive fixes — dashboard
+   ===================================================== */
+
+@media (max-width: 768px) {
+
+    /* --- Page padding --- */
+    .dash-page {
+        padding: 1.25rem 1rem 3rem;
+    }
+
+    /* --- Header: keep eyebrow+title left, button right, same row --- */
+    .dash-header {
+        align-items: center;
+        margin-bottom: 1.25rem;
+        gap: 0.75rem;
+    }
+
+    .dash-header__title {
+        font-size: 1.5rem;
+    }
+
+    /* Constrain the New Booking button so it sits neatly beside the title */
+    .dash-header .btn--primary {
+        flex-shrink: 0;
+        white-space: nowrap;
+        font-size: 0.8rem;
+        padding: 0.5rem 0.85rem;
+        /* Override any global .btn font-size overrides */
+        font-size: 0.8rem !important;
+    }
+
+    /* --- Stats: 2-col grid --- */
+    .dash-stats {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .dash-stat {
+        padding: 1rem 1.1rem;
+    }
+
+    .dash-stat__value {
+        font-size: 1.5rem;
+    }
+
+    /* --- Toolbar: stack nav row on top, views+today on bottom --- */
+    .dash-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.5rem;
+        margin-bottom: 0.75rem;
+    }
+
+    /* Nav row: arrows + period label centred together */
+    .dash-toolbar__nav {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        width: 100%;
+    }
+
+    .dash-toolbar__period {
+        min-width: 130px;
+        text-align: center;
+        font-size: 1rem;
+    }
+
+    /* Bottom row: view toggles left, Today right */
+    .dash-toolbar__bottom {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    /* Views group loses the auto-margin it uses on desktop */
+    .dash-toolbar__views {
+        margin-left: 0;
+    }
+
+    /* --- Calendar cells --- */
+    .dash-month-cell {
+        min-height: 60px;
+        padding: 0.35rem;
+    }
+
+    .dash-month-header {
+        padding: 0.35rem 0.25rem;
+        font-size: 0.65rem;
+    }
+
+    .dash-month-cell__day {
+        font-size: 0.75rem;
+    }
+
+    .dash-event-pill__name {
+        display: none;
+    }
+}
