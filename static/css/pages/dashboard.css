@@ -1218,4 +1218,9 @@
     .dash-event-pill__name {
         display: none;
     }
+
+    .btn {
+        width: 4ch; */
+        margin-bottom: 0; */
+    }
 }
