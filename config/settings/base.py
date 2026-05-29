@@ -157,10 +157,16 @@ USE_TZ = True
 # --------------------------------------------------
 
 STATIC_URL = "/static/"
-STATICFILES_DIRS = [BASE_DIR / "static"]
-STATIC_ROOT = str(BASE_DIR / "staticfiles")
 
-STATICFILES_STORAGE = 'whitenoise.storage.StaticFilesStorage'
+STATICFILES_DIRS = [BASE_DIR / "static"]
+
+STATIC_ROOT = BASE_DIR / "staticfiles"
+
+# IMPORTANT: stable WhiteNoise setup (NOT manifest)
+STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
+
+WHITENOISE_USE_FINDERS = True
+WHITENOISE_MANIFEST_STRICT = False
 
 STATICFILES_FINDERS = [
     "django.contrib.staticfiles.finders.FileSystemFinder",
