@@ -1109,14 +1109,6 @@
     font-size: clamp(1.4rem, 4vw, 2rem); /* scales gracefully, no jump */
 }
 
-/* Constrain the New Booking button at ALL sizes */
-.dash-header .btn--primary {
-    flex-shrink: 0;
-    white-space: nowrap;
-    padding: 0.55rem 1rem;
-    font-size: 0.85rem !important; /* override the broken .btn { font-size: 0.5rem } rule */
-}
-
 /* --- Toolbar: desktop stays exactly as-is --- */
 /* The .dash-toolbar__bottom wrapper is desktop-neutral when display:contents */
 .dash-toolbar__bottom {
@@ -1220,7 +1212,7 @@
     }
 
     .btn {
-        width: 4ch; */
+        width: 40%; */
         margin-bottom: 0; */
     }
 }
