@@ -7,6 +7,8 @@ import cloudinary
 import cloudinary.uploader
 import cloudinary.api
 
+
+load_dotenv()
 # --------------------------------------------------
 # BASE DIR
 # --------------------------------------------------
@@ -159,6 +161,11 @@ STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+STATICFILES_FINDERS = [
+    "django.contrib.staticfiles.finders.FileSystemFinder",
+    "django.contrib.staticfiles.finders.AppDirectoriesFinder",
+]
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
