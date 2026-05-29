@@ -1,90 +1,333 @@
 {% load static %}
 
-<head>
-    <title>
-    {% block title %}Anti-Wrinkle Treatments | Caldwell Cosmetics{% endblock %}
-    </title>
 
-    {% block extra_css %}
-    <link rel="stylesheet" href="{% static 'css/pages/treatment_info.css' %}">
-    {% endblock %}
-</head>
+{# ── 1. About ─────────────────────────────────────────────────────── #}
+<div class="ti-block">
+    <h2 class="ti-block__heading">What Are Anti-Wrinkle Treatments</h2>
+    <p class="ti-block__sub">Subtle, natural facial rejuvenation</p>
 
-<main>
+    <p>
+        Anti-wrinkle treatments are designed to temporarily relax targeted facial muscles responsible for dynamic lines and wrinkles. 
+        By softening repeated muscle movement, the skin appears smoother, fresher, and more youthful - while still maintaining natural facial expression.
+    </p>
 
-    {% block hero %}
-    {% endblock %}
+    <p>
+        At Caldwell Cosmetics, every treatment is tailored specifically to your facial anatomy and aesthetic goals. 
+        Our approach focuses on refined, balanced enhancement - never a frozen or overdone appearance.
+    </p>
+</div>
 
-    <section class="core-page-section">
-        <div class="container">
 
-            <div class="treatment-details">
+{# ── 2. Treatment Areas ───────────────────────────────────────────── #}
+<div class="ti-block">
+    <h2 class="ti-block__heading">Common Treatment Areas</h2>
+    <p class="ti-block__sub">Target the areas that concern you most</p>
 
-                <!-- About -->
-                <div style="background:#fff; padding:2rem; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.06); margin-bottom:2rem;">
-                    <h2>About Anti-Wrinkle Treatments</h2>
-                    <p>
-                        At Caldwell Cosmetics, our Anti-Wrinkle Treatments are designed to smooth and rejuvenate your skin, reducing the appearance of fine lines and wrinkles for a more youthful and refreshed look. Using advanced techniques and high-quality products, our treatments effectively address common signs of ageing with precision and care.
-                    </p>
-                </div>
+    <div class="ti-areas-grid">
 
-                <!-- What to Expect -->
-                <div style="background:#fff; padding:2rem; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.06); margin-bottom:2rem;">
-                    <h2>What to Expect</h2>
+        <div class="ti-area-card">
+            <div class="ti-area-card__image-placeholder">&#9672;</div>
+            <p class="ti-area-card__name">Forehead Lines</p>
+            <p class="ti-area-card__duration">~15 min</p>
+            <p class="ti-area-card__desc">
+                Smooth horizontal forehead lines caused by repeated facial movement while maintaining natural expression.
+            </p>
+        </div>
 
-                    <h3>Consultation</h3>
-                    <p>
-                        Prior to your Anti-Wrinkle Treatment, you will have a thorough consultation with a prescriber. This will involve assessing your skin, discussing your aesthetic goals, and customising a treatment plan to achieve the best results for your individual needs.
-                    </p>
+        <div class="ti-area-card">
+            <div class="ti-area-card__image-placeholder">&#9672;</div>
+            <p class="ti-area-card__name">Frown Lines</p>
+            <p class="ti-area-card__duration">~15 min</p>
+            <p class="ti-area-card__desc">
+                Reduce the appearance of the vertical “11” lines between the brows for a softer, more relaxed appearance.
+            </p>
+        </div>
 
-                    <h3>Treatment Steps</h3>
-                    <ol class="core-page-ol">
-                        <li><strong>Preparation:</strong> The treatment area will be cleansed.</li>
-                        <li><strong>Injection:</strong> Advanced techniques are used to administer our anti-wrinkle solution, targeting specific areas where fine lines and wrinkles are most prominent.</li>
-                        <li><strong>Post-Treatment Care:</strong> A soothing moisturiser and SPF may be applied to protect your skin and enhance recovery.</li>
-                    </ol>
-                </div>
+        <div class="ti-area-card">
+            <div class="ti-area-card__image-placeholder">&#9672;</div>
+            <p class="ti-area-card__name">Crow's Feet</p>
+            <p class="ti-area-card__duration">~15 min</p>
+            <p class="ti-area-card__desc">
+                Smooth fine lines around the outer eye area while preserving natural smiling and facial movement.
+            </p>
+        </div>
 
-                <!-- Key Benefits -->
-                <div style="background:#fff; padding:2rem; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.06); margin-bottom:2rem;">
-                    <h2>Key Benefits</h2>
-                    <ul class="core-page-ul">
-                        <li><strong>Reduction of Fine Lines and Wrinkles:</strong> Diminishes the appearance of fine lines and wrinkles, particularly around the forehead, eyes, and mouth.</li>
-                        <li><strong>Natural-Looking Results:</strong> Smooth, natural-looking results while preserving facial expressions.</li>
-                        <li><strong>Quick and Convenient:</strong> Minimally invasive with little to no downtime.</li>
-                        <li><strong>Preventative Care:</strong> Helps prevent new wrinkles and maintain a youthful appearance over time.</li>
-                    </ul>
-                </div>
+        <div class="ti-area-card">
+            <div class="ti-area-card__image-placeholder">&#9672;</div>
+            <p class="ti-area-card__name">Bunny Lines</p>
+            <p class="ti-area-card__duration">~10 min</p>
+            <p class="ti-area-card__desc">
+                Soften the small creases that appear across the bridge of the nose during facial expression.
+            </p>
+        </div>
 
-                <!-- Who Is This For -->
-                <div style="background:#fff; padding:2rem; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.06); margin-bottom:2rem;">
-                    <h2>Who Is This For?</h2>
-                    <p>
-                        Suitable for individuals seeking to address visible signs of ageing, including crow's feet, frown lines, and forehead wrinkles.
-                    </p>
-                </div>
+        <div class="ti-area-card">
+            <div class="ti-area-card__image-placeholder">&#9672;</div>
+            <p class="ti-area-card__name">Lip Flip</p>
+            <p class="ti-area-card__duration">~10 min</p>
+            <p class="ti-area-card__desc">
+                Enhance the appearance of the upper lip with subtle relaxation around the mouth area.
+            </p>
+        </div>
 
-                <!-- Aftercare -->
-                <div style="background:#fff; padding:2rem; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.06); margin-bottom:2rem;">
-                    <h2>Aftercare</h2>
-                    <ul class="core-page-ul">
-                        <li>Do not rub or massage the treated area for 4 hours after treatment.</li>
-                        <li>Avoid strenuous exercise for 24 hours.</li>
-                        <li>Remain upright for 4 hours; avoid lying on your front.</li>
-                        <li>Avoid tight-fitting headwear across the forehead.</li>
-                        <li>Minimise excessive alcohol and consult about blood-thinning medications before treatment.</li>
-                    </ul>
-                </div>
+        <div class="ti-area-card">
+            <div class="ti-area-card__image-placeholder">&#9672;</div>
+            <p class="ti-area-card__name">Jawline Slimming</p>
+            <p class="ti-area-card__duration">~20 min</p>
+            <p class="ti-area-card__desc">
+                Target the masseter muscles to create a softer facial profile and reduce jaw tension.
+            </p>
+        </div>
 
-                <!-- Duration & Frequency -->
-                <div style="background:#fff; padding:2rem; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.06); margin-bottom:2rem;">
-                    <h2>Duration &amp; Frequency</h2>
-                    <p>
-                        The session usually takes 15–30 minutes. Follow-up treatments every 3–6 months are recommended for best results.
-                    </p>
-                </div>
+    </div>
+</div>
 
+
+{# ── 3. What to expect - tabbed steps ────────────────────────────── #}
+<div class="ti-block">
+    <h2 class="ti-block__heading">What to Expect</h2>
+    <p class="ti-block__sub">Your treatment journey</p>
+
+    <div class="ti-tabs" id="ti-journey-tabs">
+        <div class="ti-tabs__nav">
+            <button class="ti-tabs__btn is-active" data-tab="consult">Consultation</button>
+            <button class="ti-tabs__btn" data-tab="session">Treatment</button>
+            <button class="ti-tabs__btn" data-tab="results">Results</button>
+        </div>
+
+        <div class="ti-tabs__panel is-active" id="tab-consult">
+            <p>
+                Before treatment, you'll have a full consultation with an experienced practitioner and prescriber. 
+                We assess your facial anatomy, muscle movement, medical history, and treatment goals to create a personalised plan.
+            </p>
+
+            <p>
+                This ensures safe treatment and natural-looking results tailored specifically to you.
+            </p>
+        </div>
+
+        <div class="ti-tabs__panel" id="tab-session">
+            <ol class="ti-steps">
+
+                <li class="ti-step">
+                    <div class="ti-step__num">1</div>
+                    <div class="ti-step__content">
+                        <p class="ti-step__title">Assessment & Marking</p>
+                        <p class="ti-step__desc">
+                            The treatment areas are assessed while you make natural facial expressions to identify precise injection points.
+                        </p>
+                    </div>
+                </li>
+
+                <li class="ti-step">
+                    <div class="ti-step__num">2</div>
+                    <div class="ti-step__content">
+                        <p class="ti-step__title">Treatment</p>
+                        <p class="ti-step__desc">
+                            Small, carefully placed injections are administered using advanced techniques designed for comfort and precision.
+                        </p>
+                    </div>
+                </li>
+
+                <li class="ti-step">
+                    <div class="ti-step__num">3</div>
+                    <div class="ti-step__content">
+                        <p class="ti-step__title">Aftercare</p>
+                        <p class="ti-step__desc">
+                            You'll receive detailed aftercare guidance before leaving the clinic. Most clients return straight to normal daily activities.
+                        </p>
+                    </div>
+                </li>
+
+            </ol>
+        </div>
+
+        <div class="ti-tabs__panel" id="tab-results">
+            <p>
+                Initial results are typically noticeable within 3–5 days, with full results developing after around 10–14 days.
+            </p>
+
+            <p>
+                Results usually last between 3–4 months depending on metabolism, muscle activity, and lifestyle factors.
+            </p>
+        </div>
+    </div>
+</div>
+
+
+{# ── 4. Natural Results Philosophy ───────────────────────────────── #}
+<div class="ti-block">
+    <h2 class="ti-block__heading">Our Approach</h2>
+    <p class="ti-block__sub">Natural results always come first</p>
+
+    <div class="ti-comparison">
+
+        <div class="ti-comparison__col">
+            <div class="ti-comparison__head">
+                <p class="ti-comparison__title">Overdone Treatment</p>
+                <p class="ti-comparison__subtitle">What we avoid</p>
+            </div>
+
+            <div class="ti-comparison__body">
+                <div class="ti-comparison__point ti-comparison__point--con">Frozen facial appearance</div>
+                <div class="ti-comparison__point ti-comparison__point--con">Excessively restricted movement</div>
+                <div class="ti-comparison__point ti-comparison__point--con">Unnatural facial balance</div>
+                <div class="ti-comparison__point ti-comparison__point--con">One-size-fits-all dosing</div>
             </div>
         </div>
-    </section>
-</main>
+
+        <div class="ti-comparison__col ti-comparison__col--highlight">
+            <span class="ti-comparison__badge">Our Philosophy</span>
+
+            <div class="ti-comparison__head">
+                <p class="ti-comparison__title">Balanced Enhancement</p>
+                <p class="ti-comparison__subtitle">Refined, subtle rejuvenation</p>
+            </div>
+
+            <div class="ti-comparison__body">
+                <div class="ti-comparison__point ti-comparison__point--pro">Natural facial movement preserved</div>
+                <div class="ti-comparison__point ti-comparison__point--pro">Soft, refreshed appearance</div>
+                <div class="ti-comparison__point ti-comparison__point--pro">Tailored treatment planning</div>
+                <div class="ti-comparison__point ti-comparison__point--pro">Ageing prevention & maintenance</div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+{# ── 5. Key benefits ─────────────────────────────────────────────── #}
+<div class="ti-block">
+    <h2 class="ti-block__heading">Key Benefits</h2>
+    <p class="ti-block__sub">Why clients choose anti-wrinkle treatments</p>
+
+    <ul class="ti-checklist">
+
+        <li>
+            <span class="ti-checklist__icon">&#10003;</span>
+            <span>
+                <strong>Smoother skin appearance</strong> - reduce visible dynamic lines and wrinkles.
+            </span>
+        </li>
+
+        <li>
+            <span class="ti-checklist__icon">&#10003;</span>
+            <span>
+                <strong>Natural-looking rejuvenation</strong> - refreshed results without dramatically changing your appearance.
+            </span>
+        </li>
+
+        <li>
+            <span class="ti-checklist__icon">&#10003;</span>
+            <span>
+                <strong>Quick treatment sessions</strong> - most appointments take less than 30 minutes.
+            </span>
+        </li>
+
+        <li>
+            <span class="ti-checklist__icon">&#10003;</span>
+            <span>
+                <strong>Minimal downtime</strong> - return to normal daily activities immediately after treatment.
+            </span>
+        </li>
+
+        <li>
+            <span class="ti-checklist__icon">&#10003;</span>
+            <span>
+                <strong>Preventative ageing support</strong> - helps slow the formation of deeper expression lines over time.
+            </span>
+        </li>
+
+    </ul>
+</div>
+
+
+{# ── 6. Aftercare ────────────────────────────────────────────────── #}
+<div class="ti-block">
+    <h2 class="ti-block__heading">Aftercare</h2>
+    <p class="ti-block__sub">Important guidance following treatment</p>
+
+    <ul class="ti-checklist">
+
+        <li>
+            <span class="ti-checklist__icon">&#9679;</span>
+            <span>Do not rub, massage, or apply pressure to the treated area for at least 4 hours.</span>
+        </li>
+
+        <li>
+            <span class="ti-checklist__icon">&#9679;</span>
+            <span>Avoid strenuous exercise, saunas, and excessive heat for 24 hours.</span>
+        </li>
+
+        <li>
+            <span class="ti-checklist__icon">&#9679;</span>
+            <span>Remain upright for 4 hours following treatment.</span>
+        </li>
+
+        <li>
+            <span class="ti-checklist__icon">&#9679;</span>
+            <span>Avoid alcohol immediately after treatment where possible.</span>
+        </li>
+
+        <li>
+            <span class="ti-checklist__icon">&#9679;</span>
+            <span>Full aftercare advice will be provided during your appointment.</span>
+        </li>
+
+    </ul>
+</div>
+
+
+{# ── 7. Duration & Maintenance ───────────────────────────────────── #}
+<div class="ti-block">
+    <h2 class="ti-block__heading">Duration & Maintenance</h2>
+    <p class="ti-block__sub">Maintaining your results</p>
+
+    <p>
+        Anti-wrinkle treatment appointments usually take between 15-30 minutes depending on the areas treated.
+    </p>
+
+    <p>
+        Results typically last around 3-4 months, with regular maintenance treatments helping to preserve a consistently refreshed appearance over time.
+    </p>`
+</div>
+
+
+{# ─── Tabs JS (scoped - only runs on this template) ─────────────── #}
+<script>
+(function () {
+    const tabContainers = document.querySelectorAll('.ti-tabs');
+
+    tabContainers.forEach(function (container) {
+
+        container.querySelectorAll('.ti-tabs__btn').forEach(function (btn) {
+
+            btn.addEventListener('click', function () {
+
+                const tabId = btn.dataset.tab;
+
+                container.querySelectorAll('.ti-tabs__btn').forEach(function (b) {
+                    b.classList.remove('is-active');
+                });
+
+                container.querySelectorAll('.ti-tabs__panel').forEach(function (p) {
+                    p.classList.remove('is-active');
+                });
+
+                btn.classList.add('is-active');
+
+                const panel = document.getElementById('tab-' + tabId);
+
+                if (panel) {
+                    panel.classList.add('is-active');
+                }
+
+            });
+
+        });
+
+    });
+
+})();
+</script>
+

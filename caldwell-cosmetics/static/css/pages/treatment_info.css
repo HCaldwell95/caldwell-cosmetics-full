@@ -1,433 +1,973 @@
 /* ============================================
-   TREATMENT INFORMATION STYLES
-   Styled to match The Recovery Den aesthetic
+   TREATMENT INFORMATION — CALDWELL COSMETICS
+   Luxury & refined aesthetic
    ============================================ */
-
-/* ---- Shared Variables ---- */
-:root {
-  --rd-orange: #e8621a;
-  --rd-orange-dark: #c8511a;
-  --rd-dark: #252e37;
-  --rd-dark-mid: #384553;
-  --rd-text: #333333;
-  --rd-text-muted: #555555;
-  --rd-bg: #f8f9fa;
-  --rd-bg-mid: #e9ecef;
-  --rd-white: #ffffff;
-  --rd-green: #28a745;
-  --rd-radius: 8px;
-  --rd-radius-lg: 12px;
-  --rd-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
-  --rd-shadow-md: 0 10px 40px rgba(0, 0, 0, 0.10);
-}
 
 /* ============================================
    BREADCRUMB
    ============================================ */
 
-.treatment-breadcrumb-nav {
-  background: var(--rd-bg);
-  padding: 1rem 0;
-  font-size: 0.875rem;
-  color: var(--rd-text-muted);
+.ti-breadcrumb {
+    padding: 1.25rem 0;
+    font-family: var(--font-montserrat);
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-text-light);
+    border-bottom: 1px solid rgba(212,163,115,0.15);
+    background: var(--color-background);
 }
 
-.treatment-breadcrumb-nav a {
-  color: var(--rd-orange);
-  text-decoration: none;
+.ti-breadcrumb a {
+    color: var(--color-text-light);
+    text-decoration: none;
+    transition: color 0.2s ease;
 }
 
-.treatment-breadcrumb-nav a:hover {
-  text-decoration: underline;
+.ti-breadcrumb a:hover {
+    color: var(--color-primary);
 }
 
-.treatment-breadcrumb-nav span {
-  color: var(--rd-text-muted);
+.ti-breadcrumb__sep {
+    margin: 0 0.6rem;
+    opacity: 0.4;
 }
 
-/* ============================================
-   HERO SECTION
-   ============================================ */
-
-.treatment-hero-section {
-  padding: 3rem 0;
-  background: linear-gradient(135deg, var(--rd-bg) 0%, var(--rd-bg-mid) 100%);
-}
-
-.treatment-hero-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 3rem;
-  align-items: center;
-}
-
-/* LEFT: Content */
-.treatment-hero-content h1 {
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: var(--rd-dark);
-  margin-bottom: 1rem;
-  line-height: 1.2;
-}
-
-.treatment-intro {
-  font-size: 1.1rem;
-  color: var(--rd-text-muted);
-  margin-bottom: 1.75rem;
-  line-height: 1.65;
-}
-
-/* Highlight checklist (mirrors Recovery Den green ticks) */
-.treatment-highlights {
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-  margin-bottom: 2rem;
-}
-
-.treatment-highlight-item {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  color: var(--rd-dark);
-  font-size: 0.95rem;
-}
-
-.treatment-highlight-item::before {
-  content: "";
-  display: inline-block;
-  width: 18px;
-  height: 18px;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2328a745' stroke-width='2.5'%3E%3Cpolyline points='20 6 9 17 4 12'%3E%3C/polyline%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-size: contain;
-  flex-shrink: 0;
-}
-
-/* CTA buttons */
-.treatment-cta-buttons {
-  display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-.btn {
-  display: inline-block;
-  padding: 0.75rem 1.5rem;
-  border-radius: var(--rd-radius);
-  font-weight: 600;
-  font-size: 0.95rem;
-  text-decoration: none;
-  transition: background 0.25s ease, transform 0.2s ease, box-shadow 0.2s ease;
-  border: 2px solid transparent;
-  cursor: pointer;
-}
-
-.btn-primary {
-  background: var(--rd-orange);
-  color: #fff;
-  border-color: var(--rd-orange);
-}
-
-.btn-primary:hover {
-  background: var(--rd-orange-dark);
-  border-color: var(--rd-orange-dark);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 14px rgba(232, 98, 26, 0.35);
-}
-
-.btn-secondary {
-  background: transparent;
-  color: var(--rd-orange);
-  border-color: var(--rd-orange);
-}
-
-.btn-secondary:hover {
-  background: var(--rd-orange);
-  color: #fff;
-}
-
-.btn-block {
-  width: 100%;
-  text-align: center;
-  display: block;
-}
-
-/* RIGHT: Image */
-.treatment-hero-image {
-  border-radius: var(--rd-radius-lg);
-  overflow: hidden;
-  box-shadow: var(--rd-shadow-md);
-}
-
-.treatment-hero-image img {
-  width: 100%;
-  height: auto;
-  display: block;
+.ti-breadcrumb__current {
+    color: var(--color-primary);
 }
 
 /* ============================================
-   MAIN CONTENT AREA
+   HERO
    ============================================ */
 
-.treatment-details {
-  background: var(--rd-bg);
+.ti-hero {
+    background: var(--color-background);
+    padding: clamp(3rem, 6vw, 5rem) 0 0;
+    overflow: hidden;
 }
 
-.treatment-content-grid {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 3rem;
-  align-items: start;
+.ti-hero__inner {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(2rem, 5vw, 5rem);
+    align-items: end;
 }
 
-/* ---- Content Sections (cards) ---- */
-.treatment-section {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
+/* Left — text */
+.ti-hero__content {
+    padding-bottom: clamp(2rem, 4vw, 4rem);
 }
 
-/* Each logical block is a white card */
-.treatment-section > *,
-.content-block {
-  background: var(--rd-white);
-  padding: 2rem;
-  border-radius: var(--rd-radius);
-  box-shadow: var(--rd-shadow-sm);
+.ti-hero__eyebrow {
+    font-family: var(--font-montserrat);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--color-primary);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
 }
 
-/* Headings inside content */
-.treatment-section h2,
-.content-block h2 {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--rd-dark);
-  margin-bottom: 1.25rem;
+.ti-hero__eyebrow::before {
+    content: '';
+    display: block;
+    width: 32px;
+    height: 1px;
+    background: var(--color-primary);
 }
 
-.treatment-section h3,
-.content-block h3 {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--rd-dark);
-  margin-top: 1.25rem;
-  margin-bottom: 0.5rem;
+.ti-hero__title {
+    font-family: var(--font-italiana);
+    font-size: clamp(2.8rem, 5.5vw, 4.5rem);
+    font-weight: 400;
+    color: var(--color-secondary);
+    line-height: 1.05;
+    letter-spacing: 0.02em;
+    margin-bottom: 1.5rem;
 }
 
-/* Paragraphs */
-.treatment-section p,
-.content-block p {
-  color: var(--rd-text-muted);
-  line-height: 1.8;
-  margin-bottom: 0.85rem;
+.ti-hero__summary {
+    font-family: var(--font-cormorant);
+    font-size: clamp(1.05rem, 1.6vw, 1.2rem);
+    line-height: 1.85;
+    color: var(--color-text);
+    max-width: 520px;
+    margin-bottom: 2.5rem;
 }
 
-/* ---- Lists (ol/ul inside content) ---- */
-.core-page-ol,
-.core-page-ul {
-  padding-left: 0;
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  margin: 0.75rem 0 1rem;
+/* Stat pills row */
+.ti-hero__stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-bottom: 2.5rem;
 }
 
-.core-page-ol li,
-.core-page-ul li {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.75rem;
-  padding: 0.85rem 1rem;
-  background: var(--rd-bg);
-  border-radius: var(--rd-radius);
-  color: var(--rd-text-muted);
-  line-height: 1.6;
-  transition: transform 0.2s ease;
+.ti-stat {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border: 1px solid rgba(212,163,115,0.35);
+    border-radius: 40px;
+    background: rgba(212,163,115,0.06);
 }
 
-.core-page-ol li:hover,
-.core-page-ul li:hover {
-  transform: translateX(4px);
+.ti-stat__icon {
+    font-size: 0.9rem;
+    line-height: 1;
 }
 
-.core-page-ol {
-  counter-reset: ol-counter;
+.ti-stat__label {
+    font-family: var(--font-montserrat);
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    color: var(--color-text);
+    white-space: nowrap;
 }
 
-.core-page-ol li {
-  counter-increment: ol-counter;
+/* CTA */
+.ti-hero__cta {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    align-items: center;
 }
 
-.core-page-ol li::before {
-  content: counter(ol-counter);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  background: var(--rd-orange);
-  color: #fff;
-  font-size: 0.8rem;
-  font-weight: 700;
-  border-radius: 50%;
-  flex-shrink: 0;
-  margin-top: 1px;
+/* Right — image */
+.ti-hero__media {
+    position: relative;
+    align-self: stretch;
+    min-height: 460px;
 }
 
-.core-page-ul li::before {
-  content: "";
-  display: inline-block;
-  width: 20px;
-  height: 20px;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2328a745' stroke-width='2.5'%3E%3Cpath d='M22 11.08V12a10 10 0 1 1-5.93-9.14'%3E%3C/path%3E%3Cpolyline points='22 4 12 14.01 9 11.01'%3E%3C/polyline%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-size: contain;
-  flex-shrink: 0;
-  margin-top: 2px;
+.ti-hero__img-wrap {
+    position: absolute;
+    inset: 0;
+    border-radius: var(--border-radius) var(--border-radius) 0 0;
+    overflow: hidden;
+}
+
+.ti-hero__img-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
+    display: block;
+}
+
+/* Decorative gold border accent */
+.ti-hero__img-wrap::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--color-primary) 0%, transparent 100%);
+}
+
+/* ============================================
+   BODY LAYOUT
+   ============================================ */
+
+.ti-body {
+    background: #fdfaf6;
+    padding: clamp(3rem, 6vw, 5rem) 0 clamp(4rem, 8vw, 6rem);
+}
+
+.ti-layout {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: clamp(2rem, 4vw, 4rem);
+    align-items: start;
+}
+
+/* ============================================
+   CONTENT BLOCKS
+   ============================================ */
+
+.ti-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.ti-block {
+    background: #ffffff;
+    border-radius: var(--border-radius);
+    padding: clamp(1.75rem, 3vw, 2.5rem);
+    box-shadow: 0 2px 20px rgba(48,33,33,0.05);
+    border: 1px solid rgba(212,163,115,0.12);
+}
+
+.ti-block__heading {
+    font-family: var(--font-italiana);
+    font-size: clamp(1.35rem, 2.2vw, 1.65rem);
+    font-weight: 400;
+    color: var(--color-secondary);
+    letter-spacing: 0.03em;
+    margin-bottom: 0.35rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.ti-block__heading::after {
+    content: '';
+    display: block;
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(212,163,115,0.4) 0%, transparent 100%);
+}
+
+.ti-block__sub {
+    font-family: var(--font-montserrat);
+    font-size: 0.72rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--color-primary);
+    margin-bottom: 1.5rem;
+}
+
+.ti-block p {
+    font-family: var(--font-cormorant);
+    font-size: clamp(1rem, 1.5vw, 1.1rem);
+    line-height: 1.85;
+    color: var(--color-text);
+    margin-bottom: 0.85rem;
+}
+
+.ti-block p:last-child { margin-bottom: 0; }
+
+/* ============================================
+   TREATMENT AREA CARDS (the category breakdown)
+   ============================================ */
+
+.ti-areas-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 1rem;
+    margin-top: 0.5rem;
+}
+
+.ti-area-card {
+    border: 1px solid rgba(212,163,115,0.2);
+    border-radius: calc(var(--border-radius) - 2px);
+    padding: 1.25rem 1.25rem 1.5rem;
+    background: #fdfaf6;
+    transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+    cursor: default;
+    position: relative;
+    overflow: hidden;
+}
+
+.ti-area-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--color-primary) 0%, rgba(212,163,115,0.3) 100%);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s ease;
+}
+
+.ti-area-card:hover {
+    border-color: rgba(212,163,115,0.5);
+    box-shadow: 0 8px 28px rgba(48,33,33,0.08);
+    transform: translateY(-2px);
+}
+
+.ti-area-card:hover::before {
+    transform: scaleX(1);
+}
+
+.ti-area-card__image {
+    width: 100%;
+    height: 140px;
+    object-fit: cover;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+    display: block;
+    background: rgba(212,163,115,0.1);
+}
+
+/* Placeholder when no image */
+.ti-area-card__image-placeholder {
+    width: 100%;
+    height: 140px;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+    background: linear-gradient(135deg, rgba(212,163,115,0.12) 0%, rgba(212,163,115,0.06) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    opacity: 0.6;
+}
+
+.ti-area-card__name {
+    font-family: var(--font-jost);
+    font-size: 1rem;
+    font-weight: 400;
+    color: var(--color-secondary);
+    margin-bottom: 0.3rem;
+    letter-spacing: 0.02em;
+}
+
+.ti-area-card__duration {
+    font-family: var(--font-montserrat);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-primary);
+    margin-bottom: 0.6rem;
+}
+
+.ti-area-card__desc {
+    font-family: var(--font-cormorant);
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: var(--color-text-light);
+}
+
+/* ============================================
+   TABS (for sub-treatments with detail)
+   ============================================ */
+
+.ti-tabs {
+    margin-top: 0.5rem;
+}
+
+.ti-tabs__nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid rgba(212,163,115,0.2);
+    padding-bottom: 0;
+}
+
+.ti-tabs__btn {
+    font-family: var(--font-montserrat);
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-text-light);
+    background: transparent;
+    border: none;
+    padding: 0.6rem 1rem;
+    cursor: pointer;
+    position: relative;
+    transition: color 0.2s ease;
+    margin-bottom: -1px;
+}
+
+.ti-tabs__btn::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--color-primary);
+    transform: scaleX(0);
+    transition: transform 0.25s ease;
+}
+
+.ti-tabs__btn:hover { color: var(--color-secondary); }
+
+.ti-tabs__btn.is-active {
+    color: var(--color-secondary);
+}
+
+.ti-tabs__btn.is-active::after {
+    transform: scaleX(1);
+}
+
+.ti-tabs__panel {
+    display: none;
+    animation: tabFadeIn 0.25s ease;
+}
+
+.ti-tabs__panel.is-active {
+    display: block;
+}
+
+@keyframes tabFadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================================
+   BUNDLE VALUE COMPARISON
+   ============================================ */
+
+.ti-comparison {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-top: 0.75rem;
+}
+
+.ti-comparison__col {
+    border: 1px solid rgba(212,163,115,0.2);
+    border-radius: calc(var(--border-radius) - 2px);
+    overflow: hidden;
+}
+
+.ti-comparison__col--highlight {
+    border-color: var(--color-primary);
+    position: relative;
+}
+
+.ti-comparison__badge {
+    position: absolute;
+    top: -1px; right: 1rem;
+    background: var(--color-primary);
+    color: #fff;
+    font-family: var(--font-montserrat);
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0.25rem 0.75rem;
+    border-radius: 0 0 6px 6px;
+}
+
+.ti-comparison__head {
+    padding: 1.25rem 1.5rem 1rem;
+    border-bottom: 1px solid rgba(212,163,115,0.15);
+    background: rgba(212,163,115,0.05);
+}
+
+.ti-comparison__col--highlight .ti-comparison__head {
+    background: rgba(212,163,115,0.1);
+}
+
+.ti-comparison__title {
+    font-family: var(--font-jost);
+    font-size: 1.05rem;
+    font-weight: 400;
+    color: var(--color-secondary);
+    margin-bottom: 0.15rem;
+}
+
+.ti-comparison__subtitle {
+    font-family: var(--font-montserrat);
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: var(--color-text-light);
+    letter-spacing: 0.06em;
+}
+
+.ti-comparison__body {
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.ti-comparison__point {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    font-family: var(--font-cormorant);
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: var(--color-text);
+}
+
+.ti-comparison__point--pro::before {
+    content: '✓';
+    color: var(--color-primary);
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+.ti-comparison__point--con::before {
+    content: '–';
+    color: var(--color-text-light);
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+/* ============================================
+   STEPS LIST
+   ============================================ */
+
+.ti-steps {
+    list-style: none;
+    padding: 0;
+    margin: 0.75rem 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.ti-step {
+    display: flex;
+    gap: 1.25rem;
+    position: relative;
+}
+
+.ti-step:not(:last-child)::before {
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: 32px;
+    bottom: 0;
+    width: 1px;
+    background: linear-gradient(to bottom, rgba(212,163,115,0.4) 0%, rgba(212,163,115,0.1) 100%);
+}
+
+.ti-step__num {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1.5px solid var(--color-primary);
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-montserrat);
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--color-primary);
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+}
+
+.ti-step__content {
+    padding-bottom: 1.5rem;
+    flex: 1;
+}
+
+.ti-step__title {
+    font-family: var(--font-jost);
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--color-secondary);
+    margin-bottom: 0.25rem;
+    padding-top: 0.35rem;
+}
+
+.ti-step__desc {
+    font-family: var(--font-cormorant);
+    font-size: 0.95rem;
+    line-height: 1.65;
+    color: var(--color-text-light);
+}
+
+/* ============================================
+   AFTERCARE CHECKLIST
+   ============================================ */
+
+.ti-checklist {
+    list-style: none;
+    padding: 0;
+    margin: 0.75rem 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.ti-checklist li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    font-family: var(--font-cormorant);
+    font-size: clamp(0.95rem, 1.3vw, 1.05rem);
+    line-height: 1.6;
+    color: var(--color-text);
+    padding: 0.75rem 1rem;
+    background: #fdfaf6;
+    border-radius: 6px;
+    border-left: 2px solid rgba(212,163,115,0.3);
+    transition: border-color 0.2s ease;
+}
+
+.ti-checklist li:hover {
+    border-left-color: var(--color-primary);
+}
+
+.ti-checklist__icon {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: rgba(212,163,115,0.15);
+    border: 1.5px solid var(--color-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+    font-size: 0.6rem;
+    color: var(--color-primary);
+}
+
+/* ============================================
+   IMAGE GALLERY (optional in-page gallery)
+   ============================================ */
+
+.ti-gallery {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+    margin-top: 0.75rem;
+}
+
+.ti-gallery__item {
+    border-radius: 6px;
+    overflow: hidden;
+    aspect-ratio: 4/3;
+    background: rgba(212,163,115,0.08);
+}
+
+.ti-gallery__item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.4s ease;
+}
+
+.ti-gallery__item:hover img {
+    transform: scale(1.04);
 }
 
 /* ============================================
    SIDEBAR
    ============================================ */
 
-.treatment-sidebar {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-  top: 1.5rem;
+.ti-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    position: sticky;
+    top: 2rem;
 }
 
-.sidebar-card {
-  background: var(--rd-white);
-  padding: 1.5rem;
-  border-radius: var(--rd-radius);
-  box-shadow: var(--rd-shadow-sm);
+/* Booking card */
+.ti-sidebar__book {
+    background: linear-gradient(160deg, var(--color-secondary) 0%, #3a3535 100%);
+    border-radius: var(--border-radius);
+    padding: 2rem 1.75rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
 }
 
-.sidebar-card h3 {
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: var(--rd-dark);
-  margin-bottom: 0.75rem;
+.ti-sidebar__book::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 120px; height: 120px;
+    border-radius: 50%;
+    background: rgba(212,163,115,0.08);
 }
 
-.sidebar-card p {
-  color: var(--rd-text-muted);
-  font-size: 0.95rem;
-  margin-bottom: 1rem;
-  line-height: 1.6;
+.ti-sidebar__book-eyebrow {
+    font-family: var(--font-montserrat);
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--color-primary);
+    margin-bottom: 0.5rem;
 }
 
-/* Booking card: dark gradient (matches Recovery Den) */
-.sidebar-card:first-child {
-  background: linear-gradient(135deg, var(--rd-dark-mid) 0%, var(--rd-dark) 100%);
+.ti-sidebar__book-title {
+    font-family: var(--font-italiana);
+    font-size: 1.6rem;
+    font-weight: 400;
+    color: #ffffff;
+    margin-bottom: 0.75rem;
+    line-height: 1.15;
 }
 
-.sidebar-card:first-child h3,
-.sidebar-card:first-child p {
-  color: var(--rd-white);
+.ti-sidebar__book-desc {
+    font-family: var(--font-cormorant);
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: rgba(255,255,255,0.7);
+    margin-bottom: 1.5rem;
 }
 
-/* Trust / checklist card */
-.sidebar-card ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+/* Trust card */
+.ti-sidebar__card {
+    background: #ffffff;
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    box-shadow: 0 2px 16px rgba(48,33,33,0.05);
+    border: 1px solid rgba(212,163,115,0.12);
 }
 
-.sidebar-card ul li {
-  padding: 0.4rem 0;
-  color: var(--rd-text-muted);
-  font-size: 0.95rem;
+.ti-sidebar__card-title {
+    font-family: var(--font-jost);
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--color-secondary);
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid rgba(212,163,115,0.2);
+    letter-spacing: 0.02em;
 }
 
-/* Back link card */
-.sidebar-card a:not(.btn) {
-  color: var(--rd-orange);
-  text-decoration: none;
-  font-weight: 600;
+.ti-trust-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
 }
 
-.sidebar-card a:not(.btn):hover {
-  text-decoration: underline;
+.ti-trust-list li {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    font-family: var(--font-cormorant);
+    font-size: 1rem;
+    color: var(--color-text);
+    line-height: 1.4;
 }
 
+.ti-trust-list li::before {
+    content: '';
+    display: block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--color-primary);
+    flex-shrink: 0;
+}
 
+/* FAQ accordion in sidebar */
+.ti-faq {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin-top: 0.25rem;
+}
+
+.ti-faq__item {
+    border-bottom: 1px solid rgba(212,163,115,0.15);
+}
+
+.ti-faq__item:last-child { border-bottom: none; }
+
+.ti-faq__q {
+    width: 100%;
+    background: none;
+    border: none;
+    padding: 0.75rem 0;
+    text-align: left;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    font-family: var(--font-jost);
+    font-size: 0.88rem;
+    font-weight: 400;
+    color: var(--color-secondary);
+    transition: color 0.2s ease;
+}
+
+.ti-faq__q:hover { color: var(--color-primary); }
+
+.ti-faq__icon {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    color: var(--color-primary);
+    transition: transform 0.25s ease;
+}
+
+.ti-faq__item.is-open .ti-faq__icon {
+    transform: rotate(45deg);
+}
+
+.ti-faq__a {
+    font-family: var(--font-cormorant);
+    font-size: 0.9rem;
+    line-height: 1.65;
+    color: var(--color-text-light);
+    padding: 0 0 0.75rem;
+    display: none;
+}
+
+.ti-faq__item.is-open .ti-faq__a {
+    display: block;
+    animation: tabFadeIn 0.2s ease;
+}
+
+/* Back link */
+.ti-sidebar__back {
+    font-family: var(--font-montserrat);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-text-light);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: color 0.2s ease;
+    padding: 0.5rem 0;
+}
+
+.ti-sidebar__back:hover { color: var(--color-primary); }
 
 /* ============================================
-   GRADIENT HEADING (anti-wrinkle template)
+   BUTTONS (scoped, won't clash with base)
    ============================================ */
 
-.gradient-text {
-  background: linear-gradient(135deg, var(--rd-orange) 0%, var(--rd-orange-dark) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+.ti-btn {
+    display: inline-block;
+    font-family: var(--font-montserrat);
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    text-decoration: none;
+    padding: 0.875rem 2rem;
+    border-radius: var(--border-radius);
+    border: none;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    white-space: nowrap;
 }
 
-/* ============================================
-   CORE PAGE SECTION WRAPPER
-   ============================================ */
-
-.core-page-section {
-  padding: 4rem 0;
-  background: var(--rd-bg);
+.ti-btn--primary {
+    background: var(--color-primary);
+    color: #fff;
 }
 
-.treatment-details h1 {
-  font-size: 2.2rem;
-  font-weight: 700;
-  color: var(--rd-dark);
-  margin-bottom: 0.5rem;
+.ti-btn--primary:hover {
+    background: var(--color-primary-dark);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(212,163,115,0.35);
+    color: #fff;
 }
 
-.treatment-details h2 {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--rd-dark);
-  margin-top: 2rem;
-  margin-bottom: 0.75rem;
+.ti-btn--ghost {
+    background: transparent;
+    color: var(--color-secondary);
+    border: 1.5px solid rgba(48,33,33,0.25);
 }
 
-.treatment-details h3 {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--rd-dark);
-  margin-top: 1.5rem;
-  margin-bottom: 0.5rem;
+.ti-btn--ghost:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
 }
 
-.treatment-details p {
-  color: var(--rd-text-muted);
-  line-height: 1.8;
-  margin-bottom: 0.85rem;
+.ti-btn--block {
+    width: 100%;
+    text-align: center;
+    display: block;
+}
+
+.ti-btn--light {
+    background: rgba(255,255,255,0.12);
+    color: rgba(255,255,255,0.85);
+    border: 1.5px solid rgba(255,255,255,0.2);
+}
+
+.ti-btn--light:hover {
+    background: rgba(255,255,255,0.2);
+    color: #fff;
 }
 
 /* ============================================
    RESPONSIVE
    ============================================ */
 
+@media (max-width: 1100px) {
+    .ti-layout {
+        grid-template-columns: 1fr 300px;
+    }
+}
+
 @media (max-width: 991px) {
-  .treatment-hero-grid,
-  .treatment-content-grid {
-    grid-template-columns: 1fr;
+    .ti-hero__inner {
+        grid-template-columns: 1fr;
+    }
+
+    .ti-hero__media {
+        min-height: 340px;
+        order: -1;
+    }
+
+    .ti-hero__img-wrap {
+        position: relative;
+        inset: unset;
+        height: 340px;
+        border-radius: var(--border-radius);
+    }
+
+    .ti-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .ti-sidebar {
+        position: static;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+
+    .ti-sidebar__book {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 767px) {
+    .ti-comparison {
+        grid-template-columns: 1fr;
+    }
+
+    .ti-areas-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .ti-gallery {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .ti-sidebar {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 575px) {
+  .ti-hero__stats {
+      gap: 0.5rem;
   }
 
-  .treatment-sidebar {
-    position: static;
+  .ti-stat {
+      padding: 0.4rem 0.75rem;
   }
 
-  .treatment-hero-content h1 {
-    font-size: 2rem;
+  .ti-areas-grid {
+      grid-template-columns: 1fr;
   }
 
-  .treatment-cta-buttons {
-    flex-direction: column;
+  .ti-area-card {
+      padding: 1rem 1rem 1.25rem;
   }
+}
 
-  .treatment-info-cta h3 {
-    font-size: 1.6rem;
-  }
+.nav-header {
+  position: absolute;
 }

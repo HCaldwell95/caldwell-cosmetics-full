@@ -37,11 +37,7 @@ def _get_or_none(model, **kwargs):
 
 
 def _is_practitioner_mode(request):
-    """
-    Returns True if a superuser is completing a form on behalf of
-    a specific client (user_id passed in GET/POST).
-    """
-    return request.user.is_superuser and request.GET.get("on_behalf_of")
+    return request.user.is_superuser and request.GET.get("on_behalf_of") is not None
 
 
 def _get_target_user(request):

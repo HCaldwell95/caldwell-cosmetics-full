@@ -509,19 +509,6 @@ document.addEventListener('DOMContentLoaded', function () {
         if (callback) callback();
     }
 
-    function generateTimes(duration) {
-        const slots = [];
-        let h = 9, m = 30;
-        while (true) {
-            const endMins = h * 60 + m + duration;
-            if (endMins > 14 * 60 + 30) break;
-            slots.push(`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`);
-            m += duration;
-            if (m >= 60) { h += Math.floor(m / 60); m = m % 60; }
-        }
-        return slots;
-    }
-
     // ---------------------------------------------------------------
     // Save booking
     // ---------------------------------------------------------------

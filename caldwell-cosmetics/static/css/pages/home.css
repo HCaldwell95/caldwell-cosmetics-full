@@ -358,8 +358,10 @@
 /* ============================================
    CONSULTATION SECTION (Overlay Style)
    ============================================ */
+/* ============================================
+   CONSULTATION SECTION
+   ============================================ */
 
-/* 1. Force the section to be Full Width */
 .section--consultation {
     width: 100vw;
     max-width: 100vw;
@@ -368,15 +370,12 @@
     right: 50%;
     margin-left: -50vw;
     margin-right: -50vw;
-    
-    /* Ensure the section has height so the image is visible */
-    min-height: 650px; 
-    overflow: hidden; /* Prevents the image from spilling out */
-    background-color: #f0f0f0; /* Fallback color */
-    padding: var(--space-lg) 0;
+    min-height: 650px;
+    overflow: hidden;
+    background-color: #f0f0f0;
+    padding: 0;
 }
 
-/* The layout wrapper serves as the positioning context */
 .consultation-layout {
     position: relative;
     width: 100%;
@@ -384,51 +383,39 @@
     min-height: 650px;
 }
 
-/* 2. Make the Image Side span the ENTIRE background */
 .consultation__image-side {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    z-index: 1; /* Sits at the bottom */
+    z-index: 1;
 }
 
 .consultation__image {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    /* Adjust object-position to focus on the subject if needed */
-    object-position: center center; 
+    object-position: center center;
 }
 
-/* 3. Style the Info Box to float on top */
 .consultation__info-box {
     position: absolute;
-    z-index: 2; /* Sits on top of the image */
-    
-    /* Vertical Center: 50% from top */
+    z-index: 2;
     top: 50%;
-    
-    /* Horizontal Position: 
-       18% places the center of the box in the middle of the "Left Side". */
-    left: 18%; 
+    left: 18%;
     transform: translate(-50%, -50%);
-
-    /* Box Styling */
-    background-color: #efe5d6ed; /* The beige color */
+    background-color: #efe5d6ed;
     padding: 3rem;
-    border-radius: 20px; /* Rounded corners */
-    max-width: 450px; /* Restricts width so it doesn't get too wide */
-    width: 90%; /* Prevents overflow on small screens */
+    border-radius: 20px;
+    max-width: 450px;
+    width: 90%;
     text-align: center;
-    
-    /* Optional: Add a subtle shadow to make it pop */
     box-shadow: 0 10px 30px rgba(0,0,0,0.15);
 }
 
 .consultation__title {
-    font-family: 'Cormorant Garamond', serif; /* Elegant font */
+    font-family: 'Cormorant Garamond', serif;
     font-size: 2.5rem;
     font-weight: 500;
     color: #2c2c2c;
@@ -439,7 +426,7 @@
 }
 
 .consultation__text p {
-    font-family: 'Jost', sans-serif; /* Clean modern font */
+    font-family: 'Jost', sans-serif;
     font-size: 1.1rem;
     line-height: 1.6;
     color: #4a4a4a;
@@ -447,34 +434,116 @@
 }
 
 /* ============================================
-   MOBILE RESPONSIVENESS
+   TABLET (769px–1024px)
+   Same overlay style as desktop, box just
+   shifts to centre rather than left-of-centre
    ============================================ */
 
-@media (max-width: 900px) {
-    .section--consultation {
-        min-height: auto;
-    }
-
+@media (min-width: 769px) and (max-width: 1024px) {
+    .section--consultation,
     .consultation-layout {
-        display: flex;
-        flex-direction: column;
-    }
-
-    /* Stack the image on top of the box */
-    .consultation__image-side {
-        position: relative;
-        height: 400px; /* Fixed height for image on mobile */
+        min-height: 520px;
     }
 
     .consultation__info-box {
-        position: relative; /* No longer absolute floating */
-        top: auto;
-        left: auto;
-        transform: none;
-        width: 90%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        max-width: 420px;
+        padding: 2.5rem;
+    }
+
+    .consultation__title {
+        font-size: 2rem;
+    }
+
+    .consultation__text p {
+        font-size: 1rem;
+    }
+}
+
+/* ============================================
+   MOBILE (768px and below)
+   Full-bleed image, semi-transparent overlay
+   box centred over the image
+   ============================================ */
+
+@media (max-width: 768px) {
+    .section--consultation {
+        min-height: 480px;
+        padding: 0;
+    }
+
+    .consultation-layout {
+        position: relative;
+        min-height: 480px;
+    }
+
+    /* Image fills everything */
+    .consultation__image-side {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
+
+    .consultation__image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center center;
+    }
+
+    /* Box centred over the image */
+    .consultation__info-box {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 100%;
+        height: 100%;
+        border-radius: 0;
+        background-color: #32323294;
+        text-align: center;
+        z-index: 3;
         max-width: 100%;
-        margin: -50px auto 2rem auto; /* Pull up slightly to overlap image */
-        border-radius: 20px;
+    }
+
+    .consultation__title {
+        font-size: 2rem;
+        margin-bottom: 0.75rem;
+        margin-top: 3em;
+        color: #fff;
+    }
+
+    .consultation__text p {
+        font-size: 1.2rem;
+        line-height: 1.7;
+        color: #fff;
+    }
+}
+
+
+/* ============================================
+   LARGE SCREENS (1440px+)
+   ============================================ */
+
+@media (min-width: 1440px) {
+    .section--consultation,
+    .consultation-layout {
+        min-height: 700px;
+    }
+
+    .consultation__info-box {
+        max-width: 500px;
+        padding: 3.5rem;
+    }
+}
+
+@media (min-width: 1920px) {
+    .consultation__info-box {
+        left: 22%;
+        max-width: 560px;
     }
 }
 

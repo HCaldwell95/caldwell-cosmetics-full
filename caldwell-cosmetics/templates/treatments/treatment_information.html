@@ -1,86 +1,105 @@
 {% extends 'base/base.html' %}
 {% load static %}
 
-{% block title %}{{ treatment.name }} | Caldwell Cosmetics{% endblock %}
+{% block title %}{{ category.name }} | Caldwell Cosmetics{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/pages/treatment_info.css' %}">
 {% endblock %}
 
-{% block hero %}
-    {% include 'hero/treatment-info-hero.html' %}
-{% endblock %}
-
 {% block content %}
 
-<!-- Breadcrumb -->
-<nav class="treatment-breadcrumb-nav">
+{# ─── Breadcrumb ─────────────────────────────────────────────────────────── #}
+<nav class="ti-breadcrumb">
     <div class="container">
-        <a href="/">Home</a> /
-        <a href="{% url 'treatments:treatments' %}">Treatments</a> /
-        <span>{{ treatment.name }}</span>
+        <a href="/">Home</a>
+        <span class="ti-breadcrumb__sep">&#47;</span>
+        <a href="{% url 'treatments:treatments' %}">Treatments</a>
+        <span class="ti-breadcrumb__sep">&#47;</span>
+        <span class="ti-breadcrumb__current">{{ treatment.name }}</span>
     </div>
 </nav>
 
-<!-- HERO SECTION -->
-<section class="treatment-hero-section">
+{# ─── Hero ────────────────────────────────────────────────────────────────── #}
+<section class="ti-hero">
     <div class="container">
-        <div class="treatment-hero-grid">
+        <div class="ti-hero__inner">
 
-            <!-- LEFT -->
-            <div class="treatment-hero-content">
-                <h1>{{ treatment.name }}</h1>
+            {# LEFT - text #}
+            <div class="ti-hero__content">
+                <p class="ti-hero__eyebrow">{{ treatment.category|default:"Advanced Treatment" }}</p>
 
-                {% if treatment.summary %}
-                    <p class="treatment-intro">{{ treatment.summary }}</p>
+                <h1 class="ti-hero__title">{{ category.name }}</h1>
+
+                {% if category.summary %}
+                <p class="ti-hero__summary">{{ category.summary }}</p>
                 {% endif %}
 
+                <div class="ti-hero__cta">
+                    <a href="/bookings" class="ti-btn ti-btn--primary">Book Now</a>
+                    <a href="#details" class="ti-btn ti-btn--ghost">View Details</a>
+                </div>
             </div>
 
-            <!-- RIGHT -->
-            <div class="treatment-hero-image">
-                {% if treatment.image %}
-                    <img src="{{ treatment.image.url }}" alt="{{ treatment.name }}">
-                {% endif %}
+            {# RIGHT - image #}
+            <div class="ti-hero__media">
+                <div class="ti-hero__img-wrap">
+                    {% if category.image %}
+                        <img src="{{ category.image.url }}" alt="{{ category.name }}">
+                    {% else %}
+                        {# Placeholder gradient - replace with real image #}
+                        <div style="width:100%;height:100%;background:linear-gradient(160deg,rgba(212,163,115,0.15) 0%,rgba(48,33,33,0.08) 100%);"></div>
+                    {% endif %}
+                </div>
             </div>
 
         </div>
     </div>
 </section>
 
-<!-- MAIN CONTENT -->
-<section id="details" class="treatment-details">
+{# ─── Main body ───────────────────────────────────────────────────────────── #}
+<section id="details" class="ti-body">
     <div class="container">
+        <div class="ti-layout">
 
-        <div class="treatment-content-grid">
-
-            <!-- MAIN CONTENT -->
-            <div>
+            {# ── MAIN CONTENT - injected per-treatment ────────────────────── #}
+            <div class="ti-content">
                 {% include treatment_template %}
             </div>
 
-            <!-- SIDEBAR -->
-            <aside class="treatment-sidebar">
+            {# ── SIDEBAR ──────────────────────────────────────────────────── #}
+            <aside class="ti-sidebar">
 
-                <div class="sidebar-card">
-                    <h3>Book This Treatment</h3>
-                    <p>Start your journey with {{ treatment.name }} today.</p>
-                    <a href="#" class="btn btn-primary btn-block">Book Now</a>
+                {# Booking card #}
+                <div class="ti-sidebar__book">
+                    <p class="ti-sidebar__book-eyebrow">Ready to Begin?</p>
+                    <h2 class="ti-sidebar__book-title">Book {{ treatment.name }}</h2>
+                    <p class="ti-sidebar__book-desc">
+                        Start your personalised treatment journey today. We'll guide you every step of the way.
+                    </p>
+                    <a href="/bookings" class="ti-btn ti-btn--primary ti-btn--block">Book Now</a>
+                    <a href="#" class="ti-btn ti-btn--light ti-btn--block" style="margin-top:0.6rem;">Free Consultation</a>
                 </div>
 
-                <div class="sidebar-card">
-                    <h3>Why Choose Us?</h3>
-                    <ul>
-                        <li>✓ Qualified practitioner</li>
-                        <li>✓ Medical-grade equipment</li>
-                        <li>✓ Personalised treatments</li>
-                        <li>✓ Relaxing environment</li>
+                {# Why Us #}
+                <div class="ti-sidebar__card">
+                    <h3 class="ti-sidebar__card-title">Why Caldwell Cosmetics</h3>
+                    <ul class="ti-trust-list">
+                        <li>Qualified aesthetic nurse practitioner</li>
+                        <li>Medical-grade Lynton equipment</li>
+                        <li>Fully personalised treatment plans</li>
+                        <li>Relaxing, private clinic environment</li>
+                        <li>Aftercare support included</li>
                     </ul>
                 </div>
 
-                <div class="sidebar-card">
-                    <a href="{% url 'treatments:treatments' %}">
-                        ← Back to Treatments
+                {# FAQ accordion – content is populated per treatment template #}
+                {% block sidebar_faq %}{% endblock %}
+
+                {# Back link #}
+                <div>
+                    <a href="{% url 'treatments:treatments' %}" class="ti-sidebar__back">
+                        &#8592;&nbsp; All Treatments
                     </a>
                 </div>
 

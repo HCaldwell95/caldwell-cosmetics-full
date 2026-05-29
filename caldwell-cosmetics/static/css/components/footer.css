@@ -80,10 +80,12 @@ footer {
    ============================================ */
 
 .footer-column h3 {
-  font-size: var(--text-lg);
-  margin-bottom: var(--space-md);
-  color: var(--white);
-  font-weight: 600;
+    font-size: 0.8rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--color-accent-peach);
+    margin-bottom: 1.25rem;
+    font-weight: 600;
 }
 
 .footer-column p {
@@ -264,21 +266,113 @@ footer {
    ============================================ */
 
 /* Medium screens - tablet landscape (769px to 991px) */
-@media (min-width: 769px) and (max-width: 991px) {
-  .footer-content {
-    grid-template-columns: repeat(2, 1fr);
-    gap: var(--space-xl);
-    justify-items: center; /* Center columns */
-    max-width: 900px;
-    margin-left: auto;
-    margin-right: auto;
-  }
+/* ============================================
+   TABLET (769px–1024px)
+   ============================================ */
 
-  .footer-column {
-    width: 100%;
-    max-width: 350px;
-    padding-left: inherit;
-  }
+@media (min-width: 769px) and (max-width: 1024px) {
+    footer {
+        padding: 3.5rem 2.5rem 2.5rem;
+    }
+
+    .footer-content {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 3rem 4rem; /* More vertical breathing room, tighter horizontal */
+        max-width: 720px;
+        margin-left: auto;
+        margin-right: auto;
+        justify-items: start; /* Left-align columns — cleaner than centred */
+        padding: 0;
+    }
+
+    .footer-column {
+        width: 100%;
+        max-width: none;
+    }
+
+    /* Centre Quick Links and Services columns specifically */
+    .footer-column:nth-child(2),
+    .footer-column:nth-child(3) {
+        text-align: center;
+    }
+
+    .footer-column:nth-child(2) .footer-links a::after,
+    .footer-column:nth-child(3) .footer-links a::after {
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+    /* Subtle rule between the two rows */
+    .footer-column:nth-child(3) {
+        padding-top: 2.5rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .footer-column:nth-child(4) {
+        padding-top: 2.5rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .footer-column p,
+    .footer-links a {
+        font-size: 0.95rem;
+    }
+
+    .footer-links li {
+        margin-bottom: 0.6rem;
+    }
+
+    .social-links {
+        gap: 0.75rem;
+        margin-top: 1.25rem;
+        justify-content: flex-start;
+    }
+
+    .social-links a {
+        width: 40px;
+        height: 40px;
+        min-width: 40px;
+        min-height: 40px;
+        font-size: 1rem;
+    }
+
+    .footer-contact-item {
+        margin-bottom: 0.75rem;
+        align-items: center;
+    }
+
+    .footer-contact-item a,
+    .footer-contact-item p {
+        font-size: 0.95rem;
+    }
+
+    .copyright {
+        max-width: 720px;
+        padding-top: 2rem;
+        margin-top: 1rem;
+    }
+
+    .footer-legal-links {
+        flex-direction: row;
+        gap: 0.5rem;
+        justify-content: center;
+    }
+
+    .footer-legal-links a:not(:last-child)::after {
+        display: inline; /* Show separators on tablet */
+    }
+}
+
+/* iPad Pro portrait (1024px) */
+@media (min-width: 1024px) and (max-width: 1100px) {
+    .footer-content {
+        max-width: 860px;
+        gap: 3rem 5rem;
+    }
+
+    .copyright {
+        max-width: 860px;
+    }
 }
 
 /* Tablets (768px and below) */
@@ -318,32 +412,119 @@ footer {
 
 /* Small tablets and large phones (576px and below) */
 @media (max-width: 576px) {
-  footer {
-    padding: var(--space-lg) var(--space-sm);
-  }
+    footer {
+        padding: 3rem 1.5rem 2rem;
+    }
 
-  .footer-content {
-    grid-template-columns: 1fr; /* Single column on mobile */
-    gap: var(--space-lg);
-    text-align: center;
-  }
+    .footer-content {
+        grid-template-columns: 1fr;
+        gap: 0; /* Remove gap — we'll use padding on each column instead */
+        text-align: center;
+        max-width: 100%;
+    }
 
-  .footer-column h3 {
-    margin-bottom: var(--space-sm);
-  }
+    .footer-column {
+        padding: 1.75rem 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+        margin: 0 auto;
+        width: 100%;
+    }
 
-  .footer-contact-item {
-    justify-content: center;
-    text-align: left;
-  }
+    .footer-column:last-child {
+        border-bottom: none;
+    }
 
-  .social-links {
-    justify-content: center;
-  }
+    .footer-column h3 {
+        font-size: 0.72rem;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--color-accent-peach);
+        font-weight: 700;
+        margin-bottom: 1rem;
+    }
 
-  .footer-links {
-    text-align: center;
-  }
+    .footer-column p {
+        font-size: 0.9rem;
+        line-height: 1.65;
+        margin-bottom: 0;
+    }
+
+    .footer-links {
+        text-align: center;
+    }
+
+    .footer-links li {
+        margin-bottom: 0.5rem;
+    }
+
+    .footer-links a {
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.65);
+    }
+
+    .social-links {
+        justify-content: center;
+        gap: 0.75rem;
+        margin-top: 1rem;
+    }
+
+    .social-links a {
+        width: 38px;
+        height: 38px;
+        min-width: 38px;
+        min-height: 38px;
+        font-size: 0.95rem;
+    }
+
+    .footer-contact-item {
+        justify-content: center;
+        margin-bottom: 0.6rem;
+    }
+
+    .footer-contact-item a {
+        font-size: 0.9rem;
+    }
+
+    .copyright {
+        padding-top: 1.75rem;
+        font-size: 0.78rem;
+    }
+
+    .footer-legal-links {
+        flex-direction: column;
+        gap: 0.4rem;
+        margin-top: 0.75rem;
+    }
+
+    .footer-legal-links a {
+        font-size: 0.78rem;
+        padding: 0.35rem;
+    }
+
+    .footer-legal-links a:not(:last-child)::after {
+        display: none;
+    }
+}
+
+@media (max-width: 360px) {
+    footer {
+        padding: 2.5rem 1.25rem 1.75rem;
+    }
+
+    .footer-column {
+        padding: 1.5rem 0;
+    }
+
+    .footer-column h3 {
+        font-size: 0.68rem;
+        letter-spacing: 0.15em;
+    }
+
+    .footer-links a,
+    .footer-contact-item a,
+    .footer-column p {
+        font-size: 0.85rem;
+    }
 }
 
 /* Extra small devices (475px and below) */
@@ -381,6 +562,243 @@ footer {
   .footer-contact-item {
     font-size: 0.875rem;
   }
+}
+
+/* ============================================
+   DESKTOP FOOTER REFINEMENTS (992px+)
+   ============================================ */
+
+@media (min-width: 992px) {
+
+    footer {
+        padding: 0;
+        position: relative;
+    }
+
+    /* Thin brand-colour bar across the very top of the footer */
+    footer::before {
+        content: '';
+        display: block;
+        width: 100%;
+        height: 3px;
+        background: linear-gradient(
+            to right,
+            transparent 0%,
+            var(--color-primary) 20%,
+            var(--color-accent-peach) 50%,
+            var(--color-primary) 80%,
+            transparent 100%
+        );
+    }
+
+    .container-fluid {
+        margin: 0 auto;
+        padding: 0 clamp(2rem, 5vw, 5rem);
+    }
+
+    .footer-content {
+        display: grid;
+        grid-template-columns: 1.6fr 1fr 1fr 1.4fr;
+        gap: 0;
+        padding: 4rem 0 3rem;
+        margin-bottom: 0;
+        max-width: 100%;
+        justify-items: start;
+        align-items: start;
+        /* Vertical dividers between columns */
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    /* Vertical rule between each column */
+    .footer-column {
+        padding: 0 2.5rem;
+        width: 100%;
+        max-width: none;
+    }
+
+    .footer-column:first-child {
+        padding-left: 0;
+    }
+
+    .footer-column:last-child {
+        padding-right: 0;
+        border-right: none;
+    }
+
+    /* Column headings — small uppercase peach labels */
+    .footer-column h3 {
+        font-family: var(--font-montserrat);
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--color-accent-peach);
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.75rem;
+        display: block;
+        width: 100%;
+    }
+
+    /* Branding column — give the tagline more presence */
+    .footer-column:first-child h3 {
+        font-family: var(--font-italiana, var(--font-cormorant));
+        font-size: 1.3rem;
+        font-weight: 400;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--color-accent-peach);
+        padding-bottom: 0;
+        margin-bottom: 0.75rem;
+    }
+
+    /* Decorative rule under brand name */
+    .footer-column:first-child h3::after {
+        content: '';
+        display: block;
+        width: 40px;
+        height: 1px;
+        background-color: var(--color-primary);
+        margin-top: 0.75rem;
+    }
+
+    .footer-column:first-child p {
+        font-size: 0.9rem;
+        line-height: 1.75;
+        color: rgba(255, 255, 255, 0.55);
+        max-width: 100%;
+        margin-bottom: 0;
+    }
+
+    /* Links */
+    .footer-links li {
+        margin-bottom: 0.6rem;
+    }
+
+    .footer-links a {
+        font-size: 0.88rem;
+        color: rgba(255, 255, 255, 0.6);
+        letter-spacing: 0.02em;
+        transition: color 0.2s ease, padding-left 0.2s ease;
+    }
+
+    .footer-links a:hover {
+        color: #ffffff;
+        padding-left: 6px; /* Subtle nudge on hover */
+    }
+
+    .footer-links a::after {
+        display: none; /* Remove underline — use nudge instead */
+    }
+
+    /* Contact items */
+    .footer-contact-item {
+        margin-bottom: 0.85rem;
+        align-items: flex-start;
+        gap: 0.65rem;
+    }
+
+    .footer-contact-item i {
+        font-size: 0.85rem;
+        margin-top: 0.2rem;
+        color: var(--color-primary);
+    }
+
+    .footer-contact-item a {
+        font-size: 0.88rem;
+        color: rgba(255, 255, 255, 0.6);
+        transition: color 0.2s ease;
+        line-height: 1.5;
+    }
+
+    .footer-contact-item a:hover {
+        color: #ffffff;
+    }
+
+    /* Social icons */
+    .social-links {
+        margin-top: 1.75rem;
+        gap: 0.65rem;
+    }
+
+    .social-links a {
+        width: 36px;
+        height: 36px;
+        min-width: 36px;
+        min-height: 36px;
+        font-size: 0.9rem;
+        background-color: rgba(255, 255, 255, 0.07);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        transition: all 0.25s ease;
+    }
+
+    .social-links a:hover {
+        background-color: var(--color-primary);
+        border-color: var(--color-primary);
+        transform: translateY(-2px);
+        box-shadow: none;
+    }
+
+    /* Copyright bar — single line with legal links on the right */
+    .copyright {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1.5rem 0;
+        border-top: none; /* Already handled by footer-content border-bottom */
+        max-width: 1400px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .copyright p {
+        margin-bottom: 0;
+        font-size: 0.78rem;
+        color: rgba(255, 255, 255, 0.3);
+        letter-spacing: 0.04em;
+    }
+
+    .footer-legal-links {
+        margin-top: 0;
+        gap: 0;
+        flex-wrap: nowrap;
+    }
+
+    .footer-legal-links a {
+        font-size: 0.78rem;
+        color: rgba(255, 255, 255, 0.35);
+        padding: 0 0.75rem;
+        transition: color 0.2s ease;
+        letter-spacing: 0.02em;
+    }
+
+    .footer-legal-links a:hover {
+        color: rgba(255, 255, 255, 0.8);
+    }
+
+    .footer-legal-links a:not(:last-child)::after {
+        content: "|";
+        margin-left: 0.75rem;
+        color: rgba(255, 255, 255, 0.15);
+    }
+}
+
+/* Large screens (1440px+) */
+@media (min-width: 1440px) {
+    .footer-content {
+        padding: 5rem 0 4rem;
+    }
+
+    .footer-column {
+        padding: 0 3.5rem;
+    }
+
+    .footer-column:first-child {
+        padding-left: 0;
+    }
+
+    .footer-column:last-child {
+        padding-right: 0;
+    }
 }
 
 /* ============================================

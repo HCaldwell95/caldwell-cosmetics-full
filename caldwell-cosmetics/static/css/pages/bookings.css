@@ -777,8 +777,13 @@
     letter-spacing: 0;
 }
 
+#notes {
+    width: 100%;
+}
+
 .booking-confirm-btn {
     margin-top: 0.5rem;
+    width: 100%;
 }
 
 .booking-form__terms {

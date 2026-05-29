@@ -344,3 +344,319 @@ a {
         margin-bottom: 0;
     }
 }
+
+/* =====================================================
+   LARGE SCREEN HERO (1440px+)
+   ===================================================== */
+@media (min-width: 1440px) {
+    .hero {
+        min-height: 84vh;
+        max-height: 900px; /* Prevents the hero becoming a full-page monster */
+    }
+
+    .hero__box {
+        flex: 0 0 40%; /* Slightly narrower content box on large screens */
+        padding: 5% 6%;
+    }
+
+    .hero__title {
+        font-size: 6rem;
+    }
+
+    .hero__description {
+        font-size: 1.25rem;
+        max-width: 520px;
+    }
+}
+
+/* Ultra-wide (1920px+) */
+@media (min-width: 1920px) {
+    .hero {
+        margin: 0 auto;
+        max-height: 850px;
+    }
+
+    .hero__box {
+        padding: 4% 8%;
+    }
+}
+
+/* Landscape phones (568px and below, landscape orientation) */
+@media (max-width: 768px) and (orientation: landscape) {
+    .hero {
+        min-height: auto;
+    }
+
+    .hero__image-container {
+        height: 60vw;
+        min-height: 200px;
+    }
+
+    .hero__box {
+        padding: 2rem 1.5rem;
+    }
+
+    .hero__title {
+        font-size: clamp(2rem, 6vw, 3rem);
+        margin-bottom: 0.75rem;
+    }
+}
+
+/* Extra small phones (375px and below) */
+@media (max-width: 375px) {
+    .hero__box {
+        padding: 2rem 1rem;
+    }
+
+    .hero__title {
+        font-size: 2.2rem;
+    }
+
+    .hero__description {
+        font-size: 0.95rem;
+    }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+    .hero {
+        position: relative;
+        min-height: 59svh;
+        align-items: stretch;
+    }
+
+    /* Image fills the full hero */
+    .hero__image-container {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        order: unset;
+    }
+
+    .hero__image {
+        object-position: center 15%;
+    }
+
+    /* Slightly lighter gradient than mobile — more image visible */
+    .hero__image-overlay {
+        background: linear-gradient(
+            to top,
+            rgba(20, 15, 10, 0.82) 0%,
+            rgba(20, 15, 10, 0.38) 40%,
+            rgba(20, 15, 10, 0.04) 100%
+        );
+    }
+
+    /* Text box overlays at the bottom left */
+    .hero__box {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 55%; /* Doesn't span full width — leaves image breathing room on the right */
+        max-width: 560px;
+        background: transparent;
+        box-shadow: none;
+        padding: 3rem 3.5rem 4rem;
+        align-items: flex-start;
+        text-align: left;
+        z-index: 3;
+        order: unset;
+    }
+
+    .hero__tagline {
+        color: rgba(249, 225, 180, 0.85);
+        border-bottom-color: rgba(249, 225, 180, 0.5);
+    }
+
+    .hero__title {
+        color: #ffffff;
+        font-size: clamp(3.5rem, 7vw, 5rem);
+        margin-bottom: 1rem;
+        text-shadow: 0 2px 16px rgba(0,0,0,0.25);
+    }
+
+    .hero__title span {
+        color: var(--color-gold-dark);
+    }
+
+    .hero__description {
+        color: rgba(255, 255, 255, 0.82);
+        font-size: 1.05rem;
+        margin-bottom: 2rem;
+        max-width: 460px;
+    }
+
+    .hero__cta {
+        flex-direction: row;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .hero__cta .btn {
+        background-color: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1.5px solid rgba(255, 255, 255, 0.6);
+        color: #ffffff;
+        padding: 0.95rem 2.2rem;
+        font-size: 0.88rem;
+        letter-spacing: 0.12em;
+    }
+
+    .hero__cta .btn:hover {
+        background-color: rgba(255, 255, 255, 0.25);
+        color: #ffffff;
+        transform: none;
+    }
+}
+
+/* iPad Pro / large tablets in portrait (1024px) */
+@media (min-width: 769px) and (max-width: 1024px) and (orientation: portrait) {
+    .hero__box {
+        width: 65%;
+        padding: 3rem 3rem 5rem;
+    }
+
+    .hero__title {
+        font-size: clamp(3.8rem, 8vw, 5.5rem);
+    }
+}
+
+/* Tablets in landscape — more like a small desktop, keep split layout */
+@media (min-width: 769px) and (max-width: 1024px) and (orientation: landscape) {
+    .hero {
+        min-height: 85svh;
+    }
+
+    .hero__box {
+        width: 48%;
+        padding: 2.5rem 3rem 3.5rem;
+    }
+
+    .hero__title {
+        font-size: clamp(3rem, 5.5vw, 4.5rem);
+    }
+
+    .hero__description {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .hero {
+        position: relative;
+        flex-direction: column;
+        min-height: 65svh; /* svh = small viewport height, accounts for mobile browser chrome */
+        align-items: stretch;
+    }
+
+    /* Image fills the entire hero */
+    .hero__image-container {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        order: unset;
+    }
+
+    .hero__image {
+        object-position: center 15%; /* Keep focus on the face */
+    }
+
+    /* Gradient overlay rising from the bottom */
+    .hero__image-overlay {
+        background: linear-gradient(
+            to top,
+            rgba(20, 15, 10, 0.88) 0%,
+            rgba(20, 15, 10, 0.45) 45%,
+            rgba(20, 15, 10, 0.05) 100%
+        );
+    }
+
+    /* Text box floats over the image at the bottom */
+    .hero__box {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background: transparent;
+        box-shadow: none;
+        padding: 2rem 1.75rem 3rem;
+        align-items: flex-start;
+        text-align: left;
+        z-index: 3;
+        order: unset;
+    }
+
+    /* Flip text colours for dark background */
+    .hero__tagline {
+        color: rgba(249, 225, 180, 0.85); /* your --color-gold, softened */
+        border-bottom-color: rgba(249, 225, 180, 0.5);
+    }
+
+    .hero__title {
+        color: #ffffff;
+        font-size: clamp(2.8rem, 12vw, 4rem);
+        margin-bottom: 0.75rem;
+        text-shadow: 0 2px 12px rgba(0,0,0,0.3);
+    }
+
+    .hero__title span {
+        color: var(--color-gold-dark); /* gold italic stays */
+    }
+
+    .hero__description {
+        color: rgba(255, 255, 255, 0.82);
+        font-size: 0.95rem;
+        margin-bottom: 1.5rem;
+        max-width: 100%;
+    }
+
+    /* Keep only the primary CTA on mobile, hide secondary if present */
+    .hero__cta {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+        width: 100%;
+    }
+
+    .hero__cta .btn--outline {
+        display: none; /* Hide secondary button on mobile to reduce clutter */
+    }
+
+    .hero__cta .btn {
+        background-color: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1.5px solid rgba(255, 255, 255, 0.6);
+        color: #ffffff;
+        width: auto;
+        padding: 0.9rem 2rem;
+        font-size: 0.85rem;
+        letter-spacing: 0.12em;
+    }
+
+    .hero__cta .btn:hover {
+        background-color: rgba(255, 255, 255, 0.25);
+        color: #ffffff;
+        transform: none;
+    }
+}
+
+/* Very small phones — tighten everything slightly */
+@media (max-width: 390px) {
+    .hero__box {
+        padding: 1.5rem 1.25rem 2.5rem;
+    }
+
+    .hero__title {
+        font-size: 2.6rem;
+    }
+
+    .hero__description p:last-child {
+        display: none; /* Drop the second description line on tiny screens */
+    }
+}

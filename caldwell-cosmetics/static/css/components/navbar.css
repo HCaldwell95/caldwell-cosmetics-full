@@ -19,9 +19,8 @@
     justify-content: space-between;
     align-items: center;
     height: 100%;
-    padding: 0 20px;
-    max-width: 1400px;
-    margin: 0 auto;
+    padding: 0 clamp(1.5rem, 4vw, 5rem);
+    width: 100%;
 }
 
 /* ---------- Logo ---------- */
@@ -356,4 +355,36 @@ body {
 
 .nav-links li.active a::after {
     width: 100%;
+}
+
+
+/* 1920px+ (ultra-wide monitors) */
+@media (min-width: 1920px) {
+    .nav-container {
+        padding: 0 4rem;
+    }
+}
+
+/* Very small phones (360px and below) */
+@media (max-width: 360px) {
+    .nav-header {
+        height: 60px;
+    }
+
+    .nav-container {
+        padding: 0 12px;
+    }
+
+    .logo-image {
+        max-height: 40px;
+    }
+
+    .nav-menu {
+        top: 60px;
+        height: calc(100vh - 60px);
+    }
+
+    body {
+        padding-top: 60px;
+    }
 }

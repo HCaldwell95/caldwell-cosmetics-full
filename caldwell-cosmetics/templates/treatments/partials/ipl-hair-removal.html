@@ -1,80 +1,285 @@
 {% load static %}
 
-<head>
-    <title>
-    {% block title %}IPL Hair Removal | Caldwell Cosmetics{% endblock %}
-    </title>
 
-    {% block extra_css %}
-    <link rel="stylesheet" href="{% static 'css/core_pages.css' %}">
-    {% endblock %}
+{# ── 1. About ─────────────────────────────────────────────────────── #}
+<div class="ti-block">
+    <h2 class="ti-block__heading">What Is IPL Hair Removal</h2>
+    <p class="ti-block__sub">Advanced Intense Pulsed Light Technology</p>
+    <p>
+        IPL (Intense Pulsed Light) hair removal uses precisely calibrated bursts of broad-spectrum light to target the melanin within each hair follicle. The light converts to heat, 
+        disabling the follicle's ability to produce new hair - progressively, over a course of sessions, delivering lasting smoothness.
+    </p>
+    <p>
+        At Caldwell Cosmetics we use the <strong>Lynton DYNAMIX®</strong> - a UK-exclusive, medical-grade IPL machine trusted by clinicians across the country. 
+        Unlike high-street devices, medical-grade IPL is calibrated to your exact skin and hair type, ensuring both safety and efficacy.
+    </p>
+</div>
 
-</head>
 
-<main>
+{# ── 2. Treatment areas – card grid ──────────────────────────────── #}
+<div class="ti-block">
+    <h2 class="ti-block__heading">Treatment Areas</h2>
+    <p class="ti-block__sub">Choose the area that's right for you</p>
+    <p>We treat the full body. Select any area below - or combine multiple areas in a single appointment for greater efficiency and value.</p>
 
-    {% block hero %}
-    {% endblock %}
+    <div class="ti-areas-grid">
 
-    <section class="core-page-section">
-        <div class="treatment-details">
-            <h1 class="gradient-text italiana-bold">IPL Hair Removal</h1>
-
-            <h2>Overview</h2>
-            <p>
-                Our IPL Hair Removal treatment at Caldwell Cosmetics utilizes advanced Intense Pulsed Light (IPL) technology to provide a highly effective solution for long-term hair reduction. 
-                This non-invasive procedure targets hair follicles with precision, offering smooth, hair-free skin with minimal downtime.
-            </p>
-
-            <h2>What to Expect</h2>
-
-            <h3>Consultation:</h3>
-            <p>
-                Prior to your IPL Hair Removal session, you will undergo a comprehensive consultation with one of our skilled professionals. This will include assessing your skin and hair types, 
-                discussing your hair removal goals, and determining the optimal treatment plan tailored to your needs.
-            </p>
-
-            <h3>Treatment Steps:</h3>
-            <ol class="core-page-ol">
-                <li><strong>Preparation:</strong> The area to be treated is cleansed to remove oils or residues. A cooling gel is applied to enhance comfort during the procedure.</li>
-                <li><strong>IPL Application:</strong> Using our state-of-the-art DYNAMIX® - Medical-Grade Laser and IPL Machine, pulses of light target the hair follicles. The pigment in the hair absorbs the energy, damaging the follicle and inhibiting future growth.</li>
-                <li><strong>Post-Treatment Care:</strong> A soothing moisturizer and SPF may be applied to protect the skin and reduce any potential redness or sensitivity.</li>
-            </ol>
-
-            <h2>Benefits:</h2>
-            <ul class="core-page-ul">
-                <li><strong>Long-Term Hair Reduction:</strong> Targets hair follicles at the root, reducing hair growth over time and offering a more permanent solution.</li>
-                <li><strong>Smooth Skin:</strong> Enjoy hair-free skin with fewer ingrown hairs and less irritation.</li>
-                <li><strong>Minimal Downtime:</strong> Effective hair removal with minimal disruption to your daily routine.</li>
-                <li><strong>Precision:</strong> IPL technology allows precise targeting, suitable for various areas of the body.</li>
-            </ul>
-
-            <h2>Ideal For:</h2>
-            <p>
-                Suitable for a wide range of skin and hair types. Whether treating small areas like the upper lip or larger areas like the legs, the treatment can be customised to suit your needs.
-            </p>
-
-            <h2>Aftercare:</h2>
-            <ul class="core-page-ul">
-                <li>Mild redness or sensitivity may occur post-treatment, usually resolving within a few hours.</li>
-                <li>Follow a gentle skincare routine and protect the treated area from sun exposure.</li>
-                <li>Detailed aftercare instructions will be provided for optimal results.</li>
-            </ul>
-
-            <h2>Duration and Frequency:</h2>
-            <p>
-                Each session typically lasts 20-60 minutes, depending on the area treated. For optimal results, a series of sessions spaced 4-6 weeks apart is recommended. Our specialists will create a personalised treatment plan tailored to your hair removal goals.
-            </p>
-
-            <h2>Book Your Appointment:</h2>
-            <p>
-                Discover the convenience and effectiveness of IPL Hair Removal at Caldwell Cosmetics. Contact us today to schedule your appointment and take the first step towards smooth, hair-free skin.
-            </p>
-
-            <h2>Equipment Used:</h2>
-            <p>
-                We use the UK's exclusive Medical-Grade Laser provided by <a href="https://lynton.co.uk/" target="_blank">Lynton Lasers</a>. Our Lynton DYNAMIX® Medical-Grade Laser and IPL Machine ensures safe and effective results. For further details, please <a href="https://lynton.co.uk/prod/dynamix-medical-grade-laser-and-ipl-machine/" target="_blank">click here</a>.
-            </p>
+        <div class="ti-area-card">
+            <div class="ti-area-card__image-placeholder">&#9672;</div>
+            <p class="ti-area-card__name">Upper Lip</p>
+            <p class="ti-area-card__duration">~10 min</p>
+            <p class="ti-area-card__desc">Quick and precise. Ideal as a standalone or add-on to a facial treatment.</p>
         </div>
-    </section>
-</main>
+
+        <div class="ti-area-card">
+            <div class="ti-area-card__image-placeholder">&#9672;</div>
+            <p class="ti-area-card__name">Underarms</p>
+            <p class="ti-area-card__duration">~15 min</p>
+            <p class="ti-area-card__desc">One of the fastest results areas - most clients see significant reduction after 3 sessions.</p>
+        </div>
+
+        <div class="ti-area-card">
+            <div class="ti-area-card__image-placeholder">&#9672;</div>
+            <p class="ti-area-card__name">Bikini Line</p>
+            <p class="ti-area-card__duration">~20 min</p>
+            <p class="ti-area-card__desc">Standard bikini line - tidying the edges. A popular starting point for new clients.</p>
+        </div>
+
+        <div class="ti-area-card">
+            <div class="ti-area-card__image-placeholder">&#9672;</div>
+            <p class="ti-area-card__name">Brazilian / Hollywood</p>
+            <p class="ti-area-card__duration">~30 min</p>
+            <p class="ti-area-card__desc">Full intimate area treatment. Speak to your practitioner to determine the right approach for you.</p>
+        </div>
+
+        <div class="ti-area-card">
+            <div class="ti-area-card__image-placeholder">&#9672;</div>
+            <p class="ti-area-card__name">Half Leg</p>
+            <p class="ti-area-card__duration">~30 min</p>
+            <p class="ti-area-card__desc">Upper or lower leg - great for targeting a specific concern or as a first step toward full leg treatment.</p>
+        </div>
+
+        <div class="ti-area-card">
+            <div class="ti-area-card__image-placeholder">&#9672;</div>
+            <p class="ti-area-card__name">Full Leg</p>
+            <p class="ti-area-card__duration">~50–60 min</p>
+            <p class="ti-area-card__desc">Complete coverage from ankle to upper thigh. Most clients combine with underarms or bikini for a full-body package.</p>
+        </div>
+
+        <div class="ti-area-card">
+            <div class="ti-area-card__image-placeholder">&#9672;</div>
+            <p class="ti-area-card__name">Full Back</p>
+            <p class="ti-area-card__duration">~45 min</p>
+            <p class="ti-area-card__desc">Upper and lower back. Particularly effective for coarser, darker hair types.</p>
+        </div>
+
+        <div class="ti-area-card">
+            <div class="ti-area-card__image-placeholder">&#9672;</div>
+            <p class="ti-area-card__name">Chest / Abdomen</p>
+            <p class="ti-area-card__duration">~30–40 min</p>
+            <p class="ti-area-card__desc">Treat the chest, stomach, or both. Suitable for all genders.</p>
+        </div>
+
+        <div class="ti-area-card">
+            <div class="ti-area-card__image-placeholder">&#9672;</div>
+            <p class="ti-area-card__name">Arms (Full)</p>
+            <p class="ti-area-card__duration">~40 min</p>
+            <p class="ti-area-card__desc">Full arm coverage including shoulders. Pairs well with underarm treatment.</p>
+        </div>
+
+    </div>
+</div>
+
+
+{# ── 3. What to expect - tabbed steps ────────────────────────────── #}
+<div class="ti-block">
+    <h2 class="ti-block__heading">What to Expect</h2>
+    <p class="ti-block__sub">Your treatment journey</p>
+
+    <div class="ti-tabs" id="ti-journey-tabs">
+        <div class="ti-tabs__nav">
+            <button class="ti-tabs__btn is-active" data-tab="consult">Consultation</button>
+            <button class="ti-tabs__btn" data-tab="session">Your Session</button>
+            <button class="ti-tabs__btn" data-tab="results">Results</button>
+        </div>
+
+        <div class="ti-tabs__panel is-active" id="tab-consult">
+            <p>Before any treatment begins you'll have a thorough consultation with your practitioner. We assess your skin tone (Fitzpatrick scale), hair colour and thickness, and discuss your goals and medical history. A small patch test is performed to confirm your skin responds well.</p>
+            <p>This is your opportunity to ask questions and feel completely confident before committing to a course.</p>
+        </div>
+
+        <div class="ti-tabs__panel" id="tab-session">
+            <ol class="ti-steps">
+                <li class="ti-step">
+                    <div class="ti-step__num">1</div>
+                    <div class="ti-step__content">
+                        <p class="ti-step__title">Preparation</p>
+                        <p class="ti-step__desc">The area is cleansed to remove any oils or residue. A cooling gel is applied to maximise your comfort throughout the procedure.</p>
+                    </div>
+                </li>
+                <li class="ti-step">
+                    <div class="ti-step__num">2</div>
+                    <div class="ti-step__content">
+                        <p class="ti-step__title">IPL Application</p>
+                        <p class="ti-step__desc">The Lynton DYNAMIX® handpiece glides across the skin, delivering calibrated pulses of light. Most clients describe the sensation as a gentle warmth or mild snap - nothing more.</p>
+                    </div>
+                </li>
+                <li class="ti-step">
+                    <div class="ti-step__num">3</div>
+                    <div class="ti-step__content">
+                        <p class="ti-step__title">Post-Treatment</p>
+                        <p class="ti-step__desc">A soothing moisturiser and SPF are applied. Any mild redness typically resolves within a couple of hours. You can return to normal activities immediately.</p>
+                    </div>
+                </li>
+            </ol>
+        </div>
+
+        <div class="ti-tabs__panel" id="tab-results">
+            <p>Hair growth reduces progressively after each session. Most clients notice a significant reduction after 3–4 sessions, with near-permanent results typically achieved after a full course of 6–8.</p>
+            <p>Hair colour and skin tone affect results - your practitioner will give you a realistic, honest expectation at consultation.</p>
+        </div>
+    </div>
+</div>
+
+
+{# ── 4. Single vs course comparison ──────────────────────────────── #}
+<div class="ti-block">
+    <h2 class="ti-block__heading">Single Session vs Course of Treatments</h2>
+    <p class="ti-block__sub">Understanding your options</p>
+    <p>IPL works by targeting hairs in their active growth phase - because not all follicles are active simultaneously, multiple sessions are essential for comprehensive results.</p>
+
+    <div class="ti-comparison">
+        <div class="ti-comparison__col">
+            <div class="ti-comparison__head">
+                <p class="ti-comparison__title">Single Session</p>
+                <p class="ti-comparison__subtitle">Pay as you go</p>
+            </div>
+            <div class="ti-comparison__body">
+                <div class="ti-comparison__point ti-comparison__point--pro">Flexible - no upfront commitment</div>
+                <div class="ti-comparison__point ti-comparison__point--pro">Good for a patch test or trial</div>
+                <div class="ti-comparison__point ti-comparison__point--con">Results are temporary; hair regrows</div>
+                <div class="ti-comparison__point ti-comparison__point--con">Higher cost per session</div>
+                <div class="ti-comparison__point ti-comparison__point--con">No compounding benefit between sessions</div>
+            </div>
+        </div>
+
+        <div class="ti-comparison__col ti-comparison__col--highlight">
+            <span class="ti-comparison__badge">Recommended</span>
+            <div class="ti-comparison__head">
+                <p class="ti-comparison__title">Course of 6 Sessions</p>
+                <p class="ti-comparison__subtitle">Best for lasting results</p>
+            </div>
+            <div class="ti-comparison__body">
+                <div class="ti-comparison__point ti-comparison__point--pro">Targets all follicle growth cycles</div>
+                <div class="ti-comparison__point ti-comparison__point--pro">Near-permanent reduction achievable</div>
+                <div class="ti-comparison__point ti-comparison__point--pro">Better value - lower cost per session</div>
+                <div class="ti-comparison__point ti-comparison__point--pro">Spaced 4–6 weeks for optimal response</div>
+                <div class="ti-comparison__point ti-comparison__point--con">Requires commitment over several months</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{# ── 5. Key benefits ──────────────────────────────────────────────── #}
+<div class="ti-block">
+    <h2 class="ti-block__heading">Key Benefits</h2>
+    <p class="ti-block__sub">Why choose IPL</p>
+    <ul class="ti-checklist">
+        <li>
+            <span class="ti-checklist__icon">&#10003;</span>
+            <span><strong>Long-term hair reduction</strong> - targets the root cause of regrowth, not just the surface hair.</span>
+        </li>
+        <li>
+            <span class="ti-checklist__icon">&#10003;</span>
+            <span><strong>Smoother skin</strong> - fewer ingrown hairs, less irritation compared to shaving or waxing.</span>
+        </li>
+        <li>
+            <span class="ti-checklist__icon">&#10003;</span>
+            <span><strong>Minimal downtime</strong> - return to your day immediately after each session.</span>
+        </li>
+        <li>
+            <span class="ti-checklist__icon">&#10003;</span>
+            <span><strong>Precision treatment</strong> - suitable for both small and large areas across the full body.</span>
+        </li>
+        <li>
+            <span class="ti-checklist__icon">&#10003;</span>
+            <span><strong>Medical-grade technology</strong> - Lynton DYNAMIX® IPL, calibrated for your skin and hair type.</span>
+        </li>
+    </ul>
+</div>
+
+
+{# ── 6. Aftercare ─────────────────────────────────────────────────── #}
+<div class="ti-block">
+    <h2 class="ti-block__heading">Aftercare</h2>
+    <p class="ti-block__sub">Protect your results</p>
+    <ul class="ti-checklist">
+        <li>
+            <span class="ti-checklist__icon">&#9679;</span>
+            <span>Avoid sun exposure and apply SPF 30+ to treated areas for at least two weeks post-treatment.</span>
+        </li>
+        <li>
+            <span class="ti-checklist__icon">&#9679;</span>
+            <span>Do not wax, thread, or use depilatory creams between sessions - shaving is fine and will not affect results.</span>
+        </li>
+        <li>
+            <span class="ti-checklist__icon">&#9679;</span>
+            <span>Avoid hot baths, saunas, and intense exercise for 24 hours following each session.</span>
+        </li>
+        <li>
+            <span class="ti-checklist__icon">&#9679;</span>
+            <span>Mild redness or sensitivity is normal and typically resolves within a few hours.</span>
+        </li>
+        <li>
+            <span class="ti-checklist__icon">&#9679;</span>
+            <span>You will receive a personalised aftercare sheet at your appointment to take home.</span>
+        </li>
+    </ul>
+</div>
+
+
+{# ── 7. Equipment ─────────────────────────────────────────────────── #}
+<div class="ti-block">
+    <h2 class="ti-block__heading">Our Equipment</h2>
+    <p class="ti-block__sub">Medical-grade technology</p>
+    <p>
+        We use the <strong>Lynton DYNAMIX® Medical-Grade Laser and IPL Machine</strong> - the UK's leading medical-grade IPL system, available exclusively through registered clinics. 
+        It delivers consistent, calibrated results that consumer-grade devices simply cannot match.
+    </p>
+    <p>
+        <a href="https://lynton.co.uk/prod/dynamix-medical-grade-laser-and-ipl-machine/" target="_blank" rel="noopener" style="color:var(--color-primary);font-family:var(--font-montserrat);font-size:0.8rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none;">
+            Learn More About the DYNAMIX® &#8599;
+        </a>
+    </p>
+</div>
+
+
+{# ─── Tabs JS (scoped - only runs on this template) ─────────────── #}
+<script>
+(function () {
+    const tabContainers = document.querySelectorAll('.ti-tabs');
+    tabContainers.forEach(function (container) {
+        container.querySelectorAll('.ti-tabs__btn').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                const tabId = btn.dataset.tab;
+                container.querySelectorAll('.ti-tabs__btn').forEach(function (b) { b.classList.remove('is-active'); });
+                container.querySelectorAll('.ti-tabs__panel').forEach(function (p) { p.classList.remove('is-active'); });
+                btn.classList.add('is-active');
+                const panel = document.getElementById('tab-' + tabId);
+                if (panel) panel.classList.add('is-active');
+            });
+        });
+    });
+
+    // FAQ accordion
+    document.querySelectorAll('.ti-faq__q').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            const item = btn.closest('.ti-faq__item');
+            const isOpen = item.classList.contains('is-open');
+            btn.closest('.ti-faq').querySelectorAll('.ti-faq__item').forEach(function (i) { i.classList.remove('is-open'); });
+            if (!isOpen) item.classList.add('is-open');
+        });
+    });
+})();
+</script>
