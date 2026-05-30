@@ -21,15 +21,16 @@
                     
                     <div class="about__text">
                         <p>
-                            At Caldwell Cosmetics, we believe beauty starts from within - and we're here to help you feel confident, radiant, and truly yourself.
+                            At Caldwell Cosmetics, we believe beauty is personal. We encourage treatments and self-care as a way to enhance your own features, 
+                            not to meet someone else's standards. Our focus is on helping people feel confident, comfortable, and authentic in their own skin.
                         </p>
                         
                         <p>
-                            <strong>Meet Rabia, our Lead Nurse.</strong> With over seven years of NHS experience, Rabia combines professional expertise with a genuine passion for holistic well-being. Her compassionate approach ensures that every treatment is safe, effective, and perfectly tailored to you.
+                            <strong>Meet Rabia, our Lead Nurse.</strong> With over seven years of experience, Rabia combines professional expertise with a genuine passion for holistic well-being. Her compassionate approach ensures that every treatment is safe, effective, and perfectly tailored to you.
                         </p>
                         
                         <p>
-                            We specialise in personalised skin treatments designed to bring out your natural glow, all within a calm, welcoming space that encourages self-care. Every detail of your visit is thoughtfully considered, creating an experience that feels as good as it looks.
+                            We specialise in personalised treatments designed to bring out your natural glow, all within a calm, welcoming space that encourages self-care. Every detail of your visit is thoughtfully considered, creating a bespoke experience that feels as good as it looks.
                         </p>
                     </div>
 
@@ -72,8 +73,8 @@
                 <h2 class="consultation__title">Consultation</h2>
                 <div class="consultation__text">
                     <p>
-                        Caldwell Cosmetics will provide a deep consultation for every patient before any treatment. 
-                        We will discuss the results you wish to achieve and choose the best treatment plan for you.
+                        When visiting us, you will receive a detailed consultation before any treatment. 
+                        This will allow us to discuss the results you wish to achieve and choose the best treatment plan for you.
                     </p>
                 </div>
             </div>
@@ -95,18 +96,19 @@
                 <div class="tx-strip__viewport" id="txStripViewport">
                     <div class="tx-strip__track" id="txStripTrack" role="tablist" aria-label="Select a treatment">
                         <button class="tx-pill tx-pill--active" data-treatment="consultations" role="tab" aria-selected="true">Consultations</button>
-                        <button class="tx-pill" data-treatment="ipl-hair" role="tab" aria-selected="false">IPL Hair Removal</button>
-                        <button class="tx-pill" data-treatment="ipl-pigment" role="tab" aria-selected="false">IPL Pigment Removal</button>
+                        <button class="tx-pill" data-treatment="laser-hair" role="tab" aria-selected="false">Laser Hair Removal</button>
+                        <button class="tx-pill" data-treatment="illumifacial" role="tab" aria-selected="false">illumiFacial®</button>
+                        <button class="tx-pill" data-treatment="pigment" role="tab" aria-selected="false">Pigment Removal</button>
                         <button class="tx-pill" data-treatment="vascular" role="tab" aria-selected="false">Vascular Lesion Removal</button>
-                        <button class="tx-pill" data-treatment="rosacea" role="tab" aria-selected="false">IPL Rosacea</button>
-                        <button class="tx-pill" data-treatment="acne" role="tab" aria-selected="false">IPL Acne</button>
-                        <button class="tx-pill" data-treatment="botox" role="tab" aria-selected="false">Botox</button>
+                        <button class="tx-pill" data-treatment="rosacea" role="tab" aria-selected="false">Rosacea Treatments</button>
+                        <button class="tx-pill" data-treatment="acne" role="tab" aria-selected="false">Acne Blast</button>
+                        <button class="tx-pill" data-treatment="botox" role="tab" aria-selected="false">Anti-Wrinkle Injections</button>
                         <button class="tx-pill" data-treatment="prp-hair" role="tab" aria-selected="false">PRP Hair Rejuvenation</button>
-                        <button class="tx-pill" data-treatment="prp-skin" role="tab" aria-selected="false">PRP Skin Rejuvenation</button>
-                        <button class="tx-pill" data-treatment="resurfacing" role="tab" aria-selected="false">Skin Resurfacing</button>
+                        <button class="tx-pill" data-treatment="vampire-facial" role="tab" aria-selected="false">"Vampire" Facial</button>
+                        <button class="tx-pill" data-treatment="resurfacing" role="tab" aria-selected="false">PHFormula Skin Resurfacing</button>
                         <button class="tx-pill" data-treatment="nanoneedling" role="tab" aria-selected="false">Nanoneedling</button>
                         <button class="tx-pill" data-treatment="skin-plan" role="tab" aria-selected="false">Skin Plan Analysis</button>
-                        <button class="tx-pill" data-treatment="map-my-mole" role="tab" aria-selected="false">Map My Mole</button>
+                        <!-- <button class="tx-pill" data-treatment="map-my-mole" role="tab" aria-selected="false">Map My Mole</button> -->
                     </div>
                 </div>
                 <button class="tx-strip__arrow tx-strip__arrow--next" id="txStripNext" aria-label="Next treatments">&#8250;</button>
@@ -167,52 +169,52 @@
     ------------------------------------------------------- */
     const TREATMENT_IMAGES = {
         "consultations":  "https://res.cloudinary.com/ddj2rpxcb/image/upload/v1776944169/studio_ubcdom.jpg",
-        "ipl-hair":       "https://images.unsplash.com/photo-1629909613654-28e377c37b09?q=80&w=1200&auto=format&fit=crop",
-        "ipl-pigment":    "https://images.unsplash.com/photo-1512290923902-8a9f81dc236c?q=80&w=1200&auto=format&fit=crop",
+        "laser-hair":       "https://images.unsplash.com/photo-1629909613654-28e377c37b09?q=80&w=1200&auto=format&fit=crop",
+        "pigment":    "https://images.unsplash.com/photo-1512290923902-8a9f81dc236c?q=80&w=1200&auto=format&fit=crop",
         "vascular":       "https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?q=80&w=1200&auto=format&fit=crop",
         "rosacea":        "https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?q=80&w=1200&auto=format&fit=crop",
         "acne":           "https://images.unsplash.com/photo-1576091160550-2173dba999ef?q=80&w=1200&auto=format&fit=crop",
         "botox":          "https://res.cloudinary.com/ddj2rpxcb/image/upload/v1777062108/IMG_3622_oxfw5y.jpg?q=80&w=1200&auto=format&fit=crop",
         "prp-hair":       "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?q=80&w=1200&auto=format&fit=crop",
-        "prp-skin":       "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?q=80&w=1200&auto=format&fit=crop",
+        "vampire-facial":       "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?q=80&w=1200&auto=format&fit=crop",
         "resurfacing":    "https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?q=80&w=1200&auto=format&fit=crop",
         "nanoneedling":   "https://images.unsplash.com/photo-1629909613654-28e377c37b09?q=80&w=1200&auto=format&fit=crop",
         "skin-plan":      "https://images.unsplash.com/photo-1512290923902-8a9f81dc236c?q=80&w=1200&auto=format&fit=crop",
-        "map-my-mole":    "https://images.unsplash.com/photo-1576091160550-2173dba999ef?q=80&w=1200&auto=format&fit=crop"
+        "illumifacial":    "https://images.unsplash.com/photo-1576091160550-2173dba999ef?q=80&w=1200&auto=format&fit=crop"
     };
 
     const TREATMENTS = {
         "consultations": {
             name: "Consultations",
             slides: [
-                { label: "What it is", body: "<p>A thorough, one-to-one consultation with Rabia, our Lead Nurse. This is the essential first step before any treatment at Caldwell Cosmetics — a dedicated space to discuss your skin, your goals, and your medical history in complete confidence.</p>" },
+                { label: "What it is", body: "<p>A thorough, one-to-one consultation with Rabia, our Lead Nurse. This is the essential first step before any treatment at Caldwell Cosmetics — a dedicated space to discuss your concerns, your goals, and your medical history in complete confidence.</p>" },
                 { label: "What it achieves", body: "<p>A personalised treatment plan built specifically for you. The consultation ensures every recommendation is safe, appropriate, and aligned with what you want to achieve — no generic advice, no pressure.</p>" },
-                { label: "What happens in the session", body: "<p>Rabia will ask about your skin concerns, health history, lifestyle, and desired outcomes. She'll assess your skin and explain which treatments may be suitable, how they work, and what realistic results look like.</p>" },
+                { label: "What happens in the session", body: "<p>Rabia will ask about your concerns, health history, lifestyle, and desired outcomes. She will then provide you with a tailored plan with multiple options, explain how they work and offer realistic results.</p>" },
                 { label: "Treatment course", body: "<p>A single consultation is typically all that's needed before beginning a treatment. Ongoing reviews may be scheduled depending on your programme.</p>" },
-                { label: "Beforecare", body: "<p>No specific preparation is required. Come with clean skin if possible, and bring a list of any medications or supplements you take.</p>" },
-                { label: "Aftercare", body: "<p>You'll leave with a clear written treatment plan and any pre-treatment instructions relevant to your chosen service. There's no downtime.</p>" }
+                { label: "Before Care", body: "<p>No specific preparation is required. Bring a list of any medications or supplements you take.</p>" },
+                { label: "Aftercare", body: "<p>You'll leave with a clear written treatment plan and any pre/post-treatment instructions relevant to your chosen service. There's no downtime.</p>" }
             ]
         },
-        "ipl-hair": {
-            name: "IPL Hair Removal",
+        "laser-hair": {
+            name: "Laser Hair Removal",
             slides: [
-                { label: "What it is", body: "<p>Intense Pulsed Light (IPL) hair removal uses broad-spectrum light energy to target and disable hair follicles, significantly reducing hair growth over a course of treatments.</p>" },
-                { label: "What it achieves", body: "<p>Long-lasting reduction in unwanted hair on the face and body. Most clients achieve up to 80–90% permanent reduction after a full course, leaving skin smooth and hair-free.</p>" },
-                { label: "What happens in the session", body: "<p>A cool gel is applied to the treatment area. The IPL handpiece is pressed against the skin and pulses of light are delivered. The sensation is often described as a warm flick. Sessions typically last 15–60 minutes depending on the area.</p>" },
-                { label: "Treatment course", body: "<p>A minimum of 6–8 sessions spaced 4–6 weeks apart is recommended for optimal results. Annual top-up sessions may be advised.</p>" },
-                { label: "Beforecare", body: "<ul><li>Avoid sun exposure and tanning for 4 weeks before treatment</li><li>Shave the treatment area 24 hours before your appointment</li><li>Do not wax, thread, or use epilators for 4 weeks prior</li><li>Arrive with clean, product-free skin</li></ul>" },
-                { label: "Aftercare", body: "<ul><li>Avoid sun exposure and apply SPF 50+ daily</li><li>Do not use heat (saunas, hot baths) for 48 hours</li><li>Hair will shed over the following 1–3 weeks — do not pick or wax</li><li>Apply a soothing aloe vera gel if the skin feels sensitive</li></ul>" }
+                { label: "What it is", body: "<p>Laser and IPL treatments use light energy that is attracted to the pigment within the hair. This light is converted into heat, which targets and damages the hair follicle, disrupting future hair growth while leaving the surrounding skin largely unaffected. Over a series of treatments, this process leads to a long-term reduction in hair growth.</p>" },
+                { label: "What it achieves", body: "<p>Enjoy smoother skin, reduced hair growth, and freedom from the constant cycle of shaving, waxing, and plucking. As treatments progress, hair becomes finer, lighter, and less noticeable, helping you feel more confident and comfortable in your skin every day.</p>" },
+                { label: "What happens in the session", body: "<p>A cool gel is applied to the treatment area. The handpiece is pressed against the skin and pulses of light are delivered. The sensation is often described as a warm flick. Sessions typically last 15-60 minutes depending on the area.</p>" },
+                { label: "Treatment course", body: "<p>A minimum of 6-8 sessions spaced 6 weeks apart is recommended for optimal results. Top-up sessions can be advised.</p>" },
+                { label: "Before Care", body: "<ul><li>Avoid sun exposure and tanning for 4 weeks before treatment</li><li>Shave the treatment area 24 hours before your appointment</li><li>Do not wax, thread, pluck or use epilators for 4 weeks prior</li><li>Arrive with clean, product-free skin</li></ul>" },
+                { label: "Aftercare", body: "<ul><li>Avoid sun exposure and apply SPF 50+ daily</li><li>Do not use heat (saunas, hot baths) for 48 hours</li><li>Hair will shed over the following 1-3 weeks — do not pick or wax</li></ul>" }
             ]
         },
-        "ipl-pigment": {
-            name: "IPL Pigment Removal",
+        "pigment": {
+            name: "Pigment Removal",
             slides: [
                 { label: "What it is", body: "<p>IPL Pigment Removal targets areas of hyperpigmentation — including sunspots, age spots, and uneven skin tone — using targeted light pulses to break down excess melanin in the skin.</p>" },
                 { label: "What it achieves", body: "<p>A more even, clearer complexion. Brown spots and areas of discolouration fade significantly, revealing brighter, more uniform skin tone with minimal downtime.</p>" },
-                { label: "What happens in the session", body: "<p>Protective eyewear is worn throughout. A cool gel is applied and the IPL device is moved across the pigmented areas. You may notice the spots temporarily darken — this is a sign the treatment is working. Sessions last around 30–45 minutes.</p>" },
-                { label: "Treatment course", body: "<p>Typically 3–6 sessions, spaced 4 weeks apart. The number varies depending on the depth and severity of pigmentation.</p>" },
-                { label: "Beforecare", body: "<ul><li>Avoid sun exposure for 4 weeks prior and use SPF 50+ daily</li><li>Discontinue retinoids and AHAs/BHAs 5–7 days before treatment</li><li>Arrive with no makeup or skincare products on the skin</li></ul>" },
-                { label: "Aftercare", body: "<ul><li>Expect spots to appear darker for 5–10 days before they flake away naturally — do not pick</li><li>Apply SPF 50+ every morning without exception</li><li>Keep skin hydrated with a gentle, fragrance-free moisturiser</li><li>Avoid retinoids and exfoliants for 1 week post-treatment</li></ul>" }
+                { label: "What happens in the session", body: "<p>Protective eyewear is worn throughout. A cool gel is applied and the IPL device is moved across the pigmented areas. You will likely notice the spots temporarily darken and crust off — this is a sign the treatment is working. Sessions last around 30-45 minutes.</p>" },
+                { label: "Treatment course", body: "<p>An initial  3 sessions, spaced 4 weeks apart is recommended. The number varies depending on the depth and severity of pigmentation.</p>" },
+                { label: "Before Care", body: "<ul><li>Avoid sun exposure for 4 weeks prior and use SPF 50+ daily</li><li>Discontinue retinoids and AHAs/BHAs 5-7 days before treatment</li><li>Arrive with no makeup or skincare products on the skin</li></ul>" },
+                { label: "Aftercare", body: "<ul><li>Expect spots to appear darker for 5-10 days before they flake away naturally — do not pick</li><li>Apply SPF 50+ every morning without exception</li><li>Keep skin hydrated with a gentle, fragrance-free moisturiser</li><li>Avoid retinoids and exfoliants for 1 week post-treatment</li></ul>" }
             ]
         },
         "vascular": {
@@ -221,41 +223,41 @@
                 { label: "What it is", body: "<p>A targeted IPL treatment designed to reduce the appearance of vascular lesions — including thread veins, spider veins, broken capillaries, and port wine stains — by heating and collapsing unwanted blood vessels.</p>" },
                 { label: "What it achieves", body: "<p>Clearer, more even skin with a reduction or complete removal of visible redness and thread veins. Results become fully visible once the treated vessels are naturally reabsorbed by the body.</p>" },
                 { label: "What happens in the session", body: "<p>The IPL device delivers precise pulses of light to the targeted vessels. You may feel a mild stinging or heat sensation. The area may appear slightly red immediately after treatment, which typically resolves within a few hours. Sessions last 20–45 minutes.</p>" },
-                { label: "Treatment course", body: "<p>Most clients see significant improvement in 2–4 sessions, spaced 4–6 weeks apart. Larger or deeper vessels may require additional treatments.</p>" },
-                { label: "Beforecare", body: "<ul><li>Avoid sun exposure and self-tan for 4 weeks prior</li><li>Do not take aspirin or anti-inflammatory medication unless prescribed</li><li>Come to your appointment with clean, product-free skin</li></ul>" },
-                { label: "Aftercare", body: "<ul><li>Avoid heat, exercise, and alcohol for 48 hours</li><li>Redness or bruising may appear — this is normal and will subside</li><li>Protect treated areas with SPF 50+</li><li>Do not apply makeup for 24 hours after facial treatments</li></ul>" }
+                { label: "Treatment course", body: "<p>Most clients see significant improvement in 3 sessions, spaced 4 weeks apart. Larger or deeper vessels may require additional treatments.</p>" },
+                { label: "Before Care", body: "<ul><li>Avoid sun exposure and self-tan for 4 weeks prior</li><li>Come to your appointment with clean, product-free skin</li></ul>" },
+                { label: "Aftercare", body: "<ul><li>Avoid heat and exercise</li><li>Redness may appear — this is normal and will subside</li><li>Protect treated areas with SPF 50+</li><li>Do not apply makeup for 24 hours after facial treatments</li></ul>" }
             ]
         },
         "rosacea": {
             name: "IPL Rosacea Treatment",
             slides: [
-                { label: "What it is", body: "<p>IPL Rosacea Treatment uses carefully calibrated light energy to reduce the persistent redness, flushing, and visible blood vessels associated with rosacea — a common but often distressing skin condition.</p>" },
+                { label: "What it is", body: "<p>Rosacea IPL is a light-based treatment designed to target the visible redness and blood vessels commonly associated with rosacea. By delivering pulses of light into the skin, the treatment helps reduce redness, calm the appearance of flushing, and promote a more balanced, even-looking complexion. It is a non-invasive treatment that can help improve skin confidence while supporting overall skin health.</p>" },
                 { label: "What it achieves", body: "<p>Visible reduction in facial redness, fewer visible vessels, and a calmer, more even complexion. Many clients report improved confidence alongside the physical results.</p>" },
-                { label: "What happens in the session", body: "<p>Protective eyewear is applied and a cool gel is spread across the face. The IPL handpiece targets areas of redness with gentle pulses. Sessions last approximately 30 minutes.</p>" },
-                { label: "Treatment course", body: "<p>3–6 sessions, spaced 4 weeks apart, are recommended for best results. Maintenance treatments may be advised seasonally.</p>" },
-                { label: "Beforecare", body: "<ul><li>Avoid any trigger activities (alcohol, spicy food, sun) for 48 hours before treatment</li><li>Discontinue topical retinoids 5–7 days before treatment</li><li>Inform Rabia of any medications you are taking for rosacea</li></ul>" },
-                { label: "Aftercare", body: "<ul><li>Redness and warmth in the skin are expected for 24–48 hours</li><li>Apply a gentle, fragrance-free moisturiser and avoid active skincare for 1 week</li><li>Stay out of the sun and apply SPF 50+ consistently</li></ul>" }
+                { label: "What happens in the session", body: "<p>Protective eyewear is applied and a cool gel is spread across the face. The IPL handpiece targets areas of redness with gentle pulses. Sessions last approximately 30-60 minutes.</p>" },
+                { label: "Treatment course", body: "<p>3-6 sessions, spaced 4 weeks apart, are recommended for best results. Maintenance treatments are advised.</p>" },
+                { label: "Before Care", body: "<ul><li>Avoid any trigger activities (alcohol, spicy food, sun) for 48 hours before treatment</li><li>Discontinue topical retinoids 5-7 days before treatment</li></ul>" },
+                { label: "Aftercare", body: "<ul><li>Redness and warmth in the skin are expected for 24-48 hours</li><li>Avoid active skincare for 1 week</li><li>Stay out of the sun and apply SPF 50+ consistently</li></ul>" }
             ]
         },
         "acne": {
-            name: "IPL Acne Treatment",
+            name: "Acne Blast",
             slides: [
-                { label: "What it is", body: "<p>IPL Acne Treatment targets the bacteria responsible for acne breakouts and reduces the inflammation that causes redness and spots — without harsh chemicals or medication. It's suitable for mild-to-moderate acne.</p>" },
+                { label: "What it is", body: "<p>Acne IPL is a light-based treatment designed to target multiple factors that contribute to acne-prone skin. The treatment helps reduce acne-causing bacteria, calm inflammation, and regulate excess oil production, creating a healthier environment for clearer skin. In addition to improving active breakouts, IPL can help reduce post-acne redness and pigmentation, supporting a smoother, more even-looking complexion over time.</p>" },
                 { label: "What it achieves", body: "<p>A reduction in active breakouts, decreased redness and inflammation, and an improvement in overall skin clarity. With a full course, many clients also see a reduction in post-acne marks.</p>" },
-                { label: "What happens in the session", body: "<p>The IPL device emits light wavelengths that penetrate the skin and destroy acne-causing bacteria whilst soothing inflammation. Sessions typically take 20–40 minutes.</p>" },
-                { label: "Treatment course", body: "<p>6–8 sessions, spaced 1–2 weeks apart initially, then moving to monthly maintenance. Results build progressively over the course.</p>" },
-                { label: "Beforecare", body: "<ul><li>Avoid sun exposure and use SPF 50+ for 4 weeks before treatment</li><li>Do not use Roaccutane within 6 months of treatment</li><li>Come to your appointment with clean, makeup-free skin</li><li>Avoid exfoliating acids for 5 days prior</li></ul>" },
-                { label: "Aftercare", body: "<ul><li>Skin may appear temporarily flushed — this usually resolves within a few hours</li><li>Avoid touching or picking at the skin</li><li>Use only gentle, non-comedogenic products for 5–7 days post-treatment</li><li>Apply SPF 50+ every day</li></ul>" }
+                { label: "What happens in the session", body: "<p>The IPL device emits light wavelengths that penetrate the skin and destroy acne-causing bacteria whilst soothing inflammation. Sessions typically take 30-60 minutes.</p>" },
+                { label: "Treatment course", body: "<p>3-8 sessions, spaced 2-4 weeks apart initially, then moving to monthly maintenance when ready. Results build progressively over the course.</p>" },
+                { label: "Before Care", body: "<ul><li>Avoid sun exposure and use SPF 50+ for 4 weeks before treatment</li><li>Do not use Roaccutane within 6 months of treatment</li><li>Come to your appointment with clean, makeup-free skin</li><li>Avoid exfoliating acids for 5 days prior</li></ul>" },
+                { label: "Aftercare", body: "<ul><li>Skin may appear temporarily flushed - this usually resolves within a few hours</li><li>Avoid touching or picking at the skin</li><li>Use only gentle, non-comedogenic products for 5-7 days post-treatment</li><li>Apply SPF 50+ every day</li></ul>" }
             ]
         },
         "botox": {
-            name: "Botox",
+            name: "Anti-Wrinkle Injections",
             slides: [
                 { label: "What it is", body: "<p>Botulinum toxin (Botox) is a prescription-only injectable treatment administered by Rabia, our qualified Nurse. It temporarily relaxes targeted facial muscles to smooth dynamic lines and wrinkles caused by repeated expressions.</p>" },
                 { label: "What it achieves", body: "<p>A refreshed, naturally rested appearance. Common treatment areas include forehead lines, frown lines between the brows, and crow's feet. Results are subtle and natural-looking when performed by an experienced practitioner.</p>" },
-                { label: "What happens in the session", body: "<p>After a thorough consultation, a small amount of Botox is injected into precise muscle points using a very fine needle. The procedure takes around 15–30 minutes. Most clients find it very comfortable.</p>" },
-                { label: "Treatment course", body: "<p>Results appear within 3–14 days and typically last 3–4 months. Regular maintenance every 3–4 months helps sustain results long-term.</p>" },
-                { label: "Beforecare", body: "<ul><li>Avoid alcohol for 24–48 hours before treatment</li><li>Avoid blood-thinning medications for 1 week prior unless prescribed</li><li>Do not have any facial treatments within 2 weeks</li><li>Arrive with clean skin, free of makeup</li></ul>" },
+                { label: "What happens in the session", body: "<p>After a thorough consultation and an appointment with the prescriber, a small amount of product is injected into precise muscle points using a very fine needle. The procedure takes around 15-30 minutes. Most clients find it very comfortable.</p>" },
+                { label: "Treatment course", body: "<p>Full results appear by week 2 and typically last 3-6 months. Regular maintenance every 3-6 months helps sustain results long-term.</p>" },
+                { label: "Before Care", body: "<ul><li>Avoid alcohol for 24-48 hours before treatment</li><li>Avoid blood-thinning medications for 1 week prior unless prescribed</li><li>Do not have any facial treatments within 2 weeks</li><li>Arrive with clean skin, free of makeup</li></ul>" },
                 { label: "Aftercare", body: "<ul><li>Do not rub or massage the treated areas for 24 hours</li><li>Avoid lying down flat for 4 hours after treatment</li><li>Avoid strenuous exercise, heat, and alcohol for 24 hours</li><li>You may experience mild redness or small bumps at injection sites — these resolve quickly</li></ul>" }
             ]
         },
@@ -263,33 +265,33 @@
             name: "PRP Hair Rejuvenation",
             slides: [
                 { label: "What it is", body: "<p>Platelet-Rich Plasma (PRP) for hair rejuvenation uses your own blood to stimulate dormant hair follicles. A small sample of your blood is processed to concentrate the growth-factor-rich plasma, which is then injected into the scalp.</p>" },
-                { label: "What it achieves", body: "<p>Improved hair density, reduced hair shedding, and stimulated regrowth in areas of thinning. PRP is particularly effective for androgenic alopecia and general hair thinning.</p>" },
-                { label: "What happens in the session", body: "<p>A small blood sample is taken from your arm and placed in a centrifuge to separate the platelet-rich plasma. The scalp is then prepared and the PRP is carefully injected across the treatment area. Sessions take approximately 60–75 minutes.</p>" },
-                { label: "Treatment course", body: "<p>An initial course of 3 sessions, spaced 4–6 weeks apart, is recommended. Maintenance sessions every 4–6 months help sustain results.</p>" },
-                { label: "Beforecare", body: "<ul><li>Stay well-hydrated in the days leading up to your appointment</li><li>Eat a light meal before your session — do not come on an empty stomach</li><li>Avoid alcohol for 24 hours prior</li><li>Wash your hair the morning of your appointment</li></ul>" },
-                { label: "Aftercare", body: "<ul><li>Avoid washing your hair for 24 hours post-treatment</li><li>Do not apply heat styling tools for 48 hours</li><li>Some mild scalp tenderness, redness, or swelling is normal and will resolve within 1–3 days</li></ul>" }
+                { label: "What it achieves", body: "<p>Improved hair density, reduced hair shedding, and stimulated regrowth in areas of thinning while nourishing existing hair. PRP is particularly effective for androgenic alopecia and general hair thinning.</p>" },
+                { label: "What happens in the session", body: "<p>A small blood sample is taken from your arm and placed in a centrifuge to separate the platelet-rich plasma. The scalp is then prepared and the PRP is carefully injected across the treatment area. Sessions take approximately 60-75 minutes.</p>" },
+                { label: "Treatment course", body: "<p>An initial course of 3 sessions, spaced 4 weeks apart, is recommended.</p>" },
+                { label: "Before Care", body: "<ul><li>Stay well-hydrated in the days leading up to your appointment</li><li>Eat a light meal before your session — do not come on an empty stomach</li><li>Avoid alcohol for 24 hours prior</li><li>The practitioner will advise supplements prior to your appointment</li></ul>" },
+                { label: "Aftercare", body: "<ul><li>Do not apply heat styling tools for 48 hours</li><li>Some mild scalp tenderness, redness, or swelling is normal and will resolve within 1-3 days</li></ul>" }
             ]
         },
-        "prp-skin": {
-            name: "PRP Skin Rejuvenation",
+        "vampire-facial": {
+            name: '"Vampire" Facial',
             slides: [
-                { label: "What it is", body: "<p>PRP Skin Rejuvenation harnesses the healing and regenerative power of your own platelet-rich plasma to boost collagen production, improve skin texture, and restore a youthful glow.</p>" },
-                { label: "What it achieves", body: "<p>Improved skin tone and texture, reduced fine lines and wrinkles, minimised pores, and a brighter, more radiant complexion. It also helps with acne scarring and uneven pigmentation.</p>" },
-                { label: "What happens in the session", body: "<p>Blood is drawn, processed to extract the PRP, and then either injected into targeted areas of the face or applied topically in combination with microneedling. Topical anaesthetic is used to ensure comfort. Sessions last around 60–90 minutes.</p>" },
-                { label: "Treatment course", body: "<p>3 sessions, spaced 4–6 weeks apart, form the recommended initial course. Results continue to improve over 3–6 months as collagen production is stimulated.</p>" },
-                { label: "Beforecare", body: "<ul><li>Drink plenty of water for 48 hours before treatment</li><li>Avoid retinoids and active acids for 5–7 days prior</li><li>Do not take anti-inflammatory medication for 1 week before unless prescribed</li><li>Arrive with clean, makeup-free skin</li></ul>" },
-                { label: "Aftercare", body: "<ul><li>Redness, swelling, and mild bruising are expected and will resolve within 3–5 days</li><li>Avoid makeup for 24 hours</li><li>Keep skin clean and moisturised with gentle products only</li><li>Avoid sun exposure and use SPF 50+ for at least 2 weeks</li></ul>" }
+                { label: "What it is", body: "<p>A PRP Facial is a natural regenerative treatment that uses the healing components found within your own blood to support skin rejuvenation. Rich in growth factors, PRP helps stimulate collagen production, improve skin texture, and promote a firmer, healthier-looking complexion. As collagen naturally declines with age, PRP works with your body's own repair processes to restore radiance, improve skin quality, and encourage a more refreshed, youthful appearance.</p>" },
+                { label: "What it achieves", body: "<p>PRP helps restore a healthier, more radiant complexion by improving skin texture, firmness, and overall skin quality. By stimulating collagen production, it can soften the appearance of fine lines and wrinkles, improve skin elasticity, and refresh the under-eye area, helping to reduce the appearance of hollowness and tired-looking eyes. The result is naturally rejuvenated skin that looks refreshed, brighter, and more youthful.</p>" },
+                { label: "What happens in the session", body: "<p>Your treatment begins with a small blood sample, which is processed using the Cellenis® PRP system. Cellenis uses an advanced gel separation technology, considered a gold-standard approach for producing high-quality PRP, helping to effectively separate and minimise unwanted red blood cells from the final preparation. This allows for a concentrated platelet-rich plasma rich in growth factors to be collected and injected into to the treatment area. The PRP is then introduced into the skin to support collagen production, tissue renewal, and natural skin rejuvenation.</p>" },
+                { label: "Treatment course", body: "<p>3 sessions, spaced 4 weeks apart, form the recommended initial course. Results continue to improve over 6 months as collagen production is stimulated.</p>" },
+                { label: "Before Care", body: "<ul><li>Drink plenty of water for 48 hours before treatment</li><li>Avoid retinoids and active acids for 5-7 days prior</li><li>Do not take anti-inflammatory medication for 1 week before unless prescribed</li><li>You will be advised on supplements prior to your appointment</li><li>Arrive with clean, makeup-free skin</li></ul>" },
+                { label: "Aftercare", body: "<ul><li>Redness, swelling, and mild bruising are expected and will resolve within 3-5 days</li><li>Avoid makeup for 24 hours</li><li>Keep skin clean and moisturised with gentle products only</li><li>Avoid sun exposure and use SPF 50+ for at least 2 weeks</li></ul>" }
             ]
         },
         "resurfacing": {
-            name: "Skin Resurfacing",
+            name: "PHFormula Skin Resurfacing",
             slides: [
-                { label: "What it is", body: "<p>Skin resurfacing treatments use controlled energy to remove the outer layers of damaged skin and stimulate the production of fresh, healthy skin cells and collagen beneath.</p>" },
-                { label: "What it achieves", body: "<p>Smoother, firmer, more evenly toned skin. Effective for reducing fine lines, acne scars, enlarged pores, sun damage, and general dullness.</p>" },
-                { label: "What happens in the session", body: "<p>The skin is cleansed and prepared. The resurfacing treatment is applied with precision to the target areas. Depending on the depth of treatment, a topical anaesthetic may be used. Sessions last 30–90 minutes.</p>" },
-                { label: "Treatment course", body: "<p>Lighter resurfacing treatments may require 4–6 sessions monthly. Deeper treatments may deliver significant results in 1–3 sessions. Your plan will be outlined at consultation.</p>" },
-                { label: "Beforecare", body: "<ul><li>Avoid sun exposure for 4 weeks and use SPF 50+ daily</li><li>Discontinue retinoids, exfoliating acids, and vitamin C serums 1 week before</li><li>Do not wax or have other facial treatments for 2 weeks prior</li></ul>" },
-                { label: "Aftercare", body: "<ul><li>Expect redness, peeling, or flaking for 3–10 days — this is the skin renewing</li><li>Do not pick or peel the skin manually</li><li>Avoid direct sun and apply SPF 50+ rigorously for at least 4 weeks</li></ul>" }
+                { label: "What it is", body: "<p>Every pHformula treatment begins with an advanced SP Complex Skin Analysis, allowing us to create a personalised treatment plan tailored to your skin's unique needs. Using an innovative skin resurfacing delivery system, pHformula targets concerns such as ageing, pigmentation, acne, and sensitivity while supporting healthy skin renewal. The result is clearer, stronger, and more radiant skin with minimal downtime.</p>" },
+                { label: "What it achieves", body: "<p>pHformula treatments help improve a wide range of skin concerns, including signs of ageing, pigmentation, acne, congestion, and uneven skin texture. By supporting healthy skin renewal, they can reveal a clearer, smoother, brighter, and more balanced complexion while improving overall skin health and radiance.</p>" },
+                { label: "What happens in the session", body: "<p>The skin is cleansed and prepared. The resurfacing treatment is applied with precision to the target areas. Sessions last 60-90 minutes.</p>" },
+                { label: "Treatment course", body: "<p>Your plan will be outlined at consultation.</p>" },
+                { label: "Before Care", body: "<ul><li>Discontinue retinoids, exfoliating acids, and vitamin C serums 1 week before</li><li>Do not wax or have other facial treatments for 2 weeks prior</li></ul>" },
+                { label: "Aftercare", body: "<ul><li>Homecare treatment will be prescribed and discussed.</li></ul>" }
             ]
         },
         "nanoneedling": {
@@ -297,10 +299,10 @@
             slides: [
                 { label: "What it is", body: "<p>Nanoneedling is a non-invasive skin treatment that uses a device tipped with hundreds of tiny pyramid-shaped silicone tips to create superficial micro-channels in the skin's surface, allowing active serums to penetrate far more effectively.</p>" },
                 { label: "What it achieves", body: "<p>Improved hydration, brighter and more even skin tone, reduced appearance of fine lines, and enhanced absorption of targeted serums. A gentle option for those seeking rejuvenation without downtime.</p>" },
-                { label: "What happens in the session", body: "<p>The skin is cleansed and a targeted serum is applied. The nanoneedling device is gently moved across the face, pushing the serum deeper into the skin. The treatment feels like gentle sandpaper — most clients find it very comfortable. Sessions last approximately 30–45 minutes.</p>" },
-                { label: "Treatment course", body: "<p>Best results are seen with a course of 4–6 sessions, spaced 2–4 weeks apart. Nanoneedling can also be used as an ongoing maintenance treatment.</p>" },
-                { label: "Beforecare", body: "<ul><li>Arrive with clean, makeup-free skin</li><li>Avoid exfoliating acids for 48 hours prior</li><li>Inform Rabia of any active skin conditions or sensitivities</li></ul>" },
-                { label: "Aftercare", body: "<ul><li>Some clients experience mild flushing for a few hours — minimal downtime overall</li><li>Avoid makeup for 12–24 hours to let the channels close</li><li>Apply a gentle moisturiser and SPF 50+</li></ul>" }
+                { label: "What happens in the session", body: "<p>The skin is cleansed and a targeted serum is applied. The nanoneedling device is gently moved across the face, pushing the serum deeper into the skin. The treatment feels like gentle sandpaper — most clients find it very comfortable. Sessions last approximately 30-45 minutes.</p>" },
+                { label: "Treatment course", body: "<p>Will be discussed in the initial consultation.</p>" },
+                { label: "Before Care", body: "<ul><li>Arrive with clean, makeup-free skin</li><li>Avoid exfoliating acids for 48 hours prior</li><li>Inform Rabia of any active skin conditions or sensitivities</li></ul>" },
+                { label: "Aftercare", body: "<ul><li>Some clients experience mild flushing for a few hours — minimal downtime overall</li><li>Avoid makeup for 12-24 hours to let the channels close</li><li>Apply a gentle moisturiser and SPF 50+</li></ul>" }
             ]
         },
         "skin-plan": {
@@ -309,20 +311,20 @@
                 { label: "What it is", body: "<p>A comprehensive skin analysis service using professional tools and clinical assessment to build a detailed picture of your skin's current condition — including hydration levels, pigmentation, sensitivity, texture, and pore health.</p>" },
                 { label: "What it achieves", body: "<p>A complete understanding of your skin and a personalised, evidence-based skincare and treatment plan. This removes guesswork and helps you invest in the products and treatments that will actually make a difference for your specific skin.</p>" },
                 { label: "What happens in the session", body: "<p>Rabia will carry out an in-depth assessment of your skin using clinical tools and detailed questioning about your lifestyle, diet, sleep, and skincare habits. You'll leave with a written, personalised skin plan. Sessions last 45–60 minutes.</p>" },
-                { label: "Treatment course", body: "<p>Usually a one-off session, with optional follow-up reviews at 3–6 months to track progress and adjust the plan as your skin evolves.</p>" },
-                { label: "Beforecare", body: "<ul><li>Arrive with clean skin and no makeup — this allows for the most accurate analysis</li><li>Bring a list of your current skincare products if possible</li></ul>" },
+                { label: "Treatment course", body: "<p>Usually a one-off session, with optional follow-up reviews at 3-6 months to track progress and adjust the plan as your skin evolves.</p>" },
+                { label: "Before Care", body: "<ul><li>Arrive with clean skin and no makeup — this allows for the most accurate analysis</li><li>Bring a list of your current skincare products if possible</li></ul>" },
                 { label: "Aftercare", body: "<p>No aftercare required. You'll receive a written skin plan to take away. Rabia will advise on next steps and any treatments or products she recommends.</p>" }
             ]
         },
-        "map-my-mole": {
-            name: "Map My Mole",
+        "illumifacial": {
+            name: "illumiFacial®",
             slides: [
-                { label: "What it is", body: "<p>Map My Mole is a professional mole mapping and skin lesion monitoring service. Using dermoscopy and clinical assessment, Rabia will systematically examine, document, and monitor the moles and lesions across your body for any changes over time.</p>" },
-                { label: "What it achieves", body: "<p>Early identification of any moles or lesions that may require further investigation, peace of mind through regular monitoring, and a documented baseline to track any future changes.</p>" },
-                { label: "What happens in the session", body: "<p>Using a dermatoscope and clinical expertise, Rabia will examine your moles and skin lesions thoroughly. Each mole is documented with notes and imagery. You'll receive a full report and clear guidance on any findings. Sessions last approximately 45–60 minutes.</p>" },
-                { label: "Treatment course", body: "<p>An initial mapping session followed by annual review appointments to monitor for changes. If any lesion requires urgent review, you'll be referred to the appropriate medical professional promptly.</p>" },
-                { label: "Beforecare", body: "<ul><li>Wear clothing that allows easy access to all body areas you'd like assessed</li><li>Remove nail varnish if you'd like your nails assessed</li><li>Do not apply fake tan or body makeup on the day</li></ul>" },
-                { label: "Aftercare", body: "<ul><li>No aftercare required — this is a non-invasive assessment</li><li>You'll receive a written report of findings</li><li>Any moles of concern will be discussed with clear next steps and appropriate referrals if needed</li></ul>" }
+                { label: "What it is", body: "<p>illumiFacial® is an award winning skin rejuvenation treatment using a four step approach, which stimulates collagen, targets pigmentation, rosacia and uneven skin tone.</p>" },
+                { label: "What it achieves", body: "<p>Next generation photo facial is designed to give a flawless, airbrushed complexion by evening tone and texture, reducing redness, boosting collagen, clearing congestion and improving hydration.</p>" },
+                { label: "What happens in the session", body: "<p>The 4-Step Protocol. Each 60-90 minute session follows this exact sequence: <ul><li>Deep Cleanse: Removes impurities and readies the skin.</li><li>Tri-Fruit Acid Peel: A specialist fruit peel is applied (usually for 3-10 minutes) to resurface texture and decongest pores.</li><li>Lynton IPL: Medical-grade Intense Pulsed Light is applied to stimulate new collagen production, target acne, and reduce redness or pigmentation.</li><li>Hydrate & Protect: A potent trio of serums is applied to soothe, regenerate, and protect your freshly treated skin.</li></ul> At Caldwell Cosmetics, we add an ice-globe facial complimentary at the end of this service to improve recovery and aid lymphatic drainage.</p>" },
+                { label: "Treatment course", body: "<p>An initial 3 sessions, 4 weeks apart. Maintenance recommended.</p>" },
+                { label: "Before Care", body: "<p>To prepare for an illumiFacial®, you must avoid direct sun exposure and fake tanning for at least 4 weeks prior. Additionally, you need to pause the use of active skincare ingredients, such as retinols and exfoliating acids, for at least 2 weeks before.</p>" },
+                { label: "Aftercare", body: "<p>IllumiFacial aftercare involves protecting your recovering skin and keeping it hydrated. For the first 24-48 hours, avoid intense heat (hot showers, saunas), strenuous workouts, and harsh skincare products (retinoids, AHAs/BHAs). Always apply a high-quality SPF 30+ daily to prevent pigmentation changes.</p>" }
             ]
         }
     };

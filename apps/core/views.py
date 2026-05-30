@@ -15,3 +15,6 @@ def terms(request):
 
 def cookies(request):
     return render(request, "core/cookies.html")
+
+def myjourney(request):
+    return render(request, "core/myjourney.html")

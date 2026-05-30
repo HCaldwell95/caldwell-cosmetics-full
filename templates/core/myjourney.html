@@ -1,0 +1,153 @@
+
+{% extends "base/base.html" %}
+{% load static %}
+
+{% block title %}Where We Began | Caldwell Cosmetics{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/myjourney.css' %}">
+{% endblock %}
+
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+
+{% block content %}
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner">
+    <p class="hero-eyebrow">Our Story</p>
+    <h1>Where We <em>Began</em></h1>
+    <p class="hero-sub">Not a business idea — but a lived experience, shaped by frustration, care, and an unwavering belief in doing things right.</p>
+  </div>
+</section>
+
+<!-- PULL QUOTE -->
+<div class="content-wrapper" style="padding-bottom: 0; padding-top: 3rem;">
+  <div class="pull-quote-wrapper">
+    <div class="pull-quote">
+      <blockquote>"Caldwell Cosmetics didn't start as a business idea — it grew from lived experience, frustration, and a genuine care for how people feel in their own skin."</blockquote>
+      <cite>— Rabia Caldwell, Founder & Lead Nurse</cite>
+    </div>
+    <div class="founder-image">
+      <!-- Replace the src below with your image path e.g. src="{% static 'images/founder.jpg' %}" -->
+      <img src="{% static 'images/founder.jpg' %}" alt="Rabia Caldwell, Founder of Caldwell Cosmetics" />
+    </div>
+  </div>
+</div>
+
+<!-- STORY -->
+<div class="content-wrapper">
+
+  <div class="section-label" style="margin-top: 3.5rem;">
+    <span>The Journey</span>
+  </div>
+
+  <div class="story-grid">
+
+    <!-- Chapter 1 -->
+    <div class="story-chapter">
+      <div class="chapter-spine">
+        <div class="chapter-dot"></div>
+        <div class="chapter-line"></div>
+      </div>
+      <div class="chapter-body">
+        <p class="chapter-tag">The Beginning</p>
+        <h2 class="chapter-heading">A Personal Struggle That Never Left</h2>
+        <p>From a young age, I struggled with excess hair and skin concerns, trying everything I could to feel more comfortable and confident. That experience has stayed with me ever since and quietly shaped the way I see both myself and others.</p>
+      </div>
+    </div>
+
+    <!-- Chapter 2 -->
+    <div class="story-chapter">
+      <div class="chapter-spine">
+        <div class="chapter-dot"></div>
+        <div class="chapter-line"></div>
+      </div>
+      <div class="chapter-body">
+        <p class="chapter-tag">The Turning Point</p>
+        <h2 class="chapter-heading">Nursing, Chester & A Moment That Shaped Everything</h2>
+        <p>Becoming a nurse took me to Chester, where I trained and developed clinically. During my Botox and filler training, something happened that has always stayed with me — a doctor casually used my lips as an example and suggested I could benefit from filler.</p>
+
+        <div class="moment-card">
+          <p>"I remember the moment clearly. Not because I agreed, but because it made me realise how easily perception can be influenced in those environments. I was grateful for my own sense of self in that moment, because it made me aware of how different things could have been if I had simply accepted it without question."</p>
+        </div>
+
+        <p>That moment stayed with me, and it shaped something deeper. It strengthened my belief in doing things properly — in creating a space where people feel supported rather than shaped, and where choices come from confidence and self-respect, not pressure or expectation.</p>
+      </div>
+    </div>
+
+    <!-- Chapter 3 -->
+    <div class="story-chapter">
+      <div class="chapter-spine">
+        <div class="chapter-dot"></div>
+        <div class="chapter-line"></div>
+      </div>
+      <div class="chapter-body">
+        <p class="chapter-tag">The Conviction</p>
+        <h2 class="chapter-heading">Ethics at the Heart of Everything</h2>
+        <p>I became determined to practice responsibly — to help people feel empowered in their own decisions, rather than encouraged to change themselves to fit someone else's idea of beauty or society's expectations.</p>
+        <p>I wanted to build something I could be ethically proud of — to make my mark through genuine care and responsibility, not by following trends or simply creating another business.</p>
+      </div>
+    </div>
+
+    <!-- Chapter 4 -->
+    <div class="story-chapter">
+      <div class="chapter-spine">
+        <div class="chapter-dot"></div>
+        <div class="chapter-line"></div>
+      </div>
+      <div class="chapter-body">
+        <p class="chapter-tag">Life & Motherhood</p>
+        <h2 class="chapter-heading">When Everything Changed at Once</h2>
+        <p>Then life shifted in every direction at once. COVID hit, I moved from specialist coronary care into intensive care, and at the same time I was becoming a mum to two little ones. Everything felt full — work, home, responsibility, emotion — and the idea of starting something of my own had to sit quietly in the background.</p>
+        <p>But it never really left me.</p>
+      </div>
+    </div>
+
+    <!-- Chapter 5 -->
+    <div class="story-chapter">
+      <div class="chapter-spine">
+        <div class="chapter-dot"></div>
+        <div class="chapter-line"></div>
+      </div>
+      <div class="chapter-body">
+        <p class="chapter-tag">Est. 2024</p>
+        <h2 class="chapter-heading">Taking the Chance</h2>
+        <p>With gentle encouragement from my husband and a few people close to me, I eventually decided to take a chance. I rented my first treatment room, invested in my Lynton laser, and slowly began building something that felt truly mine.</p>
+        <p>Today, Caldwell Cosmetics is my full-time at-home clinic — something built with care, experience, and heart. It reflects not just what I do, but why I do it: helping people feel comfortable, confident, and empowered in their own skin.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- MILESTONES -->
+  <div class="milestones">
+    <div class="milestone">
+      <div class="milestone-icon">✦</div>
+      <p class="milestone-label">NHS Experience</p>
+      <p class="milestone-value">7+ Years</p>
+    </div>
+    <div class="milestone">
+      <div class="milestone-icon">✦</div>
+      <p class="milestone-label">Established</p>
+      <p class="milestone-value">Abergele, 2024</p>
+    </div>
+    <div class="milestone">
+      <div class="milestone-icon">✦</div>
+      <p class="milestone-label">My Promise</p>
+      <p class="milestone-value">Ethics First, Always</p>
+    </div>
+  </div>
+
+  <!-- CLOSING CTA -->
+  <div class="closing">
+    <div class="closing-inner">
+      <h2>Ready to Begin <em>Your</em> Journey?</h2>
+      <p>Every treatment at Caldwell Cosmetics begins with a conversation — because your story matters just as much as your results.</p>
+      <a href="/bookings" class="btn-primary">Schedule a Consultation</a>
+      <a href="/treatments" class="btn-outline">View Treatments</a>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
