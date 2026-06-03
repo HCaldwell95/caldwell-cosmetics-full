@@ -173,38 +173,86 @@
    STEP 1 — TREATMENT SELECTION
    ============================================ */
 
+.category-strip-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1.75rem;
+    background-color: var(--color-background-alt, #fdfbf7);
+    border-radius: 999px;
+    padding: 8px 10px;
+}
+
+.category-strip__arrow {
+    background: transparent;
+    border: 1.5px solid var(--color-primary);
+    color: var(--color-primary);
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    font-size: 1.3rem;
+    line-height: 1;
+    cursor: pointer;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.category-strip__arrow:hover {
+    background-color: var(--color-primary);
+    color: #fff;
+}
+
+.category-strip__arrow:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.category-strip__arrow:disabled:hover {
+    background: transparent;
+    color: var(--color-primary);
+}
+
+.category-strip__viewport {
+    flex: 1;
+    overflow: hidden;
+}
+
 .category-tabs {
     display: flex;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-    margin-bottom: 1.75rem;
-    border-bottom: 1.5px solid #f0ece5;
-    padding-bottom: 0;
+    gap: 8px;
+    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform;
 }
 
 .category-tab {
     font-family: var(--font-montserrat);
-    font-size: 0.82rem;
+    font-size: 0.78rem;
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
-    padding: 0.6rem 1.25rem;
-    border: none;
-    background: none;
+    letter-spacing: 0.1em;
+    padding: 0.5rem 1.25rem;
+    border: 1.5px solid var(--color-primary);
+    border-radius: 999px;
+    background: transparent;
     cursor: pointer;
-    color: var(--color-text-light);
-    border-bottom: 2.5px solid transparent;
-    margin-bottom: -1.5px;
-    transition: color 0.2s ease, border-color 0.2s ease;
+    color: var(--color-secondary);
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: background 0.2s ease, color 0.2s ease;
 }
 
 .category-tab:hover {
-    color: var(--color-secondary);
+    background-color: var(--color-primary);
+    color: #fff;
 }
 
 .category-tab--active {
-    color: var(--color-secondary);
-    border-bottom-color: var(--color-primary);
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+    color: #ffffff;
 }
 
 .treatments-grid {
@@ -878,6 +926,23 @@
 
     .timeslot-grid {
         grid-template-columns: repeat(3, 1fr);
+    }
+
+    .category-strip-wrapper {
+        padding: 6px 6px;
+        gap: 0.35rem;
+    }
+
+    .category-strip__arrow {
+        width: 28px;
+        height: 28px;
+        font-size: 1.1rem;
+    }
+
+    .category-tab {
+        font-size: 0.65rem;
+        padding: 0.4rem 0.75rem;
+        letter-spacing: 0.06em;
     }
 }
 

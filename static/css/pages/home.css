@@ -1130,4 +1130,33 @@
     .tx-strip-wrapper {
         border-radius: 12px;
     }
+
+    .tx-strip__arrow {
+        width: 30px;
+        height: 30px;
+        font-size: 1.1rem;
+    }
+
+    .tx-pill {
+        font-size: 0.7rem;
+        padding: 0.4rem 0.9rem;
+        letter-spacing: 0.04em;
+    }
+}
+
+@media (max-width: 480px) {
+    .tx-strip-wrapper {
+        padding: 6px 6px;
+        gap: 0.35rem;
+    }
+
+    .tx-strip__arrow {
+        width: 28px;
+        height: 28px;
+    }
+
+    .tx-pill {
+        font-size: 0.65rem;
+        padding: 0.4rem 0.75rem;
+    }
 }

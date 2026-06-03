@@ -468,6 +468,55 @@
         if (e.key === "ArrowLeft") goToSlide(currentSlide - 1);
     });
 
+    /* -------------------------------------------------------
+       TOUCH / SWIPE SUPPORT
+    ------------------------------------------------------- */
+    let stripDragStartX = 0, stripDragStartOffset = 0;
+    const stripViewport = document.getElementById("txStripViewport");
+
+    stripViewport.addEventListener("touchstart", e => {
+        stripDragStartX = e.touches[0].clientX;
+        stripDragStartOffset = stripOffset;
+        stripTrack.style.transition = "none";
+    }, { passive: true });
+
+    stripViewport.addEventListener("touchmove", e => {
+        const dx = stripDragStartX - e.touches[0].clientX;
+        const maxScroll = stripTrack.scrollWidth - stripViewport.offsetWidth;
+        const newOffset = Math.max(0, Math.min(stripDragStartOffset + dx, maxScroll));
+        stripTrack.style.transform = `translateX(-${newOffset}px)`;
+    }, { passive: true });
+
+    stripViewport.addEventListener("touchend", e => {
+        stripTrack.style.transition = "";
+        const dx = stripDragStartX - e.changedTouches[0].clientX;
+        const maxScroll = stripTrack.scrollWidth - stripViewport.offsetWidth;
+        stripOffset = Math.max(0, Math.min(stripDragStartOffset + dx, maxScroll));
+        stripTrack.style.transform = `translateX(-${stripOffset}px)`;
+        stripPrev.disabled = stripOffset <= 0;
+        stripNext.disabled = stripOffset >= maxScroll;
+    });
+
+    stripViewport.addEventListener("touchcancel", () => {
+        stripTrack.style.transition = "";
+    });
+
+    let slideTouchStartX = 0, slideTouchStartY = 0;
+    const slidesViewport = track.parentElement;
+
+    slidesViewport.addEventListener("touchstart", e => {
+        slideTouchStartX = e.touches[0].clientX;
+        slideTouchStartY = e.touches[0].clientY;
+    }, { passive: true });
+
+    slidesViewport.addEventListener("touchend", e => {
+        const dx = slideTouchStartX - e.changedTouches[0].clientX;
+        const dy = slideTouchStartY - e.changedTouches[0].clientY;
+        if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) {
+            goToSlide(dx > 0 ? currentSlide + 1 : currentSlide - 1);
+        }
+    });
+
     switchTreatment("consultations");
 
 })();

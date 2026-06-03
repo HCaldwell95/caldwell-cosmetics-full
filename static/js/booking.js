@@ -47,6 +47,7 @@ document.addEventListener('DOMContentLoaded', function () {
         tab.addEventListener('click', function () {
             categoryTabs.forEach(t => t.classList.remove('category-tab--active'));
             this.classList.add('category-tab--active');
+            scrollCatStripToActive();
 
             const catId = this.dataset.category;
             treatmentCards.forEach(card => {
@@ -59,6 +60,57 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     if (categoryTabs.length) categoryTabs[0].click();
+
+    // Category strip scrolling
+    const catStripTrack = document.getElementById('categoryTabs');
+    const catStripPrev  = document.getElementById('catStripPrev');
+    const catStripNext  = document.getElementById('catStripNext');
+    let catStripOffset  = 0;
+
+    function getCatScrollAmount() {
+        const pill = catStripTrack && catStripTrack.querySelector('.category-tab');
+        return pill ? pill.offsetWidth + 8 : 160;
+    }
+
+    function scrollCatStrip(direction) {
+        const viewport   = catStripTrack.parentElement;
+        const maxScroll  = catStripTrack.scrollWidth - viewport.offsetWidth;
+        catStripOffset   = Math.max(0, Math.min(catStripOffset + direction * getCatScrollAmount() * 2, maxScroll));
+        catStripTrack.style.transform = `translateX(-${catStripOffset}px)`;
+        catStripPrev.disabled = catStripOffset <= 0;
+        catStripNext.disabled = catStripOffset >= maxScroll;
+    }
+
+    function scrollCatStripToActive() {
+        const active = catStripTrack && catStripTrack.querySelector('.category-tab--active');
+        if (!active) return;
+        const viewport   = catStripTrack.parentElement;
+        const pillLeft   = active.offsetLeft;
+        const pillRight  = pillLeft + active.offsetWidth;
+        const viewWidth  = viewport.offsetWidth;
+        if (pillLeft < catStripOffset) {
+            catStripOffset = Math.max(0, pillLeft - 8);
+        } else if (pillRight > catStripOffset + viewWidth) {
+            catStripOffset = pillRight - viewWidth + 8;
+        }
+        catStripTrack.style.transform = `translateX(-${catStripOffset}px)`;
+        const maxScroll = catStripTrack.scrollWidth - viewWidth;
+        catStripPrev.disabled = catStripOffset <= 0;
+        catStripNext.disabled = maxScroll <= 0 || catStripOffset >= maxScroll;
+    }
+
+    if (catStripPrev && catStripNext) {
+        catStripPrev.addEventListener('click', () => scrollCatStrip(-1));
+        catStripNext.addEventListener('click', () => scrollCatStrip(1));
+        catStripPrev.disabled = true;
+        setTimeout(() => {
+            if (catStripTrack) {
+                const viewport  = catStripTrack.parentElement;
+                const maxScroll = catStripTrack.scrollWidth - viewport.offsetWidth;
+                catStripNext.disabled = maxScroll <= 0;
+            }
+        }, 100);
+    }
 
     window.selectTreatment = function (card) {
         selectedTreatment = {

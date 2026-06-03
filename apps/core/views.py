@@ -1,8 +1,10 @@
 from django.shortcuts import render
+from apps.treatments.models import TreatmentCategory
 
 
 def home(request):
-    return render(request, 'core/home.html')
+    marquee_categories = TreatmentCategory.objects.filter(is_active=True).order_by('order', 'name')
+    return render(request, 'core/home.html', {'marquee_categories': marquee_categories})
 
 def dashboard(request):
     return render(request, "core/dashboard.html")

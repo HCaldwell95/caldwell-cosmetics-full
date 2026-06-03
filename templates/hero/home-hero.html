@@ -59,14 +59,11 @@
 <!-- Services Marquee -->
 <div class="services-marquee">
     <div class="services-marquee__track">
-        <a class="services-marquee__item" href="/services/ipl-hair-reduction">IPL Hair Reduction</a>
-        <a class="services-marquee__item" href="/services/skin-rejuvenation">Skin Rejuvenation</a>
-        <a class="services-marquee__item" href="/services/platelet-rich-plasma-prp">Platelet Rich Plasma (PRP)</a>
-        <a class="services-marquee__item" href="{% url 'treatments:treatment_detail' 'anti-wrinkle-treatments' %}">Anti Wrinkle Injections</a>
-        <a class="services-marquee__item" href="/services/hair-rejuvenation">Hair Rejuvenation</a>
-        <a class="services-marquee__item" href="/services/illumifacial">illumiFacial®</a>
-        <a class="services-marquee__item" href="/services/acne-treatments">Acne Treatments</a>
-        <a class="services-marquee__item" href="/services/facial-veins-or-pigment-removal">Facial Veins or Pigment Removal</a>
-        <a class="services-marquee__item" href="/services/consultations">Consultations</a>
+        {% for category in marquee_categories %}
+        <a class="services-marquee__item" href="{% url 'treatments:category_detail' category.slug %}">{{ category.name }}</a>
+        {% endfor %}
+        {% for category in marquee_categories %}
+        <a class="services-marquee__item" href="{% url 'treatments:category_detail' category.slug %}">{{ category.name }}</a>
+        {% endfor %}
     </div>
 </div>

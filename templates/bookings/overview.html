@@ -54,15 +54,21 @@
             <h2 class="booking-step__title">Choose Your Treatment</h2>
 
             <!-- Category Tabs -->
-            <div class="category-tabs" id="categoryTabs">
-                {% for category in categories %}
-                <button
-                    class="category-tab {% if forloop.first %}category-tab--active{% endif %}"
-                    data-category="{{ category.id }}"
-                >
-                    {{ category.name }}
-                </button>
-                {% endfor %}
+            <div class="category-strip-wrapper">
+                <button class="category-strip__arrow category-strip__arrow--prev" id="catStripPrev" aria-label="Previous categories">&#8249;</button>
+                <div class="category-strip__viewport" id="catStripViewport">
+                    <div class="category-tabs" id="categoryTabs">
+                        {% for category in categories %}
+                        <button
+                            class="category-tab {% if forloop.first %}category-tab--active{% endif %}"
+                            data-category="{{ category.id }}"
+                        >
+                            {{ category.name }}
+                        </button>
+                        {% endfor %}
+                    </div>
+                </div>
+                <button class="category-strip__arrow category-strip__arrow--next" id="catStripNext" aria-label="Next categories">&#8250;</button>
             </div>
 
             <!-- Treatment Cards -->
