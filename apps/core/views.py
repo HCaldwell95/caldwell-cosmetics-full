@@ -20,3 +20,12 @@ def cookies(request):
 
 def myjourney(request):
     return render(request, "core/myjourney.html")
+
+def skin_journey(request):
+    return render(request, "core/skin_journey.html")
+
+def phformula(request):
+    return render(request, "core/phformula.html")
+
+def lynton(request):
+    return render(request, "core/lynton.html")

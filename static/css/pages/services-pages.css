@@ -1,0 +1,632 @@
+/* ============================================
+   SERVICES PAGES — CALDWELL COSMETICS
+   Shared styles for Bespoke Skin Journey,
+   PHFormula, and Lynton Dynamix pages.
+   ============================================ */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --blush: #f5e6e2;
+  --blush-mid: #e8cfc9;
+  --blush-deep: #c9a49c;
+  --champagne: #f5f0e8;
+  --champagne-deep: #d4c5a9;
+  --gold: #b89a6a;
+  --gold-light: #d4b896;
+  --cream: #faf7f4;
+  --text-dark: #3a2e2a;
+  --text-mid: #6b5a53;
+  --text-light: #9c8880;
+  --white: #ffffff;
+}
+
+body {
+  font-family: 'Jost', sans-serif;
+  background-color: var(--cream);
+  color: var(--text-dark);
+  font-weight: 300;
+  line-height: 1.8;
+}
+
+/* ── HERO ── */
+.hero {
+  background: linear-gradient(160deg, var(--blush) 0%, var(--champagne) 60%, var(--cream) 100%);
+  min-height: 480px;
+  width: 100vw;
+  position: relative;
+  left: 50%;
+  right: 50%;
+  margin-left: -50vw;
+  margin-right: -50vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 5rem 2rem 4rem;
+  overflow: hidden;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -60px; right: -60px;
+  width: 320px; height: 320px;
+  background: var(--blush-mid);
+  border-radius: 50%;
+  opacity: 0.35;
+}
+
+.hero::after {
+  content: '';
+  position: absolute;
+  bottom: -80px; left: -40px;
+  width: 240px; height: 240px;
+  background: var(--champagne-deep);
+  border-radius: 50%;
+  opacity: 0.25;
+}
+
+.hero-inner { position: relative; z-index: 1; max-width: 700px; }
+
+.hero-eyebrow {
+  font-family: 'Jost', sans-serif;
+  font-size: 0.72rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.hero-eyebrow::before,
+.hero-eyebrow::after {
+  content: '';
+  display: block;
+  width: 40px;
+  height: 1px;
+  background: var(--gold-light);
+}
+
+.hero h1 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(2.6rem, 5vw, 4rem);
+  font-weight: 300;
+  line-height: 1.2;
+  color: var(--text-dark);
+  margin-bottom: 1.2rem;
+}
+
+.hero h1 em {
+  font-style: italic;
+  color: var(--gold);
+}
+
+.hero-sub {
+  font-family: 'Jost', sans-serif;
+  font-size: 1rem;
+  font-weight: 300;
+  color: var(--text-mid);
+  letter-spacing: 0.04em;
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+/* ── MAIN WRAPPER ── */
+.content-wrapper {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 4rem 2rem 5rem;
+}
+
+/* ── SECTION LABEL ── */
+.section-label {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 3rem;
+}
+
+.section-label span {
+  font-size: 0.68rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--gold);
+  white-space: nowrap;
+}
+
+.section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--blush-mid);
+}
+
+/* ── INTRO BLOCK ── */
+.intro-block {
+  max-width: 760px;
+  margin: 0 auto;
+  text-align: center;
+  padding: 2rem 0 0;
+}
+
+.intro-text {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.35rem;
+  font-weight: 300;
+  color: var(--text-mid);
+  line-height: 1.75;
+  font-style: italic;
+}
+
+/* ── FEATURE GRID ── */
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.4rem;
+  margin-bottom: 1rem;
+}
+
+.feature-card {
+  background: var(--white);
+  border: 1px solid var(--blush-mid);
+  border-radius: 10px;
+  padding: 2rem 1.6rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.feature-card:hover {
+  border-color: var(--gold-light);
+  box-shadow: 0 4px 20px rgba(184, 154, 106, 0.1);
+}
+
+.feature-card__icon {
+  font-size: 1.4rem;
+  color: var(--gold);
+  margin-bottom: 0.9rem;
+}
+
+.feature-card__title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.15rem;
+  font-weight: 500;
+  color: var(--text-dark);
+  margin-bottom: 0.6rem;
+  line-height: 1.35;
+}
+
+.feature-card__body {
+  font-size: 0.88rem;
+  color: var(--text-mid);
+  line-height: 1.8;
+  font-weight: 300;
+}
+
+/* ── PROCESS STEPS ── */
+.process-steps {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0;
+}
+
+.process-step {
+  display: grid;
+  grid-template-columns: 80px 1fr;
+  gap: 0 2rem;
+  padding: 2rem 0;
+  border-bottom: 1px solid var(--blush-mid);
+}
+
+.process-step:last-child {
+  border-bottom: none;
+}
+
+.process-step__number {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 2.8rem;
+  font-weight: 300;
+  color: var(--blush-mid);
+  line-height: 1;
+  padding-top: 0.2rem;
+}
+
+.process-step__title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.25rem;
+  font-weight: 500;
+  color: var(--text-dark);
+  margin-bottom: 0.5rem;
+  line-height: 1.3;
+}
+
+.process-step__body p {
+  font-size: 0.92rem;
+  color: var(--text-mid);
+  line-height: 1.9;
+  font-weight: 300;
+}
+
+/* ── MOMENT / QUOTE CARD ── */
+.moment-card {
+  background: var(--blush);
+  border-radius: 12px;
+  padding: 2.2rem 2.5rem;
+  border: 1px solid var(--blush-mid);
+}
+
+.moment-card p {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.25rem;
+  font-style: italic;
+  color: var(--text-dark);
+  line-height: 1.7;
+  margin: 0 0 1rem;
+}
+
+.moment-card cite {
+  display: block;
+  font-family: 'Jost', sans-serif;
+  font-size: 0.72rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gold);
+  font-style: normal;
+}
+
+/* ── MILESTONES ── */
+.milestones {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.2rem;
+  margin: 4rem 0;
+}
+
+.milestone {
+  background: var(--white);
+  border: 1px solid var(--blush-mid);
+  border-radius: 10px;
+  padding: 1.6rem 1.4rem;
+  text-align: center;
+}
+
+.milestone-icon {
+  font-size: 1.6rem;
+  margin-bottom: 0.7rem;
+  color: var(--gold);
+}
+
+.milestone-label {
+  font-family: 'Jost', sans-serif;
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-light);
+  margin-bottom: 0.4rem;
+}
+
+.milestone-value {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.3rem;
+  font-weight: 500;
+  color: var(--text-dark);
+}
+
+/* ── CLOSING CTA ── */
+.closing {
+  background: linear-gradient(135deg, var(--blush) 0%, var(--champagne) 100%);
+  border-radius: 16px;
+  padding: 4rem 3rem;
+  text-align: center;
+  margin-top: 3rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.closing::before {
+  content: '';
+  position: absolute;
+  top: -50px; right: -50px;
+  width: 180px; height: 180px;
+  background: var(--blush-mid);
+  border-radius: 50%;
+  opacity: 0.5;
+}
+
+.closing-inner { position: relative; z-index: 1; }
+
+.closing h2 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 2.2rem;
+  font-weight: 300;
+  color: var(--text-dark);
+  margin-bottom: 1rem;
+}
+
+.closing h2 em { font-style: italic; color: var(--gold); }
+
+.closing p {
+  font-size: 0.97rem;
+  color: var(--text-mid);
+  max-width: 520px;
+  margin: 0 auto 2rem;
+  line-height: 1.9;
+  font-weight: 300;
+}
+
+/* ── BUTTONS ── */
+.btn-primary {
+  display: inline-block;
+  background: var(--gold);
+  color: var(--white);
+  font-family: 'Jost', sans-serif;
+  font-size: 0.75rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  padding: 0.9rem 2.4rem;
+  border-radius: 2px;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+
+.btn-primary:hover { background: var(--text-dark); }
+
+.btn-outline {
+  display: inline-block;
+  border: 1px solid var(--gold);
+  color: var(--gold);
+  font-family: 'Jost', sans-serif;
+  font-size: 0.75rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  padding: 0.9rem 2.4rem;
+  border-radius: 2px;
+  text-decoration: none;
+  margin-left: 1rem;
+  transition: all 0.2s;
+}
+
+.btn-outline:hover { background: var(--gold); color: var(--white); }
+
+/* ── CHAPTER TAG (reused from myjourney) ── */
+.chapter-tag {
+  font-family: 'Jost', sans-serif;
+  font-size: 0.68rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 0.5rem;
+}
+
+.chapter-heading {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.55rem;
+  font-weight: 400;
+  color: var(--text-dark);
+  line-height: 1.3;
+  margin-bottom: 1rem;
+}
+
+/* ── BRAND STORY GRID ── */
+.brand-story-grid {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 3.5rem;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.brand-story-text p {
+  color: var(--text-mid);
+  font-size: 0.97rem;
+  line-height: 1.95;
+  margin-bottom: 1rem;
+  font-weight: 300;
+}
+
+.brand-story-text p:last-child { margin-bottom: 0; }
+
+.brand-story-image {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.brand-badge {
+  background: linear-gradient(135deg, var(--blush) 0%, var(--champagne) 100%);
+  border: 1px solid var(--gold-light);
+  border-radius: 12px;
+  padding: 3rem 2.5rem;
+  text-align: center;
+  width: 100%;
+}
+
+.brand-badge--dark {
+  background: linear-gradient(135deg, var(--text-dark) 0%, #5a4840 100%);
+  border-color: var(--gold);
+}
+
+.brand-badge__label {
+  display: block;
+  font-family: 'Jost', sans-serif;
+  font-size: 0.65rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 1rem;
+}
+
+.brand-badge--dark .brand-badge__label {
+  color: var(--gold-light);
+}
+
+.brand-badge__name {
+  display: block;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 2.2rem;
+  font-weight: 400;
+  color: var(--text-dark);
+  line-height: 1.2;
+  margin-bottom: 0.8rem;
+}
+
+.brand-badge--dark .brand-badge__name {
+  color: var(--white);
+}
+
+.brand-badge__tagline {
+  display: block;
+  font-family: 'Jost', sans-serif;
+  font-size: 0.75rem;
+  color: var(--text-mid);
+  letter-spacing: 0.1em;
+}
+
+.brand-badge--dark .brand-badge__tagline {
+  color: var(--gold-light);
+}
+
+/* ── REVIEW GRID ── */
+.review-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.4rem;
+  margin-bottom: 1rem;
+}
+
+.review-card {
+  background: var(--white);
+  border: 1px solid var(--blush-mid);
+  border-radius: 10px;
+  padding: 1.8rem 1.6rem;
+}
+
+.review-stars {
+  color: var(--gold);
+  font-size: 0.85rem;
+  letter-spacing: 0.1em;
+  margin-bottom: 0.9rem;
+}
+
+.review-body {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.05rem;
+  font-style: italic;
+  color: var(--text-dark);
+  line-height: 1.7;
+  margin-bottom: 1rem;
+}
+
+.review-author {
+  font-family: 'Jost', sans-serif;
+  font-size: 0.72rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-light);
+}
+
+/* ── MACHINE HIGHLIGHT (Lynton) ── */
+.machine-highlight {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 3rem;
+  align-items: start;
+  background: var(--white);
+  border: 1px solid var(--blush-mid);
+  border-radius: 12px;
+  padding: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.machine-highlight__body p {
+  font-size: 0.95rem;
+  color: var(--text-mid);
+  line-height: 1.9;
+  font-weight: 300;
+  margin-top: 0.8rem;
+}
+
+.machine-specs {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0;
+  border-left: 1px solid var(--blush-mid);
+  padding-left: 2rem;
+}
+
+.spec-item {
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--blush-mid);
+}
+
+.spec-item:last-child { border-bottom: none; }
+
+.spec-label {
+  font-family: 'Jost', sans-serif;
+  font-size: 0.65rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--text-light);
+  margin-bottom: 0.3rem;
+}
+
+.spec-value {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.05rem;
+  font-weight: 500;
+  color: var(--text-dark);
+}
+
+/* ── WHY IT MATTERS GRID (Lynton) ── */
+.why-matters-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.4rem;
+  margin-bottom: 1rem;
+}
+
+.why-card {
+  background: linear-gradient(135deg, var(--blush) 0%, var(--champagne) 100%);
+  border-radius: 10px;
+  padding: 2rem 1.6rem;
+  border: 1px solid var(--blush-mid);
+}
+
+.why-card h3 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: var(--text-dark);
+  margin-bottom: 0.8rem;
+}
+
+.why-card p {
+  font-size: 0.88rem;
+  color: var(--text-mid);
+  line-height: 1.85;
+  font-weight: 300;
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 900px) {
+  .feature-grid { grid-template-columns: repeat(2, 1fr); }
+  .review-grid  { grid-template-columns: repeat(2, 1fr); }
+  .why-matters-grid { grid-template-columns: repeat(2, 1fr); }
+  .brand-story-grid { grid-template-columns: 1fr; }
+  .machine-highlight { grid-template-columns: 1fr; }
+  .machine-specs { border-left: none; padding-left: 0; border-top: 1px solid var(--blush-mid); padding-top: 1.5rem; margin-top: 0.5rem; }
+}
+
+@media (max-width: 640px) {
+  .feature-grid    { grid-template-columns: 1fr; }
+  .review-grid     { grid-template-columns: 1fr; }
+  .why-matters-grid { grid-template-columns: 1fr; }
+  .milestones      { grid-template-columns: 1fr; }
+  .process-step    { grid-template-columns: 50px 1fr; gap: 0 1rem; }
+  .process-step__number { font-size: 2rem; }
+  .closing         { padding: 2.5rem 1.5rem; }
+  .btn-outline     { margin-left: 0; margin-top: 0.8rem; display: block; text-align: center; }
+  .intro-text      { font-size: 1.1rem; }
+}

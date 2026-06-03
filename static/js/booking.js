@@ -40,8 +40,9 @@ document.addEventListener('DOMContentLoaded', function () {
     // Step 1 — Treatment selection
     // ---------------------------------------------------------------
 
-    const categoryTabs   = document.querySelectorAll('.category-tab');
-    const treatmentCards = document.querySelectorAll('.treatment-card');
+    const categoryTabs    = document.querySelectorAll('.category-tab');
+    const treatmentCards  = document.querySelectorAll('.treatment-card');
+    const groupHeadings   = document.querySelectorAll('.treatment-group-heading');
 
     categoryTabs.forEach(tab => {
         tab.addEventListener('click', function () {
@@ -56,10 +57,20 @@ document.addEventListener('DOMContentLoaded', function () {
                     card.dataset.category !== catId
                 );
             });
+            groupHeadings.forEach(heading => {
+                heading.classList.toggle(
+                    'treatment-card--hidden',
+                    heading.dataset.category !== catId
+                );
+            });
         });
     });
 
-    if (categoryTabs.length) categoryTabs[0].click();
+    if (categoryTabs.length) setTimeout(() => categoryTabs[0].click(), 0);
+
+    // Auto-filter to the active tab on load
+    const activeTab = document.querySelector('.category-tab--active');
+    if (activeTab) activeTab.click();
 
     // Category strip scrolling
     const catStripTrack = document.getElementById('categoryTabs');

@@ -963,3 +963,26 @@
     color: #dc2626;
     font-size: 0.9rem;
 }
+
+/* Treatment group headings within a category */
+.treatment-group-heading {
+    grid-column: 1 / -1;          /* span full grid width */
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--colour-gold, #b89a6a);
+    padding: 1.25rem 0 0.5rem;
+    border-bottom: 1px solid var(--colour-champagne, #e8dcc8);
+    margin-bottom: 0.25rem;
+}
+
+.treatment-group-heading:first-child {
+    padding-top: 0;
+}
+
+/* Hide group headings the same way cards are hidden */
+.treatment-group-heading.treatment-card--hidden {
+    display: none;
+}

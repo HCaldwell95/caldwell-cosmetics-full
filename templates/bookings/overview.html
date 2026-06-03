@@ -73,38 +73,51 @@
 
             <!-- Treatment Cards -->
             <div class="treatments-grid" id="treatmentsGrid">
-                {% for treatment in treatments %}
-                <div
-                    class="treatment-card"
-                    data-category="{{ treatment.category.id }}"
-                    data-treatment-id="{{ treatment.id }}"
-                    data-treatment-name="{{ treatment.name }}"
-                    data-duration="{{ treatment.duration_minutes }}"
-                    data-price="{{ treatment.price }}"
-                    data-requires-deposit="{{ treatment.requires_deposit|yesno:'true,false' }}"
-                    data-deposit-amount="{{ treatment.deposit_amount|default:0 }}"
-                >
-                    <div class="treatment-card__body">
-                        <h3 class="treatment-card__name">{{ treatment.name }}</h3>
-                        <p class="treatment-card__desc">{{ treatment.description }}</p>
-                        <div class="treatment-card__meta">
-                            <span class="treatment-card__duration">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                                {{ treatment.duration_minutes }} min
-                            </span>
-                            <span class="treatment-card__price">£{{ treatment.price }}</span>
+                {% regroup treatments by category.id as treatments_by_category %}
+                {% for cat_group in treatments_by_category %}
+                    {% regroup cat_group.list by group as grouped_treatments %}
+                    {% for group in grouped_treatments %}
+                        {% if group.grouper %}
+                        <div
+                            class="treatment-group-heading treatment-card--hidden"
+                            data-category="{{ cat_group.grouper }}"
+                        >
+                            {{ group.grouper }}
                         </div>
-                        {% if treatment.requires_deposit %}
-                        <span class="treatment-card__deposit-badge">Deposit required</span>
                         {% endif %}
-                    </div>
-                    <button class="treatment-card__select-btn" onclick="selectTreatment(this.closest('.treatment-card'))">
-                        Select
-                    </button>
-                </div>
+                        {% for treatment in group.list %}
+                        <div
+                            class="treatment-card"
+                            data-category="{{ treatment.category.id }}"
+                            data-treatment-id="{{ treatment.id }}"
+                            data-treatment-name="{{ treatment.name }}"
+                            data-duration="{{ treatment.duration_minutes }}"
+                            data-price="{{ treatment.price }}"
+                            data-requires-deposit="{{ treatment.requires_deposit|yesno:'true,false' }}"
+                            data-deposit-amount="{{ treatment.deposit_amount|default:0 }}"
+                        >
+                            <div class="treatment-card__body">
+                                <h3 class="treatment-card__name">{{ treatment.name }}</h3>
+                                <p class="treatment-card__desc">{{ treatment.summary }}</p>
+                                <div class="treatment-card__meta">
+                                    <span class="treatment-card__duration">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                        {{ treatment.duration_minutes }} min
+                                    </span>
+                                    <span class="treatment-card__price">£{{ treatment.price }}</span>
+                                </div>
+                                {% if treatment.requires_deposit %}
+                                <span class="treatment-card__deposit-badge">Deposit required</span>
+                                {% endif %}
+                            </div>
+                            <button class="treatment-card__select-btn" onclick="selectTreatment(this.closest('.treatment-card'))">
+                                Select
+                            </button>
+                        </div>
+                        {% endfor %}
+                    {% endfor %}
                 {% endfor %}
             </div>
-        </div>
 
         <!-- ========== STEP 2: Calendar + Time Slots ========== -->
         <div class="booking-step booking-step--hidden" id="step-2">

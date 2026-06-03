@@ -44,6 +44,23 @@ class TreatmentCategory(models.Model):
         super().save(*args, **kwargs)
 
 
+class TreatmentGroup(models.Model):
+    category = models.ForeignKey(
+        TreatmentCategory,
+        on_delete=models.CASCADE,
+        related_name='groups'
+    )
+    name = models.CharField(max_length=100)
+    order = models.PositiveIntegerField(default=0, help_text="Controls display order within a category")
+
+    class Meta:
+        ordering = ['category__order', 'order', 'name']
+        unique_together = [('category', 'name')]
+
+    def __str__(self):
+        return self.name
+
+
 class Treatment(models.Model):
     category = models.ForeignKey(
         TreatmentCategory,
@@ -52,7 +69,17 @@ class Treatment(models.Model):
     )
 
     name = models.CharField(max_length=200)
-    slug = models.SlugField(unique=True, blank=True)
+    slug = models.SlugField(blank=True)
+
+    group = models.ForeignKey(
+        TreatmentGroup,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='treatments',
+        help_text="Optional subgroup within a category, e.g. 'Face', 'Body'. "
+                  "Cards with the same group are displayed together under a heading."
+    )
 
     summary = models.TextField(blank=True)
 
@@ -70,12 +97,16 @@ class Treatment(models.Model):
     order = models.PositiveIntegerField(default=0)
 
     class Meta:
-        ordering = ['category__order', 'order', 'name']
+        ordering = ['category__order', 'group__order', 'group__name', 'order', 'name']
+        # Allows "Chest" to exist in both IPL Hair Removal and Skin Rejuvenation
+        unique_together = [('name', 'category')]
 
     def __str__(self):
         return self.name
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.name)
+            # Include category slug prefix to avoid slug clashes across categories
+            category_prefix = slugify(self.category.name) if self.category_id else ''
+            self.slug = f"{category_prefix}-{slugify(self.name)}" if category_prefix else slugify(self.name)
         super().save(*args, **kwargs)

@@ -135,7 +135,7 @@ def _build_slots_json(treatments, booked_set):
 def overview(request):
     treatments = (
         Treatment.objects
-        .select_related('category')
+        .select_related('category', 'group')
         .filter(is_active=True)
     )
 
