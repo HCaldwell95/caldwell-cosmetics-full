@@ -97,7 +97,7 @@ class Treatment(models.Model):
     order = models.PositiveIntegerField(default=0)
 
     class Meta:
-        ordering = ['category__order', 'group__order', 'group__name', 'order', 'name']
+        ordering = ['category__order', 'category__id', 'group__order', 'group__name', 'order', 'name']
         # Allows "Chest" to exist in both IPL Hair Removal and Skin Rejuvenation
         unique_together = [('name', 'category')]
 
