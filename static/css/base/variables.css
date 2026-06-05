@@ -1,56 +1,50 @@
-/* Base variables */
+/* ===========================================
+   GLOBAL CSS VARIABLES — Caldwell Cosmetics
+   All :root variable definitions live here.
+   Page-specific overrides remain in their
+   own files (myjourney.css, services-pages.css)
+   as they are loaded after style.css.
+   =========================================== */
 :root {
 
+    /* ── Brand Colors ── */
     --color-primary: #d4a373;
     --color-primary-dark: #b8865f;
     --color-secondary: #2c3e50;
+
+    /* ── Text Colors ── */
     --color-text: #333333;
     --color-text-light: #666666;
+    --color-text-dark: #333333;         /* hero.css previously overrode variables.css (#302321) → consolidated here */
+    --color-heading: black;
+
+    /* ── Background Colors ── */
     --color-background: #ffffff;
     --color-background-alt: #f8f9fa;
+    --color-background-light: rgb(255, 251, 249);
+    --color-background-cream: rgb(253, 247, 245);
+
+    /* ── Accent & UI Colors ── */
     --color-overlay: rgba(0, 0, 0, 0.4);
+    --color-hero-overlay: rgba(95, 95, 95, 0.4);
+    --color-accent-peach: #eed6c2;
+    --color-accent-dark: #302121;
+    --color-accent-pink: #d27c8b;       /* from hero.css */
+    --color-scrollbar: #eed2be;
+    --color-gold: #f9e1b4;              /* from hero.css */
+    --color-gold-dark: #d4af37;         /* from hero.css */
+    --color-bg-beige: #fdfbf7;          /* from hero.css */
 
-    /* Background Colors */
-    --color-background-light: rgb(255, 251, 249); /* Off-White */
-    --color-background-cream: rgb(253, 247, 245); /* Cream */
-    --color-hero-overlay: rgba(95, 95, 95, 0.4); /* Hero image tint overlay */
+    /* ── Utility Colors (used by footer & navbar) ── */
+    --white: #ffffff;
+    --text: #333333;
+    --text-light: #555555;
 
-    /* Accent & Text Colors */
-    --color-accent-peach: #eed6c2; /* Peach Accent */
-    --color-accent-dark: #302121; /* Darker variant */
-    --color-text-dark: #302321; /* Dark Brown for text and links */
-    --color-heading: black;
-    --color-scrollbar: #eed2be; /* Custom scrollbar color */
-    /* Typography */
-    --font-cormorant: 'Cormorant', serif;
-    --font-italiana: 'Italiana', sans-serif;
-    --font-roboto: 'Roboto', sans-serif;
-    --font-lora: 'Lora', serif;
-    --font-jost: 'Jost', sans-serif;
-    --font-montserrat: 'Montserrat', sans-serif;
-    --font-nunito-sans: 'Nunito-Sans', sans-serif;
-    --fa-style-family-classic: "Font Awesome 6 Free";
-    --font-weight-regular: 400;
-    --font-weight-bold: 600;
-    --font-size-base: 14px;
-    --font-size-heading: 1.5rem;
-    --font-size-small: 90%;
+    /* ── Glass Effects ── */
+    --glass-light: rgba(255, 255, 255, 0.2);
+    --glass-dark: rgba(0, 0, 0, 0.2);
 
-    /* Spacing */
-    --spacing-xs: 0.5rem;
-    --spacing-sm: 1rem;
-    --spacing-md: 2rem;
-    --spacing-lg: 3rem;
-    --spacing-xl: 4rem;
-    --spacing-xxl: 6rem;
-    
-    --border-radius: 8px;
-    --transition-speed: 0.3s;
-    
-    --max-width-content: 1400px;
-    --max-width-text: 800px;
-
-    /* Border radius */
+    /* ── Borders ── */
     --color-border: rgba(0, 0, 0, 0.5);
     --border-width: 2px;
     --border-radius: 10px;
@@ -58,7 +52,51 @@
     --radius-md: 8px;
     --radius-lg: 12px;
 
-    /* Glass Colours */
-    --glass-light: rgba(255, 255, 255, 0.2);
-    --glass-dark: rgba(0, 0, 0, 0.2);
+    /* ── Typography: Font Families ── */
+    --font-cormorant: 'Cormorant Garamond', serif; /* hero.css previously overrode variables.css ('Cormorant') → consolidated here */
+    --font-italiana: 'Italiana', sans-serif;
+    --font-roboto: 'Roboto', sans-serif;
+    --font-lora: 'Lora', serif;
+    --font-jost: 'Jost', sans-serif;
+    --font-montserrat: 'Montserrat', sans-serif;
+    --font-nunito-sans: 'Nunito-Sans', sans-serif;
+    --fa-style-family-classic: "Font Awesome 6 Free";
+
+    /* ── Typography: Weights & Sizes ── */
+    --font-weight-regular: 400;
+    --font-weight-bold: 600;
+    --font-size-base: 14px;
+    --font-size-heading: 1.5rem;
+    --font-size-small: 90%;
+
+    /* ── Responsive Font Scale (from footer.css) ── */
+    --text-xs: clamp(0.75rem, 1vw, 0.875rem);
+    --text-sm: clamp(0.875rem, 1.5vw, 1rem);
+    --text-base: clamp(1rem, 2vw, 1.125rem);
+    --text-lg: clamp(1.125rem, 2.5vw, 1.25rem);
+    --text-xl: clamp(1.25rem, 3vw, 1.5rem);
+
+    /* ── Spacing (fixed scale) ── */
+    --spacing-xs: 0.5rem;
+    --spacing-sm: 1rem;
+    --spacing-md: 2rem;
+    --spacing-lg: 4rem;     /* hero.css previously overrode variables.css (3rem) → consolidated here */
+    --spacing-xl: 6rem;     /* hero.css previously overrode variables.css (4rem) → consolidated here */
+    --spacing-xxl: 6rem;
+
+    /* ── Spacing (responsive scale, from footer.css) ── */
+    --space-xs: clamp(0.5rem, 1vw, 0.75rem);
+    --space-sm: clamp(0.75rem, 1.5vw, 1rem);
+    --space-md: clamp(1rem, 2vw, 1.5rem);
+    --space-lg: clamp(1.5rem, 3vw, 2rem);
+    --space-xl: clamp(2rem, 4vw, 3rem);
+    --space-xxl: clamp(3rem, 6vw, 4rem);
+
+    /* ── Transitions ── */
+    --transition-speed: 0.3s;
+
+    /* ── Layout ── */
+    --max-width-content: 1400px;
+    --max-width-text: 800px;
+    --container-width: 1400px;          /* from hero.css */
 }

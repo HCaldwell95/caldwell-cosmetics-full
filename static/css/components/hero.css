@@ -1,29 +1,3 @@
-/* ============================================
-CSS VARIABLES & RESET
-(Maintaining your existing palette)
-============================================ */
-:root {
-    --font-cormorant: 'Cormorant Garamond', serif;
-    --font-lora: 'Lora', serif;
-    --font-montserrat: 'Montserrat', sans-serif;
-    
-    --color-gold: #f9e1b4;
-    --color-gold-dark: #d4af37;
-    --color-text-dark: #333333;
-    --color-text-light: #666666;
-    --color-bg-beige: #fdfbf7; /* Soft cream for the left box */
-    --color-accent-pink: #d27c8b;
-    
-    --spacing-xs: 0.5rem;
-    --spacing-sm: 1rem;
-    --spacing-md: 2rem;
-    --spacing-lg: 4rem;
-    --spacing-xl: 6rem;
-
-    --container-width: 1400px;
-}
-
-
 body {
     font-family: var(--font-lora);
     color: var(--color-text-dark);

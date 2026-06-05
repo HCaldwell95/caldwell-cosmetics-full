@@ -12,16 +12,13 @@ from .models import Booking
 
 
 # ---------------------------------------------------------------------------
-# Opening hours config — edit here if your schedule changes
-# ---------------------------------------------------------------------------
-# ⚠️  CHANGE 1: CLOSE_TIME corrected from (14, 30) to (17, 0).
-#     The old value cut off all afternoon slots. The frontend (booking.utils.js)
-#     now also uses 17:00 — both must always match.
+# Opening hours config — edit here if your schedule changes.
+# Frontend (booking.js, booking.utils.js) must always match these values.
 # ---------------------------------------------------------------------------
 
 OPEN_DAYS             = {0, 1, 2}  # Mon=0 … Sun=6  →  Mon/Tue/Wed
 OPEN_TIME             = (9, 30)    # 09:30
-CLOSE_TIME            = (14, 30)    # 17:00  ← was (14, 30)
+CLOSE_TIME            = (14, 30)   # 14:30
 SLOT_INTERVAL_MINUTES = 30         # Cadence between slot start times
 BOOKING_HORIZON_DAYS  = 60         # How many days ahead to expose
 

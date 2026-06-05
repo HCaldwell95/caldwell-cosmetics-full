@@ -2,37 +2,6 @@
    FOOTER - FULLY RESPONSIVE
    ============================================ */
 
-:root {
-  --pale-orange: #FFF0E5;
-  --peach: #FFD7BA;
-  --orange: #FF8C42;
-  --dark-orange: #E85D04;
-  --white: #FFFFFF;
-  --text: #333333;
-  --text-light: #555555;
-  --sage-green: #87A96B;
-  --black: #000000;
-  --light-gray: #F5F5F5;
-  --charcoal: #333333;
-  --medium-gray: #777777;
-  --grey-gradient: #5c5c5c;
-  
-  /* Responsive spacing scale */
-  --space-xs: clamp(0.5rem, 1vw, 0.75rem);
-  --space-sm: clamp(0.75rem, 1.5vw, 1rem);
-  --space-md: clamp(1rem, 2vw, 1.5rem);
-  --space-lg: clamp(1.5rem, 3vw, 2rem);
-  --space-xl: clamp(2rem, 4vw, 3rem);
-  --space-xxl: clamp(3rem, 6vw, 4rem);
-  
-  /* Responsive font scale */
-  --text-xs: clamp(0.75rem, 1vw, 0.875rem);
-  --text-sm: clamp(0.875rem, 1.5vw, 1rem);
-  --text-base: clamp(1rem, 2vw, 1.125rem);
-  --text-lg: clamp(1.125rem, 2.5vw, 1.25rem);
-  --text-xl: clamp(1.25rem, 3vw, 1.5rem);
-}
-
 /* ============================================
    FOOTER BASE STYLES
    ============================================ */

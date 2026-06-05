@@ -4,8 +4,6 @@
    PHFormula, and Lynton Dynamix pages.
    ============================================ */
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
 :root {
   --blush: #f5e6e2;
   --blush-mid: #e8cfc9;

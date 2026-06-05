@@ -1,3 +1,4 @@
+from datetime import date
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 from django.db.models.signals import post_save
@@ -125,7 +126,6 @@ class Profile(models.Model):
         """Returns the client's current age, or None if DOB not set."""
         if not self.date_of_birth:
             return None
-        from datetime import date
         today = date.today()
         dob = self.date_of_birth
         return today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
