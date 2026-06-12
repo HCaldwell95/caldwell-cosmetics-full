@@ -296,9 +296,11 @@
         formConsultation: "/forms/consultation/?on_behalf_of={id}",
         formPhotography:  "/forms/photography/?on_behalf_of={id}",
         formBotoxClient:  "/forms/botox/?on_behalf_of={id}",
+        formPrpClient:    "/forms/prp/?on_behalf_of={id}",
+        formLaserReconsent: "/forms/laser/reconsent/?on_behalf_of={id}",
+        prpOperator:      "/forms/prp/{id}/operator/",
     };
     const CSRF_TOKEN = "{{ csrf_token }}";
-    const OPEN_DAYS  = [1, 2, 3];
 </script>
 
 <script src="{% static 'js/booking.utils.js' %}"></script>

@@ -677,6 +677,10 @@
     padding: 2rem !important;
 }
 
+.dash-client-view-btn {
+    margin-bottom: 0px!important;
+}
+
 /* =====================================================
    Profile panel (slides in from right)
    ===================================================== */

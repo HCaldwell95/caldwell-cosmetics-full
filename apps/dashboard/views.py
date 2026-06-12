@@ -24,6 +24,8 @@ from apps.forms_system.models import (
     BotoxConsentForm,
     PhotographyConsent,
     RecordCard,
+    PRPConsentForm,
+    LaserReConsent,
 )
 
 try:
@@ -60,7 +62,15 @@ def _client_form_status(user):
     consultation = _get_latest_form(ConsultationForm, user)
     photography  = _get_latest_form(PhotographyConsent, user)
     botox        = _get_latest_form(BotoxConsentForm, user)
+    prp          = _get_latest_form(PRPConsentForm, user)
     record_count = RecordCard.objects.filter(user=user).count()
+
+    try:
+        laser_latest = LaserReConsent.objects.filter(user=user).latest("completed_at")
+        laser_count  = LaserReConsent.objects.filter(user=user).count()
+    except Exception:
+        laser_latest = None
+        laser_count  = 0
 
     return {
         "consultation": {
@@ -78,6 +88,16 @@ def _client_form_status(user):
             "fully_complete":   botox.is_fully_complete if botox else False,
             "date":             botox.completed_at if botox else None,
             "id":               botox.pk if botox else None,
+        },
+        "prp": {
+            "client_signed":    prp.client_signed if prp else False,
+            "fully_complete":   prp.is_fully_complete if prp else False,
+            "date":             prp.completed_at if prp else None,
+            "id":               prp.pk if prp else None,
+        },
+        "laser_reconsent": {
+            "count":            laser_count,
+            "last_date":        laser_latest.completed_at.strftime("%d %b %Y") if laser_latest else None,
         },
         "record_cards": record_count,
     }

@@ -161,6 +161,20 @@
                     data.botox.fully_complete,
                     '/forms/botox/'
                 ),
+                pill(
+                    data.prp.fully_complete ? 'PRP Consent ✓'
+                        : data.prp.client_signed ? 'PRP Consent (Awaiting Practitioner)'
+                        : 'PRP Consent',
+                    data.prp.fully_complete,
+                    '/forms/prp/'
+                ),
+                pill(
+                    data.laser_reconsent.count > 0
+                        ? `Laser Re-Consent (${data.laser_reconsent.count})`
+                        : 'Laser Re-Consent',
+                    data.laser_reconsent.count > 0,
+                    '/forms/laser/reconsent/'
+                ),
             ];
 
             bar.innerHTML = pills.join('');

@@ -309,6 +309,24 @@ class BotoxConsentForm(BaseForm):
     treatment_batch_3           = models.CharField(max_length=100, blank=True)
 
     operator_notes              = models.TextField(blank=True)
+
+    # ---- Step 2: Treatment areas (facial mapping) ----
+    treatment_product_lot       = models.CharField(max_length=200, blank=True)
+    units_forehead              = models.CharField(max_length=10, blank=True)
+    units_glabella              = models.CharField(max_length=10, blank=True)
+    units_crows_feet            = models.CharField(max_length=10, blank=True)
+    units_jelly_roll            = models.CharField(max_length=10, blank=True)
+    units_bunny_lines           = models.CharField(max_length=10, blank=True)
+    units_gummy_smile           = models.CharField(max_length=10, blank=True)
+    units_smokers_lines         = models.CharField(max_length=10, blank=True)
+    units_lip_flip              = models.CharField(max_length=10, blank=True)
+    units_dao_jowls             = models.CharField(max_length=10, blank=True)
+    units_chin                  = models.CharField(max_length=10, blank=True)
+    units_masseter              = models.CharField(max_length=10, blank=True)
+    units_neck_bands            = models.CharField(max_length=10, blank=True)
+    units_total                 = models.CharField(max_length=10, blank=True)
+    treatment_cost              = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
+
     operator_signature          = models.TextField(blank=True)
     operator_signed             = models.BooleanField(default=False)
     operator_signed_at          = models.DateTimeField(null=True, blank=True)
@@ -487,3 +505,133 @@ class RecordCard(models.Model):
             )
             self.treatment_number = (last.treatment_number + 1) if last else 1
         super().save(*args, **kwargs)
+
+
+class PRPConsentForm(BaseForm):
+    """
+    PRP (Platelet-Rich Plasma) Consent — two-step.
+    Step 1: client section. Step 2: operator section.
+    """
+
+    # ---- Step 1: Client ----
+    full_name                   = models.CharField(max_length=200)
+    date_of_birth               = models.DateField()
+    phone_number                = models.CharField(max_length=20, blank=True)
+    email                       = models.EmailField()
+    address                     = models.TextField(blank=True)
+    emergency_contact_name      = models.CharField(max_length=200, blank=True)
+    emergency_contact_phone     = models.CharField(max_length=20, blank=True)
+
+    # Medical history checkboxes
+    blood_disorders             = models.BooleanField(default=False)
+    on_anticoagulants           = models.BooleanField(default=False)
+    active_infection            = models.BooleanField(default=False)
+    autoimmune_disease          = models.BooleanField(default=False)
+    history_of_cancer           = models.BooleanField(default=False)
+    skin_conditions             = models.BooleanField(default=False)
+    recent_vaccination          = models.BooleanField(default=False)
+    communicable_diseases       = models.BooleanField(default=False)
+    keloid_scarring             = models.BooleanField(default=False)
+    current_medications         = models.TextField(blank=True)
+    other_conditions            = models.TextField(blank=True)
+
+    # Treatment area / goals
+    treatment_areas             = models.CharField(max_length=300, blank=True)
+    expectations                = models.TextField(blank=True)
+
+    # Health questions (yes/no)
+    is_pregnant                 = models.BooleanField(default=False)
+    is_breastfeeding            = models.BooleanField(default=False)
+    has_medical_problems        = models.BooleanField(default=False)
+    on_medication               = models.BooleanField(default=False)
+    has_allergies               = models.BooleanField(default=False)
+    previous_prp                = models.BooleanField(default=False)
+    yes_details                 = models.TextField(blank=True)
+
+    # Consent declarations
+    consent_procedure           = models.BooleanField(default=False)
+    consent_risks               = models.BooleanField(default=False)
+    consent_results             = models.BooleanField(default=False)
+    consent_aftercare           = models.BooleanField(default=False)
+    consent_photos              = models.BooleanField(default=False)
+    consent_privacy             = models.BooleanField(default=False)
+    consent_agreement           = models.BooleanField(default=False)
+
+    # Step 1 complete flag
+    client_signed               = models.BooleanField(default=False)
+    client_signed_at            = models.DateTimeField(null=True, blank=True)
+
+    # ---- Step 2: Operator ----
+    product_name                = models.CharField(max_length=200, blank=True)
+    product_batch               = models.CharField(max_length=200, blank=True)
+    vials_drawn                 = models.CharField(max_length=20, blank=True)
+    centrifuge_details          = models.CharField(max_length=200, blank=True)
+    application_method          = models.CharField(max_length=200, blank=True)
+    treatment_areas_operator    = models.TextField(blank=True)
+    next_appointment            = models.CharField(max_length=200, blank=True)
+    treatment_cost              = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
+    operator_notes              = models.TextField(blank=True)
+    operator_signature          = models.TextField(blank=True)
+    operator_signed             = models.BooleanField(default=False)
+    operator_signed_at          = models.DateTimeField(null=True, blank=True)
+    operator_signed_by          = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name="prp_operator_completions",
+    )
+
+    @property
+    def is_fully_complete(self):
+        return self.client_signed and self.operator_signed
+
+    class Meta(BaseForm.Meta):
+        verbose_name = "PRP Consent Form"
+
+    def __str__(self):
+        return f"PRP Consent — {self.user.full_name} ({self.completed_at.date()})"
+
+
+class LaserReConsent(models.Model):
+    """
+    Standalone laser re-consent — completed at each laser appointment.
+    Practitioner-assisted: client signs, operator countersigns.
+    """
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="laser_reconsents",
+    )
+    completed_at = models.DateTimeField(auto_now_add=True)
+    practitioner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name="laser_reconsents_as_practitioner",
+    )
+
+    # Pre-treatment checks
+    changes_consultation_form   = models.BooleanField(default=False)
+    changes_medication          = models.BooleanField(default=False)
+    changes_uv_exposure         = models.BooleanField(default=False)
+    active_tan                  = models.BooleanField(default=False)
+    changes_detail              = models.TextField(blank=True)
+
+    # Client
+    client_feedback             = models.TextField(blank=True)
+    consent_proceed             = models.BooleanField(default=False)
+    client_signature            = models.TextField()
+    client_signed_at            = models.DateTimeField(null=True, blank=True)
+
+    # Operator
+    treatment_notes             = models.TextField(blank=True)
+    operator_signature          = models.TextField(blank=True)
+    operator_signed             = models.BooleanField(default=False)
+    operator_signed_at          = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["-completed_at"]
+        verbose_name = "Laser Re-Consent"
+
+    def __str__(self):
+        return f"Laser Re-Consent — {self.user.full_name} ({self.completed_at.date()})"

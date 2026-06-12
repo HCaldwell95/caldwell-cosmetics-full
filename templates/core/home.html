@@ -106,7 +106,6 @@
                         <button class="tx-pill" data-treatment="vampire-facial" role="tab" aria-selected="false">"Vampire" Facial</button>
                         <button class="tx-pill" data-treatment="resurfacing" role="tab" aria-selected="false">PHFormula Skin Resurfacing</button>
                         <button class="tx-pill" data-treatment="nanoneedling" role="tab" aria-selected="false">Nanoneedling</button>
-                        <button class="tx-pill" data-treatment="skin-plan" role="tab" aria-selected="false">Skin Plan Analysis</button>
                         <!-- <button class="tx-pill" data-treatment="map-my-mole" role="tab" aria-selected="false">Map My Mole</button> -->
                     </div>
                 </div>
@@ -166,20 +165,23 @@
        IMAGE MAP — one image per treatment, shown on every slide.
        Swap these URLs for your own Cloudinary images when ready.
     ------------------------------------------------------- */
+    const TREATMENT_VIDEOS = {
+        "consultations": "https://res.cloudinary.com/ddj2rpxcb/video/upload/v1781204888/consultation-vid_syxzbt.mp4",
+        "rosacea": "https://res.cloudinary.com/ddj2rpxcb/video/upload/v1755382637/Oou4aGk9_w1kjvj.mp4",
+    };
+
     const TREATMENT_IMAGES = {
         "consultations":  "https://res.cloudinary.com/ddj2rpxcb/image/upload/v1776944169/studio_ubcdom.jpg",
-        "laser-hair":       "https://images.unsplash.com/photo-1629909613654-28e377c37b09?q=80&w=1200&auto=format&fit=crop",
-        "pigment":    "https://images.unsplash.com/photo-1512290923902-8a9f81dc236c?q=80&w=1200&auto=format&fit=crop",
-        "vascular":       "https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?q=80&w=1200&auto=format&fit=crop",
-        "rosacea":        "https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?q=80&w=1200&auto=format&fit=crop",
-        "acne":           "https://images.unsplash.com/photo-1576091160550-2173dba999ef?q=80&w=1200&auto=format&fit=crop",
-        "botox":          "https://res.cloudinary.com/ddj2rpxcb/image/upload/v1777062108/IMG_3622_oxfw5y.jpg?q=80&w=1200&auto=format&fit=crop",
-        "prp-hair":       "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?q=80&w=1200&auto=format&fit=crop",
-        "vampire-facial":       "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?q=80&w=1200&auto=format&fit=crop",
-        "resurfacing":    "https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?q=80&w=1200&auto=format&fit=crop",
-        "nanoneedling":   "https://images.unsplash.com/photo-1629909613654-28e377c37b09?q=80&w=1200&auto=format&fit=crop",
-        "skin-plan":      "https://images.unsplash.com/photo-1512290923902-8a9f81dc236c?q=80&w=1200&auto=format&fit=crop",
-        "illumifacial":    "https://images.unsplash.com/photo-1576091160550-2173dba999ef?q=80&w=1200&auto=format&fit=crop"
+        "laser-hair":     "https://res.cloudinary.com/ddj2rpxcb/image/upload/v1781303328/laser-hair_c9ub6e.png?q=80&w=1200&auto=format&fit=crop",
+        "pigment":        "https://res.cloudinary.com/ddj2rpxcb/image/upload/v1781303467/pigment_df1fik.jpg?q=80&w=1200&auto=format&fit=crop",
+        "vascular":       "https://res.cloudinary.com/ddj2rpxcb/image/upload/v1781304027/vascular_h4fcke.jpg?q=80&w=1200&auto=format&fit=crop",
+        "acne":           "https://res.cloudinary.com/ddj2rpxcb/image/upload/v1781303529/acne_qu5f4c.jpg?q=80&w=1200&auto=format&fit=crop",
+        "botox":          "https://res.cloudinary.com/ddj2rpxcb/image/upload/v1750017552/media/treatments/anti-wrinkle-treatment-card_ug4mrh.jpg?q=80&w=1200&auto=format&fit=crop",
+        "prp-hair":       "https://res.cloudinary.com/ddj2rpxcb/image/upload/v1781303499/prp_xukofm.jpg?q=80&w=1200&auto=format&fit=crop",
+        "vampire-facial": "https://res.cloudinary.com/ddj2rpxcb/image/upload/v1781304163/vampire_ngar1b.jpg?q=80&w=1200&auto=format&fit=crop",
+        "resurfacing":    "https://res.cloudinary.com/ddj2rpxcb/image/upload/v1781206371/copy_of_phformula_pnymep.jpg?q=80&w=1200&auto=format&fit=crop",
+        "nanoneedling":   "https://res.cloudinary.com/ddj2rpxcb/image/upload/v1781300649/nanoneedlingtwo_c33cn0.jpg?q=80&w=1200&auto=format&fit=crop",
+        "illumifacial":   "https://res.cloudinary.com/ddj2rpxcb/image/upload/v1781303426/illumifacial_aktyyj.jpg?q=80&w=1200&auto=format&fit=crop"
     };
 
     const TREATMENTS = {
@@ -304,17 +306,6 @@
                 { label: "Aftercare", body: "<ul><li>Some clients experience mild flushing for a few hours — minimal downtime overall</li><li>Avoid makeup for 12-24 hours to let the channels close</li><li>Apply a gentle moisturiser and SPF 50+</li></ul>" }
             ]
         },
-        "skin-plan": {
-            name: "Skin Plan Analysis",
-            slides: [
-                { label: "What it is", body: "<p>A comprehensive skin analysis service using professional tools and clinical assessment to build a detailed picture of your skin's current condition — including hydration levels, pigmentation, sensitivity, texture, and pore health.</p>" },
-                { label: "What it achieves", body: "<p>A complete understanding of your skin and a personalised, evidence-based skincare and treatment plan. This removes guesswork and helps you invest in the products and treatments that will actually make a difference for your specific skin.</p>" },
-                { label: "What happens in the session", body: "<p>Rabia will carry out an in-depth assessment of your skin using clinical tools and detailed questioning about your lifestyle, diet, sleep, and skincare habits. You'll leave with a written, personalised skin plan. Sessions last 45–60 minutes.</p>" },
-                { label: "Treatment course", body: "<p>Usually a one-off session, with optional follow-up reviews at 3-6 months to track progress and adjust the plan as your skin evolves.</p>" },
-                { label: "Before Care", body: "<ul><li>Arrive with clean skin and no makeup — this allows for the most accurate analysis</li><li>Bring a list of your current skincare products if possible</li></ul>" },
-                { label: "Aftercare", body: "<p>No aftercare required. You'll receive a written skin plan to take away. Rabia will advise on next steps and any treatments or products she recommends.</p>" }
-            ]
-        },
         "illumifacial": {
             name: "illumiFacial®",
             slides: [
@@ -395,13 +386,14 @@
     ------------------------------------------------------- */
     function buildSlides(treatmentKey) {
         const treatment = TREATMENTS[treatmentKey];
+        const video = TREATMENT_VIDEOS[treatmentKey];
         const image = TREATMENT_IMAGES[treatmentKey];
         track.innerHTML = "";
         dotsContainer.innerHTML = "";
 
         treatment.slides.forEach((slide, i) => {
             const el = document.createElement("div");
-            el.className = "tx-slide" + (image ? "" : " tx-slide--no-image");
+            el.className = "tx-slide" + (video ? " tx-slide--has-video" : image ? "" : " tx-slide--no-image");
             el.setAttribute("role", "tabpanel");
 
             el.innerHTML = `
@@ -410,7 +402,10 @@
                     <h3 class="tx-slide__heading">${slide.label}</h3>
                     <div class="tx-slide__body">${slide.body}</div>
                 </div>
-                ${image ? `
+                ${video ? `
+                <div class="tx-slide__image-panel">
+                    <video src="${video}" autoplay loop muted playsinline></video>
+                </div>` : image ? `
                 <div class="tx-slide__image-panel">
                     <img src="${image}" alt="${treatment.name} at Caldwell Cosmetics" loading="lazy">
                 </div>` : ""}

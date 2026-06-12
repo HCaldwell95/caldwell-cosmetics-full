@@ -9,8 +9,35 @@
 
 <div class="cform-header">
     <span class="cform-header__eyebrow">Caldwell Cosmetics — Step 1 of 2</span>
-    <h1 class="cform-header__title">Botulinum Toxin Consent</h1>
-    <p class="cform-header__sub">Please complete this form before your appointment. The practitioner will countersign at the clinic.</p>
+    <h1 class="cform-header__title">Botulinum Toxin Consent &amp; Consultation</h1>
+    <p class="cform-header__sub">Please read the information below carefully and complete all sections before your appointment. The practitioner will countersign at the clinic.</p>
+</div>
+
+<div class="cform-section">
+    <h2 class="cform-section__title">About This Treatment</h2>
+    <p class="cform-hint" style="color:var(--color-text,#2d2d2d); font-size:0.875rem; margin-bottom:1rem;">This form confirms that you understand the potential benefits and risks associated with the Botulinum Toxin procedure, as outlined below. By signing, you acknowledge that you have considered this information and are happy to proceed, feeling confident that it aligns with your personal goals and wellbeing.</p>
+
+    <p class="cform-label" style="margin-bottom:0.5rem; border-bottom:1px solid var(--color-border,#e8e0d5); padding-bottom:0.4rem;">What is being injected?</p>
+    <p class="cform-hint" style="color:var(--color-text,#2d2d2d); margin-bottom:0.75rem;">Botulinum Toxin (which may be known by brand names such as Azzalure, Botox, Evolus, or Bocouture) is a purified protein derived from the bacterium <em>Clostridium botulinum</em>. It works by temporarily relaxing targeted muscles or reducing sweating by blocking nerve signals. The effects usually last between 2 to 6 months, although this can vary from person to person.</p>
+    <p class="cform-hint" style="color:var(--color-text,#2d2d2d); margin-bottom:1rem;">In many cases, Botulinum Toxin is used 'off-label', meaning it is safely and commonly used in areas not specifically listed in the product's official licence. This is standard practice and based on clinical experience and best outcomes.</p>
+
+    <p class="cform-label" style="margin-bottom:0.5rem; border-bottom:1px solid var(--color-border,#e8e0d5); padding-bottom:0.4rem;">What are the possible side effects and risks?</p>
+    <p class="cform-hint" style="color:var(--color-text,#2d2d2d); margin-bottom:0.5rem;">While Botulinum Toxin treatments are generally safe, some people may experience temporary side effects, which usually settle within a few days. These may include:</p>
+    <ul style="font-family:var(--font-montserrat,'Montserrat',sans-serif); font-size:0.875rem; color:var(--color-text,#2d2d2d); margin:0 0 0.75rem 1.25rem; padding:0; line-height:1.7;">
+        <li>Mild headache</li>
+        <li>Swelling, bruising, or redness at the injection site</li>
+        <li>Small amount of bleeding or discomfort during treatment</li>
+        <li>Twitching, itching, or puffiness around the eyes</li>
+        <li>Temporary numbness or altered sensation in the treated area</li>
+    </ul>
+    <p class="cform-hint" style="color:var(--color-text,#2d2d2d); margin-bottom:0.5rem;">Less common side effects include:</p>
+    <ul style="font-family:var(--font-montserrat,'Montserrat',sans-serif); font-size:0.875rem; color:var(--color-text,#2d2d2d); margin:0 0 0.75rem 1.25rem; padding:0; line-height:1.7;">
+        <li>Allergic reactions, including very rare but serious reactions like anaphylaxis</li>
+        <li>Asymmetry, where one side of the face may appear slightly different from the other</li>
+        <li>Temporary drooping of facial features (such as the eyelid or brow)</li>
+        <li>Dry eyes, or more rarely, blurred or double vision</li>
+    </ul>
+    <p class="cform-hint" style="color:var(--color-text,#2d2d2d); margin-bottom:0;">Every individual responds differently to treatment, and although very rare, there may be unknown risks specific to your body or medical history.</p>
 </div>
 
 <form id="botoxClientForm" class="cform" method="post" action="{% url 'forms_system:botox_client' %}{% if on_behalf %}?on_behalf_of={{ target_user.pk }}{% endif %}">
@@ -73,15 +100,57 @@
 
     <div class="cform-section cform-section--consent">
         <h2 class="cform-section__title">Consent Declarations</h2>
+        <p class="cform-hint">Please read each statement carefully and tick to confirm you understand and agree before signing.</p>
         <div class="cform-consent-list">
-            <label class="cform-consent-item"><input type="checkbox" name="consent_interactions" required><span>I have shared my full medical history and any medications or supplements I'm currently taking with my clinician. I understand that certain medications may increase the risk of bruising.</span></label>
-            <label class="cform-consent-item"><input type="checkbox" name="consent_appearance" required><span>I understand that there is a chance of visual side effects that may affect the final appearance, including increased asymmetry, swelling, changes in pigmentation, or surface irregularities.</span></label>
-            <label class="cform-consent-item"><input type="checkbox" name="consent_limitations" required><span>I understand that Botulinum Toxin may not work as expected and is most effective at softening dynamic lines. Alternative treatments may be more suitable in some cases.</span></label>
-            <label class="cform-consent-item"><input type="checkbox" name="consent_alternatives" required><span>I understand that there are alternative options to Botulinum Toxin treatment, and I have chosen this treatment as the most suitable option for me at this time.</span></label>
-            <label class="cform-consent-item"><input type="checkbox" name="consent_followup" required><span>I understand that adjustment or top-up injections are only available free of charge within 2 weeks of my initial treatment. I agree to follow all aftercare advice.</span></label>
-            <label class="cform-consent-item"><input type="checkbox" name="consent_dissatisfaction" required><span>I understand that results can vary and cannot be guaranteed. I acknowledge that the effects are temporary and ongoing treatments may be needed.</span></label>
-            <label class="cform-consent-item"><input type="checkbox" name="consent_agreement" required><span>By signing, I confirm I have carefully considered the potential side effects and risks, discussed all concerns with my clinician, and willingly accept all associated risks and conditions of the procedure.</span></label>
-            <label class="cform-consent-item"><input type="checkbox" name="consent_privacy_policy" required><span>I have read Caldwell Cosmetics' privacy policy. I acknowledge that clinical photographs will be taken and securely stored for 21 years as part of my medical records. No refunds will be given if side effects occur.</span></label>
+
+            <p class="cform-label" style="margin:0.5rem 0 0.25rem; padding-bottom:0.3rem; border-bottom:1px solid var(--color-border,#e8e0d5);">Interactions</p>
+            <label class="cform-consent-item">
+                <input type="checkbox" name="consent_interactions" required>
+                <span>I have shared my full medical history and any medications or supplements I'm currently taking with my clinician through this form. I understand that certain medications — including, but not limited to, Vitamin E, Aspirin, Motrin (ibuprofen), Clopidogrel, and Warfarin — may increase the risk of bruising following treatment.</span>
+            </label>
+
+            <p class="cform-label" style="margin:0.75rem 0 0.25rem; padding-bottom:0.3rem; border-bottom:1px solid var(--color-border,#e8e0d5);">Appearance</p>
+            <label class="cform-consent-item">
+                <input type="checkbox" name="consent_appearance" required>
+                <span>I understand that, as with any aesthetic treatment, there is a chance of visual side effects that may affect the final appearance. These may include increased asymmetry, swelling or puffiness, changes in skin pigmentation, surface irregularities or uneven texture, the appearance of thread veins or new capillaries, or other minor blemishes. These effects may improve over time, respond to further treatment, or in rare cases, be permanent. I also understand that it's possible to feel unhappy with the results even if the treatment has worked as intended.</span>
+            </label>
+
+            <p class="cform-label" style="margin:0.75rem 0 0.25rem; padding-bottom:0.3rem; border-bottom:1px solid var(--color-border,#e8e0d5);">Limitations</p>
+            <label class="cform-consent-item">
+                <input type="checkbox" name="consent_limitations" required>
+                <span>I understand that in some cases, Botulinum Toxin may not work as expected — the effects might wear off sooner than usual, or the treatment may have little or no visible effect. Botulinum Toxin is most effective at softening dynamic lines (wrinkles caused by facial movement). Static lines, visible at rest, may not respond as well, and results in these areas can vary. Alternative treatments may be more suitable in some cases.</span>
+            </label>
+
+            <p class="cform-label" style="margin:0.75rem 0 0.25rem; padding-bottom:0.3rem; border-bottom:1px solid var(--color-border,#e8e0d5);">Alternatives</p>
+            <label class="cform-consent-item">
+                <input type="checkbox" name="consent_alternatives" required>
+                <span>I understand that there are alternative options to Botulinum Toxin treatment, including: choosing not to have any treatment; topical creams or skincare products; chemical peels or laser treatments; surgical options such as denervation, brow lift, or facelift; and injectable treatments such as hyaluronic acid (dermal fillers). Having considered these alternatives, I have chosen Botulinum Toxin as the most suitable option for me at this time.</span>
+            </label>
+
+            <p class="cform-label" style="margin:0.75rem 0 0.25rem; padding-bottom:0.3rem; border-bottom:1px solid var(--color-border,#e8e0d5);">Follow-Up</p>
+            <label class="cform-consent-item">
+                <input type="checkbox" name="consent_followup" required>
+                <span>I understand that if I need any adjustment or top-up injections, these are only available free of charge within 2 weeks of my initial treatment. After this period, any further treatment will be considered a new appointment and charged at the full price. I also agree to follow all aftercare advice provided to me to help achieve the best possible results.</span>
+            </label>
+
+            <p class="cform-label" style="margin:0.75rem 0 0.25rem; padding-bottom:0.3rem; border-bottom:1px solid var(--color-border,#e8e0d5);">Dissatisfaction</p>
+            <label class="cform-consent-item">
+                <input type="checkbox" name="consent_dissatisfaction" required>
+                <span>I understand that the results of any treatment can vary from person to person, and the level of improvement cannot be guaranteed. As appearance is subjective, I acknowledge that even if the treatment works as intended, I may still feel dissatisfied with the outcome. I also understand that the effects of Botulinum Toxin are temporary and will gradually wear off over time. Ongoing or additional treatments may be needed to maintain the desired result.</span>
+            </label>
+
+            <p class="cform-label" style="margin:0.75rem 0 0.25rem; padding-bottom:0.3rem; border-bottom:1px solid var(--color-border,#e8e0d5);">Agreement</p>
+            <label class="cform-consent-item">
+                <input type="checkbox" name="consent_agreement" required>
+                <span>By signing this form, I confirm that I have carefully considered the potential side effects, risks, and uncertainties related to the treatment and have decided that proceeding is in my best interest at this time. I have discussed all relevant details and concerns with my clinician and have provided all necessary information to help plan my treatment safely and effectively. I understand and accept that, based on the overall balance of benefits and risks, Botulinum Toxin treatment is the most suitable option for me. I willingly accept all associated risks, complications, and conditions of the procedure.</span>
+            </label>
+
+            <p class="cform-label" style="margin:0.75rem 0 0.25rem; padding-bottom:0.3rem; border-bottom:1px solid var(--color-border,#e8e0d5);">Photography &amp; Privacy</p>
+            <label class="cform-consent-item">
+                <input type="checkbox" name="consent_privacy_policy" required>
+                <span>I acknowledge that clinical photographs will be taken and securely stored for 21 years as part of my medical records. <strong>No Refunds Policy:</strong> I understand that results cannot be guaranteed. If additional treatment is needed to achieve my desired outcome, I will be responsible for any related costs. This also applies to the treatment of any side effects that may arise.</span>
+            </label>
+
         </div>
     </div>
 

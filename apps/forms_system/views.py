@@ -9,7 +9,7 @@ from django.views.decorators.http import require_POST
 from django.contrib.auth import get_user_model
 from .utils import bool_from_post
 
-from .models import ConsultationForm, BotoxConsentForm, PhotographyConsent, RecordCard
+from .models import ConsultationForm, BotoxConsentForm, PhotographyConsent, RecordCard, PRPConsentForm, LaserReConsent
 
 User = get_user_model()
 
@@ -32,7 +32,7 @@ def staff_required(view_func):
 def _get_or_none(model, **kwargs):
     try:
         return model.objects.filter(**kwargs).latest("completed_at")
-    except model.DoesNotExist:
+    except Exception:
         return None
 
 
@@ -70,7 +70,15 @@ def form_status(request, user_id):
     consultation  = _get_or_none(ConsultationForm, user=user)
     photography   = _get_or_none(PhotographyConsent, user=user)
     botox         = _get_or_none(BotoxConsentForm, user=user)
+    prp           = _get_or_none(PRPConsentForm, user=user)
     record_count  = RecordCard.objects.filter(user=user).count()
+
+    try:
+        laser_latest = LaserReConsent.objects.filter(user=user).latest("completed_at")
+        laser_count  = LaserReConsent.objects.filter(user=user).count()
+    except Exception:
+        laser_latest = None
+        laser_count  = 0
 
     return JsonResponse({
         "consultation": {
@@ -88,6 +96,16 @@ def form_status(request, user_id):
             "fully_complete": botox.is_fully_complete if botox else False,
             "date": botox.completed_at.strftime("%d %b %Y") if botox else None,
             "id": botox.pk if botox else None,
+        },
+        "prp": {
+            "client_signed": prp.client_signed if prp else False,
+            "fully_complete": prp.is_fully_complete if prp else False,
+            "date": prp.completed_at.strftime("%d %b %Y") if prp else None,
+            "id": prp.pk if prp else None,
+        },
+        "laser_reconsent": {
+            "count": laser_count,
+            "last_date": laser_latest.completed_at.strftime("%d %b %Y") if laser_latest else None,
         },
         "record_cards": record_count,
     })
@@ -382,25 +400,24 @@ def botox_operator(request, pk):
                 {"ok": False, "error": "Operator signature is required."}, status=400
             )
 
-        botox.treatment_notes   = data.get("treatment_notes", "")
-        botox.next_appointment  = data.get("next_appointment", "")
-
-        botox.treatment_line_1  = data.get("treatment_line_1", "")
-        botox.treatment_price_1 = data.get("treatment_price_1") or None
-        botox.treatment_units_1 = data.get("treatment_units_1", "")
-        botox.treatment_batch_1 = data.get("treatment_batch_1", "")
-
-        botox.treatment_line_2  = data.get("treatment_line_2", "")
-        botox.treatment_price_2 = data.get("treatment_price_2") or None
-        botox.treatment_units_2 = data.get("treatment_units_2", "")
-        botox.treatment_batch_2 = data.get("treatment_batch_2", "")
-
-        botox.treatment_line_3  = data.get("treatment_line_3", "")
-        botox.treatment_price_3 = data.get("treatment_price_3") or None
-        botox.treatment_units_3 = data.get("treatment_units_3", "")
-        botox.treatment_batch_3 = data.get("treatment_batch_3", "")
-
-        botox.operator_notes       = data.get("operator_notes", "")
+        botox.treatment_notes        = data.get("treatment_notes", "")
+        botox.next_appointment       = data.get("next_appointment", "")
+        botox.treatment_product_lot  = data.get("treatment_product_lot", "")
+        botox.units_forehead         = data.get("units_forehead", "")
+        botox.units_glabella         = data.get("units_glabella", "")
+        botox.units_crows_feet       = data.get("units_crows_feet", "")
+        botox.units_jelly_roll       = data.get("units_jelly_roll", "")
+        botox.units_bunny_lines      = data.get("units_bunny_lines", "")
+        botox.units_gummy_smile      = data.get("units_gummy_smile", "")
+        botox.units_smokers_lines    = data.get("units_smokers_lines", "")
+        botox.units_lip_flip         = data.get("units_lip_flip", "")
+        botox.units_dao_jowls        = data.get("units_dao_jowls", "")
+        botox.units_chin             = data.get("units_chin", "")
+        botox.units_masseter         = data.get("units_masseter", "")
+        botox.units_neck_bands       = data.get("units_neck_bands", "")
+        botox.units_total            = data.get("units_total", "")
+        botox.treatment_cost         = data.get("treatment_cost") or None
+        botox.operator_notes         = data.get("operator_notes", "")
         botox.operator_signature   = sig
         botox.operator_signed      = True
         botox.operator_signed_at   = timezone.now()
@@ -521,3 +538,192 @@ def record_card_view(request, pk):
         return redirect("accounts:profile")
 
     return render(request, "forms_system/record_card_view.html", {"card": card})
+
+
+# ---------------------------------------------------------------------------
+# PRP — Step 1 (client)
+# ---------------------------------------------------------------------------
+
+@login_required
+def prp_client(request):
+    target_user = _get_target_user(request)
+    on_behalf   = _is_practitioner_mode(request)
+    existing    = _get_or_none(PRPConsentForm, user=target_user)
+
+    if request.method == "POST":
+        data = request.POST
+        sig  = data.get("signature", "")
+
+        if not sig:
+            return JsonResponse({"ok": False, "error": "Signature is required."}, status=400)
+
+        prp = PRPConsentForm.objects.create(
+            user=target_user,
+            completed_by_practitioner=on_behalf,
+            practitioner=request.user if on_behalf else None,
+            signature=sig,
+
+            full_name=data.get("full_name", ""),
+            date_of_birth=data.get("date_of_birth"),
+            phone_number=data.get("phone_number", ""),
+            email=data.get("email", ""),
+            address=data.get("address", ""),
+            emergency_contact_name=data.get("emergency_contact_name", ""),
+            emergency_contact_phone=data.get("emergency_contact_phone", ""),
+
+            blood_disorders=bool(data.get("blood_disorders")),
+            on_anticoagulants=bool(data.get("on_anticoagulants")),
+            active_infection=bool(data.get("active_infection")),
+            autoimmune_disease=bool(data.get("autoimmune_disease")),
+            history_of_cancer=bool(data.get("history_of_cancer")),
+            skin_conditions=bool(data.get("skin_conditions")),
+            recent_vaccination=bool(data.get("recent_vaccination")),
+            communicable_diseases=bool(data.get("communicable_diseases")),
+            keloid_scarring=bool(data.get("keloid_scarring")),
+            current_medications=data.get("current_medications", ""),
+            other_conditions=data.get("other_conditions", ""),
+
+            treatment_areas=data.get("treatment_areas", ""),
+            expectations=data.get("expectations", ""),
+
+            is_pregnant=bool(data.get("is_pregnant")),
+            is_breastfeeding=bool(data.get("is_breastfeeding")),
+            has_medical_problems=bool(data.get("has_medical_problems")),
+            on_medication=bool(data.get("on_medication")),
+            has_allergies=bool(data.get("has_allergies")),
+            previous_prp=bool(data.get("previous_prp")),
+            yes_details=data.get("yes_details", ""),
+
+            consent_procedure=bool(data.get("consent_procedure")),
+            consent_risks=bool(data.get("consent_risks")),
+            consent_results=bool(data.get("consent_results")),
+            consent_aftercare=bool(data.get("consent_aftercare")),
+            consent_photos=bool(data.get("consent_photos")),
+            consent_privacy=bool(data.get("consent_privacy")),
+            consent_agreement=bool(data.get("consent_agreement")),
+
+            client_signed=True,
+            client_signed_at=timezone.now(),
+        )
+
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            return JsonResponse({"ok": True, "prp_id": prp.pk})
+        return redirect("accounts:profile")
+
+    return render(request, "forms_system/prp_client.html", {
+        "existing": existing,
+        "target_user": target_user,
+        "on_behalf": on_behalf,
+    })
+
+
+# ---------------------------------------------------------------------------
+# PRP — Step 2 (operator)
+# ---------------------------------------------------------------------------
+
+@staff_required
+def prp_operator(request, pk):
+    prp = get_object_or_404(PRPConsentForm, pk=pk)
+
+    if request.method == "POST":
+        data = request.POST
+        sig  = data.get("operator_signature", "")
+
+        if not sig:
+            return JsonResponse({"ok": False, "error": "Operator signature is required."}, status=400)
+
+        prp.product_name             = data.get("product_name", "")
+        prp.product_batch            = data.get("product_batch", "")
+        prp.vials_drawn              = data.get("vials_drawn", "")
+        prp.centrifuge_details       = data.get("centrifuge_details", "")
+        prp.application_method       = data.get("application_method", "")
+        prp.treatment_areas_operator = data.get("treatment_areas_operator", "")
+        prp.next_appointment         = data.get("next_appointment", "")
+        prp.treatment_cost           = data.get("treatment_cost") or None
+        prp.operator_notes           = data.get("operator_notes", "")
+        prp.operator_signature       = sig
+        prp.operator_signed          = True
+        prp.operator_signed_at       = timezone.now()
+        prp.operator_signed_by       = request.user
+        prp.save()
+
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            return JsonResponse({"ok": True})
+        return redirect("accounts:profile")
+
+    return render(request, "forms_system/prp_operator.html", {"prp": prp})
+
+
+# ---------------------------------------------------------------------------
+# Laser Re-Consent
+# ---------------------------------------------------------------------------
+
+@login_required
+def laser_reconsent(request):
+    target_user = _get_target_user(request)
+    on_behalf   = _is_practitioner_mode(request)
+
+    if request.method == "POST":
+        data = request.POST
+        sig  = data.get("client_signature", "")
+
+        if not sig:
+            return JsonResponse({"ok": False, "error": "Signature is required."}, status=400)
+
+        LaserReConsent.objects.create(
+            user=target_user,
+            practitioner=request.user if on_behalf else None,
+            changes_consultation_form=bool(data.get("changes_consultation_form")),
+            changes_medication=bool(data.get("changes_medication")),
+            changes_uv_exposure=bool(data.get("changes_uv_exposure")),
+            active_tan=bool(data.get("active_tan")),
+            changes_detail=data.get("changes_detail", ""),
+            client_feedback=data.get("client_feedback", ""),
+            consent_proceed=bool(data.get("consent_proceed")),
+            client_signature=sig,
+            client_signed_at=timezone.now(),
+            treatment_notes=data.get("treatment_notes", ""),
+        )
+
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            return JsonResponse({"ok": True})
+        return redirect("accounts:profile")
+
+    return render(request, "forms_system/laser_reconsent.html", {
+        "target_user": target_user,
+        "on_behalf": on_behalf,
+    })
+
+
+# ---------------------------------------------------------------------------
+# Informational pages (pre / post treatment)
+# ---------------------------------------------------------------------------
+
+@login_required
+def botox_pre_treatment(request):
+    return render(request, "forms_system/botox_pre_treatment.html")
+
+
+@login_required
+def botox_post_treatment(request):
+    return render(request, "forms_system/botox_post_treatment.html")
+
+
+@login_required
+def prp_pre_treatment(request):
+    return render(request, "forms_system/prp_pre_treatment.html")
+
+
+@login_required
+def prp_post_treatment(request):
+    return render(request, "forms_system/prp_post_treatment.html")
+
+
+@login_required
+def laser_pre_treatment(request):
+    return render(request, "forms_system/laser_pre_treatment.html")
+
+
+@login_required
+def laser_post_treatment(request):
+    return render(request, "forms_system/laser_post_treatment.html")

@@ -3,7 +3,7 @@
 {% block title %}Botox — Operator Sign-Off | Caldwell Cosmetics{% endblock %}
 {% block extra_css %}<link rel="stylesheet" href="{% static 'css/pages/forms_system.css' %}">{% endblock %}
 {% block content %}
-<div class="cform-page">
+<div class="cform-page cform-page--wide">
 <div class="cform-header">
     <span class="cform-header__eyebrow">Caldwell Cosmetics — Step 2 of 2</span>
     <h1 class="cform-header__title">Botulinum Toxin — Operator Section</h1>
@@ -35,29 +35,129 @@
 <form id="botoxOperatorForm" class="cform" method="post" action="{% url 'forms_system:botox_operator' botox.pk %}">
     {% csrf_token %}
 
+    <!-- Treatment record: facial map + areas table -->
     <div class="cform-section cform-section--operator">
-        <h2 class="cform-section__title">Agreed Treatment <span class="cform-operator-badge">Operator</span></h2>
-        <div class="cform-field"><label class="cform-label">Notes of agreed treatment</label><textarea class="cform-input" name="treatment_notes" rows="3"></textarea></div>
-        <div class="cform-field"><label class="cform-label">Book next appointment for</label><input class="cform-input" type="text" name="next_appointment"></div>
+        <h2 class="cform-section__title">Treatment Record <span class="cform-operator-badge">Operator</span></h2>
 
-        <div class="cform-treatment-table">
-            <div class="cform-treatment-table__header">
-                <span>Today's Treatments</span>
-                <span>Price (£)</span>
-                <span>Units / Syringes</span>
-                <span>Stickers / Batch No.</span>
+        <div class="cform-grid cform-grid--3" style="margin-bottom:1.5rem;">
+            <div class="cform-field">
+                <label class="cform-label">Name</label>
+                <input class="cform-input" type="text" name="treatment_name_display" value="{{ botox.full_name }}" readonly>
             </div>
-            {% for i in "123" %}
-            <div class="cform-treatment-table__row">
-                <input class="cform-input" type="text" name="treatment_line_{{ i }}" placeholder="Treatment">
-                <input class="cform-input" type="number" step="0.01" name="treatment_price_{{ i }}" placeholder="0.00">
-                <input class="cform-input" type="text" name="treatment_units_{{ i }}">
-                <input class="cform-input" type="text" name="treatment_batch_{{ i }}">
+            <div class="cform-field">
+                <label class="cform-label">Date</label>
+                <input class="cform-input" type="date" name="treatment_date_display">
             </div>
-            {% endfor %}
+            <div class="cform-field">
+                <label class="cform-label">Product / Lot No.</label>
+                <input class="cform-input" type="text" name="treatment_product_lot">
+            </div>
         </div>
 
-        <div class="cform-field" style="margin-top:1rem;"><label class="cform-label">Operator notes</label><textarea class="cform-input" name="operator_notes" rows="3"></textarea></div>
+        <!-- Face diagram + areas table side by side -->
+        <div style="display:flex; gap:2rem; align-items:flex-start; flex-wrap:wrap;">
+
+            <!-- Face diagram -->
+            <div style="flex-shrink:0; width:200px;">
+                <svg viewBox="0 0 240 310" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:100%; height:auto; display:block;">
+                    <!-- Neck -->
+                    <path d="M100 252 L93 296 M140 252 L147 296" stroke="#333" stroke-width="1.5" stroke-linecap="round"/>
+                    <!-- Shoulders/base -->
+                    <path d="M60 296 Q80 288 93 296 M147 296 Q160 288 180 296" stroke="#333" stroke-width="1.5" stroke-linecap="round"/>
+                    <!-- Head outline -->
+                    <path d="M120 22 C68 22 36 62 36 118 C36 182 72 254 120 254 C168 254 204 182 204 118 C204 62 172 22 120 22 Z" stroke="#333" stroke-width="2"/>
+                    <!-- Hair -->
+                    <path d="M50 108 C44 46 78 14 120 12 C162 14 196 46 190 108" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>
+                    <!-- Hair lines (texture) -->
+                    <path d="M72 34 C76 26 84 20 92 18" stroke="#333" stroke-width="1" stroke-linecap="round"/>
+                    <path d="M168 34 C164 26 156 20 148 18" stroke="#333" stroke-width="1" stroke-linecap="round"/>
+                    <!-- Left ear -->
+                    <path d="M36 118 C26 118 20 130 20 140 C20 150 26 162 36 162" stroke="#333" stroke-width="1.5"/>
+                    <path d="M36 126 C30 126 26 132 26 140 C26 148 30 154 36 154" stroke="#333" stroke-width="1"/>
+                    <!-- Right ear -->
+                    <path d="M204 118 C214 118 220 130 220 140 C220 150 214 162 204 162" stroke="#333" stroke-width="1.5"/>
+                    <path d="M204 126 C210 126 214 132 214 140 C214 148 210 154 204 154" stroke="#333" stroke-width="1"/>
+                    <!-- Left eyebrow -->
+                    <path d="M60 102 C72 92 88 90 98 96" stroke="#333" stroke-width="2.2" stroke-linecap="round"/>
+                    <!-- Right eyebrow -->
+                    <path d="M142 96 C152 90 168 92 180 102" stroke="#333" stroke-width="2.2" stroke-linecap="round"/>
+                    <!-- Left eye -->
+                    <path d="M60 116 C70 106 88 106 98 116 C88 126 70 126 60 116 Z" stroke="#333" stroke-width="1.5"/>
+                    <circle cx="79" cy="116" r="7" fill="#aaa" stroke="#333" stroke-width="1"/>
+                    <circle cx="79" cy="116" r="3.5" fill="#333"/>
+                    <!-- Right eye -->
+                    <path d="M142 116 C152 106 170 106 180 116 C170 126 152 126 142 116 Z" stroke="#333" stroke-width="1.5"/>
+                    <circle cx="161" cy="116" r="7" fill="#aaa" stroke="#333" stroke-width="1"/>
+                    <circle cx="161" cy="116" r="3.5" fill="#333"/>
+                    <!-- Upper lashes left -->
+                    <path d="M63 112 L60 107 M69 109 L67 104 M76 107 L75 102 M82 107 L82 102 M89 108 L90 103 M95 111 L97 106" stroke="#333" stroke-width="1" stroke-linecap="round"/>
+                    <!-- Upper lashes right -->
+                    <path d="M145 111 L143 106 M151 108 L150 103 M158 107 L158 102 M164 107 L165 102 M171 109 L173 104 M177 112 L180 107" stroke="#333" stroke-width="1" stroke-linecap="round"/>
+                    <!-- Nose bridge -->
+                    <path d="M109 124 L102 155" stroke="#333" stroke-width="1.2" stroke-linecap="round"/>
+                    <path d="M131 124 L138 155" stroke="#333" stroke-width="1.2" stroke-linecap="round"/>
+                    <!-- Nose base -->
+                    <path d="M96 158 Q102 166 120 166 Q138 166 144 158" stroke="#333" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+                    <!-- Nostrils -->
+                    <ellipse cx="103" cy="161" rx="7" ry="5" stroke="#333" stroke-width="1.2"/>
+                    <ellipse cx="137" cy="161" rx="7" ry="5" stroke="#333" stroke-width="1.2"/>
+                    <!-- Philtrum -->
+                    <path d="M113 166 L109 176 M127 166 L131 176" stroke="#333" stroke-width="1" stroke-linecap="round"/>
+                    <!-- Cupid's bow -->
+                    <path d="M96 178 Q109 172 120 176 Q131 172 144 178" stroke="#333" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+                    <!-- Lower lip -->
+                    <path d="M96 178 Q120 198 144 178" stroke="#333" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+                    <!-- Chin crease -->
+                    <path d="M108 218 Q120 224 132 218" stroke="#333" stroke-width="1" stroke-linecap="round"/>
+                    <!-- Jaw lines (subtle) -->
+                    <path d="M60 150 Q55 178 80 218 Q100 240 120 244" stroke="#333" stroke-width="1" stroke-linecap="round" opacity="0.4"/>
+                    <path d="M180 150 Q185 178 160 218 Q140 240 120 244" stroke="#333" stroke-width="1" stroke-linecap="round" opacity="0.4"/>
+                </svg>
+            </div>
+
+            <!-- Areas treated table -->
+            <div style="flex:1; min-width:260px;">
+                <p class="cform-hint" style="margin-bottom:0.75rem;">Enter units per area. Leave blank if not treated.</p>
+                <div class="cform-yn-table">
+                    <div class="cform-yn-row" style="background-color:#f5f1eb; font-size:0.7rem; font-weight:600; text-transform:uppercase; letter-spacing:0.09em; color:var(--color-text-light,#888);">
+                        <span>Area</span><span style="flex-shrink:0; width:80px; text-align:center;">Units</span>
+                    </div>
+                    <div class="cform-yn-row"><span>Forehead / Frontalis</span><input class="cform-input" type="text" name="units_forehead" placeholder="—" style="max-width:80px; text-align:center; padding:0.4rem 0.5rem;"></div>
+                    <div class="cform-yn-row"><span>Glabella</span><input class="cform-input" type="text" name="units_glabella" placeholder="—" style="max-width:80px; text-align:center; padding:0.4rem 0.5rem;"></div>
+                    <div class="cform-yn-row"><span>Crows Feet / Brow Lift</span><input class="cform-input" type="text" name="units_crows_feet" placeholder="—" style="max-width:80px; text-align:center; padding:0.4rem 0.5rem;"></div>
+                    <div class="cform-yn-row"><span>Jelly Roll</span><input class="cform-input" type="text" name="units_jelly_roll" placeholder="—" style="max-width:80px; text-align:center; padding:0.4rem 0.5rem;"></div>
+                    <div class="cform-yn-row"><span>Bunny Lines</span><input class="cform-input" type="text" name="units_bunny_lines" placeholder="—" style="max-width:80px; text-align:center; padding:0.4rem 0.5rem;"></div>
+                    <div class="cform-yn-row"><span>Gummy Smile</span><input class="cform-input" type="text" name="units_gummy_smile" placeholder="—" style="max-width:80px; text-align:center; padding:0.4rem 0.5rem;"></div>
+                    <div class="cform-yn-row"><span>Smokers Lines</span><input class="cform-input" type="text" name="units_smokers_lines" placeholder="—" style="max-width:80px; text-align:center; padding:0.4rem 0.5rem;"></div>
+                    <div class="cform-yn-row"><span>Lip Flip</span><input class="cform-input" type="text" name="units_lip_flip" placeholder="—" style="max-width:80px; text-align:center; padding:0.4rem 0.5rem;"></div>
+                    <div class="cform-yn-row"><span>DAO / Jowls</span><input class="cform-input" type="text" name="units_dao_jowls" placeholder="—" style="max-width:80px; text-align:center; padding:0.4rem 0.5rem;"></div>
+                    <div class="cform-yn-row"><span>Chin</span><input class="cform-input" type="text" name="units_chin" placeholder="—" style="max-width:80px; text-align:center; padding:0.4rem 0.5rem;"></div>
+                    <div class="cform-yn-row"><span>Masseter</span><input class="cform-input" type="text" name="units_masseter" placeholder="—" style="max-width:80px; text-align:center; padding:0.4rem 0.5rem;"></div>
+                    <div class="cform-yn-row"><span>Neck Bands</span><input class="cform-input" type="text" name="units_neck_bands" placeholder="—" style="max-width:80px; text-align:center; padding:0.4rem 0.5rem;"></div>
+                    <div class="cform-yn-row" style="background-color:#f5f1eb;">
+                        <span><strong>Total Units</strong></span>
+                        <input class="cform-input" type="text" name="units_total" placeholder="0" style="max-width:80px; text-align:center; padding:0.4rem 0.5rem; font-weight:600;">
+                    </div>
+                </div>
+
+                <div class="cform-grid cform-grid--2" style="margin-top:1rem;">
+                    <div class="cform-field">
+                        <label class="cform-label">Cost (£)</label>
+                        <input class="cform-input" type="number" step="0.01" name="treatment_cost" placeholder="0.00">
+                    </div>
+                    <div class="cform-field">
+                        <label class="cform-label">Book next appointment for</label>
+                        <input class="cform-input" type="text" name="next_appointment">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="cform-section cform-section--operator">
+        <h2 class="cform-section__title">Notes <span class="cform-operator-badge">Operator</span></h2>
+        <div class="cform-field"><label class="cform-label">Notes of agreed treatment</label><textarea class="cform-input" name="treatment_notes" rows="3"></textarea></div>
+        <div class="cform-field"><label class="cform-label">Operator notes</label><textarea class="cform-input" name="operator_notes" rows="3"></textarea></div>
     </div>
 
     <div class="cform-section">

@@ -651,31 +651,59 @@ document.addEventListener('DOMContentLoaded', function () {
         // Store for edit
         profilePanel.dataset.userId = u.id;
 
-        // Form status pills
-        function pill(label, complete, extra) {
+        // Form status pills — clickable links
+        function pill(label, complete, href, tooltip) {
             const cls = complete ? 'dash-form-pill--complete' : 'dash-form-pill--incomplete';
-            return `<span class="dash-form-pill ${cls}" title="${extra || ''}">${label}</span>`;
+            const tip = tooltip || '';
+            if (href) {
+                return `<a href="${href}" class="dash-form-pill ${cls}" title="${tip}" target="_blank">${label}</a>`;
+            }
+            return `<span class="dash-form-pill ${cls}" title="${tip}">${label}</span>`;
         }
 
         const consultPill = pill(
             'Consultation',
             forms.consultation.completed,
+            DASHBOARD_URLS.formConsultation.replace('{id}', u.id),
             forms.consultation.date ? `Completed ${forms.consultation.date}` : 'Not completed'
         );
         const photoPill = pill(
             'Photography',
             forms.photography.completed,
+            DASHBOARD_URLS.formPhotography.replace('{id}', u.id),
             forms.photography.date ? `Completed ${forms.photography.date}` : 'Not completed'
         );
         const botoxClientPill = pill(
             'Botox (Client)',
             forms.botox.client_signed,
+            DASHBOARD_URLS.formBotoxClient.replace('{id}', u.id),
             forms.botox.date ? `Signed ${forms.botox.date}` : 'Not signed'
         );
         const botoxOpPill = pill(
             'Botox (Operator)',
             forms.botox.fully_complete,
-            forms.botox.fully_complete ? 'Fully complete' : 'Awaiting operator'
+            forms.botox.id ? DASHBOARD_URLS.botoxOperator.replace('{id}', forms.botox.id) : null,
+            forms.botox.fully_complete ? 'Fully complete' : (forms.botox.client_signed ? 'Awaiting operator sign-off' : 'Client has not signed yet')
+        );
+        const prpClientPill = pill(
+            'PRP (Client)',
+            forms.prp.client_signed,
+            DASHBOARD_URLS.formPrpClient.replace('{id}', u.id),
+            forms.prp.date ? `Signed ${forms.prp.date}` : 'Not signed'
+        );
+        const prpOpPill = pill(
+            'PRP (Operator)',
+            forms.prp.fully_complete,
+            forms.prp.id ? DASHBOARD_URLS.prpOperator.replace('{id}', forms.prp.id) : null,
+            forms.prp.fully_complete ? 'Fully complete' : (forms.prp.client_signed ? 'Awaiting operator sign-off' : 'Client has not signed yet')
+        );
+        const laserPill = pill(
+            forms.laser_reconsent.count > 0
+                ? `Laser Re-Consent (${forms.laser_reconsent.count})`
+                : 'Laser Re-Consent',
+            forms.laser_reconsent.count > 0,
+            DASHBOARD_URLS.formLaserReconsent.replace('{id}', u.id),
+            forms.laser_reconsent.last_date ? `Last: ${forms.laser_reconsent.last_date}` : 'None completed'
         );
 
         // Bundle pips
@@ -795,14 +823,18 @@ document.addEventListener('DOMContentLoaded', function () {
                     ${photoPill}
                     ${botoxClientPill}
                     ${botoxOpPill}
+                    ${prpClientPill}
+                    ${prpOpPill}
+                    ${laserPill}
                 </div>
                 <div class="dash-form-actions">
-                    <a href="${DASHBOARD_URLS.formConsultation.replace('{id}', u.id)}" class="btn btn--ghost btn--sm" target="_blank">Open Consultation Form</a>
-                    <a href="${DASHBOARD_URLS.formPhotography.replace('{id}', u.id)}" class="btn btn--ghost btn--sm" target="_blank">Open Photography Consent</a>
-                    <a href="${DASHBOARD_URLS.formBotoxClient.replace('{id}', u.id)}" class="btn btn--ghost btn--sm" target="_blank">Open Botox (Client)</a>
-                    ${forms.botox.id && !forms.botox.fully_complete
-                        ? `<a href="${DASHBOARD_URLS.botoxOperator.replace('{id}', forms.botox.id)}" class="btn btn--ghost btn--sm" target="_blank">Botox Operator Sign-Off</a>`
-                        : ''}
+                    <a href="${DASHBOARD_URLS.formConsultation.replace('{id}', u.id)}" class="btn btn--ghost btn--sm" target="_blank">Consultation Form</a>
+                    <a href="${DASHBOARD_URLS.formPhotography.replace('{id}', u.id)}" class="btn btn--ghost btn--sm" target="_blank">Photography Consent</a>
+                    <a href="${DASHBOARD_URLS.formBotoxClient.replace('{id}', u.id)}" class="btn btn--ghost btn--sm" target="_blank">Botox (Client)</a>
+                    <a href="${forms.botox.id ? DASHBOARD_URLS.botoxOperator.replace('{id}', forms.botox.id) : DASHBOARD_URLS.formBotoxClient.replace('{id}', u.id)}" class="btn btn--ghost btn--sm" target="_blank">Botox (Operator)</a>
+                    <a href="${DASHBOARD_URLS.formPrpClient.replace('{id}', u.id)}" class="btn btn--ghost btn--sm" target="_blank">PRP (Client)</a>
+                    <a href="${forms.prp.id ? DASHBOARD_URLS.prpOperator.replace('{id}', forms.prp.id) : DASHBOARD_URLS.formPrpClient.replace('{id}', u.id)}" class="btn btn--ghost btn--sm" target="_blank">PRP (Operator)</a>
+                    <a href="${DASHBOARD_URLS.formLaserReconsent.replace('{id}', u.id)}" class="btn btn--ghost btn--sm" target="_blank">Laser Re-Consent</a>
                 </div>
             </div>
 
