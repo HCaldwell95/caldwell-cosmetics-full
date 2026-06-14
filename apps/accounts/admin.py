@@ -13,15 +13,30 @@ class ProfileInline(admin.StackedInline):
         "address_line_1", "address_line_2", "town_city", "postcode",
         "skin_type", "medical_notes",
         "gdpr_consent", "gdpr_consent_date",
+        "deactivated_at",
     )
-    readonly_fields = ("gdpr_consent_date",)
+    readonly_fields = ("gdpr_consent_date", "deactivated_at")
 
 
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
     ordering = ("email",)
-    list_display = ("email", "first_name", "last_name", "is_staff", "is_active", "date_joined")
+    list_display = ("email", "first_name", "last_name", "is_staff", "account_status", "date_joined", "deactivated_at")
     list_filter = ("is_staff", "is_active")
+
+    @admin.display(description="Status", boolean=False)
+    def account_status(self, obj):
+        from django.utils.html import format_html
+        if obj.is_active:
+            return format_html('<span style="color:#166534;font-weight:600;">&#10003; Active</span>')
+        return format_html('<span style="color:#991b1b;font-weight:600;">&#10005; Deactivated</span>')
+
+    @admin.display(description="Deactivated at")
+    def deactivated_at(self, obj):
+        try:
+            return obj.profile.deactivated_at or "—"
+        except Exception:
+            return "—"
     search_fields = ("email", "first_name", "last_name")
 
     fieldsets = (

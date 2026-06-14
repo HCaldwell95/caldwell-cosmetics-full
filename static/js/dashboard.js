@@ -592,8 +592,9 @@ document.addEventListener('DOMContentLoaded', function () {
                         <td>${c.phone || '—'}</td>
                         <td>${c.joined}</td>
                         <td>
-                            <button class="dash-client-view-btn btn btn--ghost btn--sm" data-id="${c.id}">
-                                View Profile
+                            <button class="dash-client-view-btn" data-id="${c.id}">
+                                <span class="dash-client-view-btn__full">View Profile</span>
+                                <span class="dash-client-view-btn__short">View</span>
                             </button>
                         </td>
                     </tr>`).join('');
@@ -765,12 +766,25 @@ document.addEventListener('DOMContentLoaded', function () {
                 <div class="cform-grid cform-grid--2" style="gap:0.75rem;">
                     <div class="dash-form-group"><label class="dash-label">First Name</label><input class="dash-input" id="editFirstName" value="${u.name.split(' ')[0] || ''}"></div>
                     <div class="dash-form-group"><label class="dash-label">Last Name</label><input class="dash-input" id="editLastName" value="${u.name.split(' ').slice(1).join(' ') || ''}"></div>
+                    <div class="dash-form-group" style="grid-column:1/-1;"><label class="dash-label">Email</label><input class="dash-input" type="email" id="editEmail" value="${u.email || ''}"></div>
                     <div class="dash-form-group"><label class="dash-label">Phone</label><input class="dash-input" id="editPhone" value="${u.phone || ''}"></div>
                     <div class="dash-form-group"><label class="dash-label">Date of Birth</label><input class="dash-input" type="date" id="editDob" value="${u.dob ? new Date(u.dob).toISOString().split('T')[0] : ''}"></div>
                     <div class="dash-form-group"><label class="dash-label">Address Line 1</label><input class="dash-input" id="editAddr1" value="${u.address.split('\n')[0] || ''}"></div>
                     <div class="dash-form-group"><label class="dash-label">Address Line 2</label><input class="dash-input" id="editAddr2" value="${u.address.split('\n')[1] || ''}"></div>
                     <div class="dash-form-group"><label class="dash-label">Town / City</label><input class="dash-input" id="editCity" value="${u.address.split('\n')[2] || ''}"></div>
                     <div class="dash-form-group"><label class="dash-label">Postcode</label><input class="dash-input" id="editPostcode" value="${u.address.split('\n')[3] || ''}"></div>
+                    <div class="dash-form-group" style="grid-column:1/-1;">
+                        <label class="dash-label">Skin Type</label>
+                        <select class="dash-input" id="editSkinType">
+                            <option value="unknown" ${u.skin_type_key === 'unknown' ? 'selected' : ''}>Unknown / Not assessed</option>
+                            <option value="type_1"  ${u.skin_type_key === 'type_1'  ? 'selected' : ''}>Type 1 – Always burns, never tans</option>
+                            <option value="type_2"  ${u.skin_type_key === 'type_2'  ? 'selected' : ''}>Type 2 – Easily burns, eventually gets a moderate tan</option>
+                            <option value="type_3"  ${u.skin_type_key === 'type_3'  ? 'selected' : ''}>Type 3 – Sometimes burns, quickly gets an average tan</option>
+                            <option value="type_4"  ${u.skin_type_key === 'type_4'  ? 'selected' : ''}>Type 4 – Rarely burns, quickly gets a deep tan</option>
+                            <option value="type_5"  ${u.skin_type_key === 'type_5'  ? 'selected' : ''}>Type 5 – Very rarely burns, consistent tan</option>
+                            <option value="type_6"  ${u.skin_type_key === 'type_6'  ? 'selected' : ''}>Type 6 – Never burns, consistent tan</option>
+                        </select>
+                    </div>
                     <div class="dash-form-group" style="grid-column:1/-1;"><label class="dash-label">Medical Notes</label><textarea class="dash-input" id="editMedicalNotes" rows="3">${u.medical_notes || ''}</textarea></div>
                 </div>
                 <div class="dash-modal__actions" style="padding:1rem 0 0;">
@@ -817,7 +831,45 @@ document.addEventListener('DOMContentLoaded', function () {
 
             <!-- Forms -->
             <div class="dash-panel-section">
-                <h3 class="dash-panel-section__title">Consent Forms</h3>
+                <div class="dash-panel-section__header">
+                    <h3 class="dash-panel-section__title">Consent Forms</h3>
+                    <div class="dash-form-launch">
+                        <button class="dash-form-launch-btn" id="formPickerToggle">
+                            Open a form
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                        </button>
+                        <div class="dash-form-dropdown" id="formPickerDropdown" hidden>
+                            <a href="${DASHBOARD_URLS.formConsultation.replace('{id}', u.id)}" class="dash-form-dropdown__item" target="_blank">
+                                <span class="dash-form-dropdown__dot ${forms.consultation.completed ? 'dash-form-dropdown__dot--complete' : 'dash-form-dropdown__dot--incomplete'}"></span>
+                                Consultation Form
+                            </a>
+                            <a href="${DASHBOARD_URLS.formPhotography.replace('{id}', u.id)}" class="dash-form-dropdown__item" target="_blank">
+                                <span class="dash-form-dropdown__dot ${forms.photography.completed ? 'dash-form-dropdown__dot--complete' : 'dash-form-dropdown__dot--incomplete'}"></span>
+                                Photography Consent
+                            </a>
+                            <a href="${DASHBOARD_URLS.formBotoxClient.replace('{id}', u.id)}" class="dash-form-dropdown__item" target="_blank">
+                                <span class="dash-form-dropdown__dot ${forms.botox.client_signed ? 'dash-form-dropdown__dot--complete' : 'dash-form-dropdown__dot--incomplete'}"></span>
+                                Botox Consent — Client
+                            </a>
+                            <a href="${forms.botox.id ? DASHBOARD_URLS.botoxOperator.replace('{id}', forms.botox.id) : DASHBOARD_URLS.formBotoxClient.replace('{id}', u.id)}" class="dash-form-dropdown__item" target="_blank">
+                                <span class="dash-form-dropdown__dot ${forms.botox.fully_complete ? 'dash-form-dropdown__dot--complete' : 'dash-form-dropdown__dot--incomplete'}"></span>
+                                Botox Consent — Operator
+                            </a>
+                            <a href="${DASHBOARD_URLS.formPrpClient.replace('{id}', u.id)}" class="dash-form-dropdown__item" target="_blank">
+                                <span class="dash-form-dropdown__dot ${forms.prp.client_signed ? 'dash-form-dropdown__dot--complete' : 'dash-form-dropdown__dot--incomplete'}"></span>
+                                PRP Consent — Client
+                            </a>
+                            <a href="${forms.prp.id ? DASHBOARD_URLS.prpOperator.replace('{id}', forms.prp.id) : DASHBOARD_URLS.formPrpClient.replace('{id}', u.id)}" class="dash-form-dropdown__item" target="_blank">
+                                <span class="dash-form-dropdown__dot ${forms.prp.fully_complete ? 'dash-form-dropdown__dot--complete' : 'dash-form-dropdown__dot--incomplete'}"></span>
+                                PRP Consent — Operator
+                            </a>
+                            <a href="${DASHBOARD_URLS.formLaserReconsent.replace('{id}', u.id)}" class="dash-form-dropdown__item" target="_blank">
+                                <span class="dash-form-dropdown__dot ${forms.laser_reconsent.count > 0 ? 'dash-form-dropdown__dot--complete' : 'dash-form-dropdown__dot--incomplete'}"></span>
+                                Laser Re-Consent
+                            </a>
+                        </div>
+                    </div>
+                </div>
                 <div class="dash-form-pills">
                     ${consultPill}
                     ${photoPill}
@@ -826,15 +878,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     ${prpClientPill}
                     ${prpOpPill}
                     ${laserPill}
-                </div>
-                <div class="dash-form-actions">
-                    <a href="${DASHBOARD_URLS.formConsultation.replace('{id}', u.id)}" class="btn btn--ghost btn--sm" target="_blank">Consultation Form</a>
-                    <a href="${DASHBOARD_URLS.formPhotography.replace('{id}', u.id)}" class="btn btn--ghost btn--sm" target="_blank">Photography Consent</a>
-                    <a href="${DASHBOARD_URLS.formBotoxClient.replace('{id}', u.id)}" class="btn btn--ghost btn--sm" target="_blank">Botox (Client)</a>
-                    <a href="${forms.botox.id ? DASHBOARD_URLS.botoxOperator.replace('{id}', forms.botox.id) : DASHBOARD_URLS.formBotoxClient.replace('{id}', u.id)}" class="btn btn--ghost btn--sm" target="_blank">Botox (Operator)</a>
-                    <a href="${DASHBOARD_URLS.formPrpClient.replace('{id}', u.id)}" class="btn btn--ghost btn--sm" target="_blank">PRP (Client)</a>
-                    <a href="${forms.prp.id ? DASHBOARD_URLS.prpOperator.replace('{id}', forms.prp.id) : DASHBOARD_URLS.formPrpClient.replace('{id}', u.id)}" class="btn btn--ghost btn--sm" target="_blank">PRP (Operator)</a>
-                    <a href="${DASHBOARD_URLS.formLaserReconsent.replace('{id}', u.id)}" class="btn btn--ghost btn--sm" target="_blank">Laser Re-Consent</a>
                 </div>
             </div>
 
@@ -866,6 +909,26 @@ document.addEventListener('DOMContentLoaded', function () {
             </div>
         `;
 
+        // Wire up form picker dropdown
+        const formPickerToggle   = document.getElementById('formPickerToggle');
+        const formPickerDropdown = document.getElementById('formPickerDropdown');
+        if (formPickerToggle && formPickerDropdown) {
+            formPickerToggle.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const isHidden = formPickerDropdown.hasAttribute('hidden');
+                formPickerDropdown.toggleAttribute('hidden', !isHidden);
+                formPickerToggle.classList.toggle('dash-form-launch-btn--open', isHidden);
+            });
+            // Close when clicking anywhere outside
+            document.addEventListener('click', function closePicker(e) {
+                if (!formPickerToggle.contains(e.target) && !formPickerDropdown.contains(e.target)) {
+                    formPickerDropdown.setAttribute('hidden', '');
+                    formPickerToggle.classList.remove('dash-form-launch-btn--open');
+                    document.removeEventListener('click', closePicker);
+                }
+            });
+        }
+
         // Wire up edit toggle
         panelEditBtn.addEventListener('click', () => {
             document.getElementById('panelViewMode').style.display = 'none';
@@ -883,12 +946,14 @@ document.addEventListener('DOMContentLoaded', function () {
             const payload = {
                 first_name:    document.getElementById('editFirstName').value,
                 last_name:     document.getElementById('editLastName').value,
+                email:         document.getElementById('editEmail').value,
                 phone_number:  document.getElementById('editPhone').value,
                 date_of_birth: document.getElementById('editDob').value,
                 address_line_1: document.getElementById('editAddr1').value,
                 address_line_2: document.getElementById('editAddr2').value,
                 town_city:     document.getElementById('editCity').value,
                 postcode:      document.getElementById('editPostcode').value,
+                skin_type:     document.getElementById('editSkinType').value,
                 medical_notes: document.getElementById('editMedicalNotes').value,
             };
 

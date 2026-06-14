@@ -2,6 +2,41 @@
    Dashboard — matches Caldwell Cosmetics base styles
    ===================================================== */
 
+/* Non-sticky navbar — dashboard only */
+.nav-header {
+    position: relative;
+    top: auto;
+    left: auto;
+    z-index: auto; /* removes stacking context so fixed panel sits above it */
+}
+
+body {
+    padding-top: 0;
+}
+
+/* Scoped button modifier overrides for the dashboard */
+.btn--ghost {
+    background-color: transparent;
+    color: var(--color-secondary, #2c2c2c);
+    border: 1.5px solid #d4c5b0;
+    border-radius: 4px;
+}
+
+.btn--ghost:hover {
+    border-color: var(--color-primary, #c9a97a);
+    color: var(--color-primary, #c9a97a);
+    background-color: transparent;
+}
+
+.btn--sm {
+    font-size: 0.78rem;
+    padding: 0.35rem 0.85rem;
+    font-family: var(--font-montserrat);
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+}
+
 .dash-page {
     max-width: 1200px;
     margin: 0 auto;
@@ -678,7 +713,28 @@
 }
 
 .dash-client-view-btn {
-    margin-bottom: 0px!important;
+    margin-bottom: 0 !important;
+    white-space: nowrap;
+    font-size: 0.78rem;
+    padding: 0.35rem 0.85rem;
+    background-color: transparent;
+    color: var(--color-secondary, #2c2c2c);
+    border: 1.5px solid #d4c5b0;
+    border-radius: 4px;
+    font-family: var(--font-montserrat);
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.dash-client-view-btn:hover {
+    border-color: var(--color-primary, #c9a97a);
+    color: var(--color-primary, #c9a97a);
+}
+
+.dash-client-view-btn__short {
+    display: none;
 }
 
 /* =====================================================
@@ -742,6 +798,7 @@
 .dash-profile-panel__body {
     flex: 1;
     overflow-y: auto;
+    overscroll-behavior: contain; /* prevent scroll chaining to main page */
     padding: 0 0 2rem;
 }
 
@@ -914,10 +971,93 @@
     color: #991b1b;
 }
 
-.dash-form-actions {
+/* Form launch button + dropdown */
+
+.dash-form-launch {
+    position: relative;
+}
+
+.dash-form-launch-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.85rem;
+    font-family: var(--font-montserrat);
+    font-size: 0.78rem;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    color: var(--color-secondary, #2c2c2c);
+    background: transparent;
+    border: 1.5px solid #d4c5b0;
+    border-radius: 4px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.dash-form-launch-btn:hover,
+.dash-form-launch-btn--open {
+    border-color: var(--color-primary, #c9a97a);
+    color: var(--color-primary, #c9a97a);
+}
+
+.dash-form-launch-btn--open svg {
+    transform: rotate(180deg);
+}
+
+.dash-form-launch-btn svg {
+    transition: transform 0.2s ease;
+    flex-shrink: 0;
+}
+
+.dash-form-dropdown {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    min-width: 220px;
+    background: #fff;
+    border: 1px solid #e8e0d5;
+    border-radius: 8px;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.10);
+    z-index: 200;
+    overflow: hidden;
+}
+
+.dash-form-dropdown__item {
     display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.65rem 1rem;
+    font-family: var(--font-montserrat);
+    font-size: 0.82rem;
+    color: var(--color-secondary, #2c2c2c);
+    text-decoration: none;
+    transition: background 0.15s ease;
+    border-bottom: 1px solid #f2ede7;
+}
+
+.dash-form-dropdown__item:last-child {
+    border-bottom: none;
+}
+
+.dash-form-dropdown__item:hover {
+    background: #faf7f4;
+    color: var(--color-primary, #c9a97a);
+}
+
+.dash-form-dropdown__dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.dash-form-dropdown__dot--complete {
+    background: #16a34a;
+}
+
+.dash-form-dropdown__dot--incomplete {
+    background: #dc2626;
 }
 
 /* Record cards */
@@ -1086,18 +1226,16 @@
     }
 }
 
-.btn {
-  font-size: 0.5rem;
-}
-
-@media (min-width: 1440px) {
-    .btn {
-        min-width: 0px;
+@media (max-width: 480px) {
+    /* Hide email column on small screens so the action button has room */
+    .dash-client-table th:nth-child(2),
+    .dash-client-table td:nth-child(2) {
+        display: none;
     }
-}
 
-.nav-header {
-  position: absolute;
+    /* Swap button label to the short version */
+    .dash-client-view-btn__full  { display: none; }
+    .dash-client-view-btn__short { display: inline; }
 }
 
 /* =====================================================

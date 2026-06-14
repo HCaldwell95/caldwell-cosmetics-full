@@ -106,13 +106,20 @@ class Profile(models.Model):
         help_text="For internal use only. Not visible to the client."
     )
 
+    # Parent / Guardian (required for clients under 18)
+    guardian_name         = models.CharField(max_length=150, blank=True)
+    guardian_relationship = models.CharField(max_length=100, blank=True, help_text="e.g. Mother, Father, Guardian")
+    guardian_phone        = models.CharField(max_length=20,  blank=True)
+    guardian_email        = models.EmailField(blank=True)
+
     # GDPR
     gdpr_consent      = models.BooleanField(default=False)
     gdpr_consent_date = models.DateTimeField(null=True, blank=True)
 
     # Timestamps
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    created_at     = models.DateTimeField(auto_now_add=True)
+    updated_at     = models.DateTimeField(auto_now=True)
+    deactivated_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         verbose_name = "Profile"
@@ -129,6 +136,18 @@ class Profile(models.Model):
         today = date.today()
         dob = self.date_of_birth
         return today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
+
+    @property
+    def is_deactivated(self):
+        return not self.user.is_active
+
+    @property
+    def is_minor(self):
+        """True if the client is under 18, False if 18+, None if DOB not set."""
+        age = self.age
+        if age is None:
+            return None
+        return age < 18
 
 
 # --------------------------------------------------

@@ -1,0 +1,45 @@
+{% extends "base/base.html" %}
+{% load static %}
+
+{% block title %}Deactivate Account | Caldwell Cosmetics{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/accounts.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card auth-card--danger">
+
+        <div class="deactivate-icon">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+        </div>
+
+        <h1 class="auth-card__title">Deactivate Your Account</h1>
+        <p class="auth-card__subtitle">Please read the following carefully before proceeding.</p>
+
+        <ul class="deactivate-list">
+            <li>You will be immediately signed out and will not be able to log back in.</li>
+            <li>Your data — appointments, forms, and treatment history — will be retained securely on file.</li>
+            <li>Our team will still have access to your records for clinical and legal purposes.</li>
+            <li>To reactivate your account, please contact us directly.</li>
+        </ul>
+
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn--danger btn--full">
+                Yes, deactivate my account
+            </button>
+        </form>
+
+        <a href="{% url 'accounts:profile' %}" class="btn btn--ghost btn--full" style="margin-top:0.75rem;">
+            Cancel — keep my account
+        </a>
+
+    </div>
+</div>
+{% endblock %}

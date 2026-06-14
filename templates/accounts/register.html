@@ -49,6 +49,67 @@
                 {% endif %}
             </div>
 
+            <div class="form-row form-row--split">
+                <div class="form-group">
+                    <label for="{{ form.phone_number.id_for_label }}">Mobile number</label>
+                    {{ form.phone_number }}
+                    {% if form.phone_number.errors %}
+                        <p class="field-error">{{ form.phone_number.errors|join:", " }}</p>
+                    {% endif %}
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.date_of_birth.id_for_label }}">Date of birth</label>
+                    {{ form.date_of_birth }}
+                    {% if form.date_of_birth.errors %}
+                        <p class="field-error">{{ form.date_of_birth.errors|join:", " }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            {# Guardian section — shown by JS when DOB indicates under 18, or on server error #}
+            <div class="guardian-section" id="guardianSection"
+                 {% if not form.guardian_name.errors and not form.guardian_phone.errors and not form.guardian_relationship.errors and not form.guardian_email.errors %}style="display:none;"{% endif %}>
+                <div class="guardian-section__header">
+                    <span class="badge badge--minor">Under 18</span>
+                    <p class="guardian-section__note">
+                        As this client is under 18, we require a parent or guardian's contact details.
+                        They may need to attend the appointment and provide written consent before treatment can begin.
+                    </p>
+                </div>
+                <div class="form-row form-row--split">
+                    <div class="form-group">
+                        <label for="{{ form.guardian_name.id_for_label }}">Parent / guardian name</label>
+                        {{ form.guardian_name }}
+                        {% if form.guardian_name.errors %}
+                            <p class="field-error">{{ form.guardian_name.errors|join:", " }}</p>
+                        {% endif %}
+                    </div>
+                    <div class="form-group">
+                        <label for="{{ form.guardian_relationship.id_for_label }}">Relationship to client</label>
+                        {{ form.guardian_relationship }}
+                        {% if form.guardian_relationship.errors %}
+                            <p class="field-error">{{ form.guardian_relationship.errors|join:", " }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="form-row form-row--split">
+                    <div class="form-group">
+                        <label for="{{ form.guardian_phone.id_for_label }}">Parent / guardian mobile</label>
+                        {{ form.guardian_phone }}
+                        {% if form.guardian_phone.errors %}
+                            <p class="field-error">{{ form.guardian_phone.errors|join:", " }}</p>
+                        {% endif %}
+                    </div>
+                    <div class="form-group">
+                        <label for="{{ form.guardian_email.id_for_label }}">Parent / guardian email <span style="font-weight:400;text-transform:none;letter-spacing:0;">(optional)</span></label>
+                        {{ form.guardian_email }}
+                        {% if form.guardian_email.errors %}
+                            <p class="field-error">{{ form.guardian_email.errors|join:", " }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
             <div class="form-group">
                 <label for="{{ form.password1.id_for_label }}">Password</label>
                 {{ form.password1 }}
@@ -78,6 +139,28 @@
 
             <button type="submit" class="btn btn--primary btn--full">Create Account</button>
         </form>
+
+        <script>
+        (function () {
+            const dobInput = document.getElementById('{{ form.date_of_birth.id_for_label }}');
+            const section  = document.getElementById('guardianSection');
+            if (!dobInput || !section) return;
+
+            function isMinor(dateStr) {
+                if (!dateStr) return false;
+                const dob   = new Date(dateStr);
+                const today = new Date();
+                let age = today.getFullYear() - dob.getFullYear();
+                const m = today.getMonth() - dob.getMonth();
+                if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) age--;
+                return age < 18;
+            }
+
+            dobInput.addEventListener('change', function () {
+                section.style.display = isMinor(this.value) ? 'block' : 'none';
+            });
+        })();
+        </script>
 
         <p class="auth-card__footer">
             Already have an account? <a href="{% url 'accounts:login' %}">Sign in</a>

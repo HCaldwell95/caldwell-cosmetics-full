@@ -3,6 +3,7 @@
     "@fullcalendar/core": "^6.1.20",
     "@fullcalendar/daygrid": "^6.1.20",
     "@fullcalendar/timegrid": "^6.1.20",
-    "fullcalendar": "^6.1.20"
+    "fullcalendar": "^6.1.20",
+    "playwright": "^1.60.0"
   }
 }

@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /accounts/
+Disallow: /dashboard/
+Disallow: /forms/
+
+Sitemap: https://caldwellcosmetics.co.uk/sitemap.xml

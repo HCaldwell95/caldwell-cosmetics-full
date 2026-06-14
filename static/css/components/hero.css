@@ -114,8 +114,8 @@ a {
     margin-bottom: var(--spacing-sm);
 }
 
-/* CTA Button Style (Added based on reference image) */
-.btn {
+/* CTA Button Style — scoped to hero CTA to avoid overriding page-level .btn rules */
+.hero__cta .btn {
     display: inline-block;
     padding: 1rem 2.5rem;
     font-family: var(--font-montserrat);
@@ -128,21 +128,22 @@ a {
     border: 1px solid #2c2c2c;
     transition: all 0.3s ease;
     cursor: pointer;
+    white-space: nowrap;
 }
 
-.btn:hover {
+.hero__cta .btn:hover {
     background-color: transparent;
     color: #2c2c2c;
     transform: translateY(-2px);
 }
 
-.btn--outline {
+.hero__cta .btn--outline {
     background-color: transparent;
     color: #2c2c2c;
     margin-left: var(--spacing-sm);
 }
 
-.btn--outline:hover {
+.hero__cta .btn--outline:hover {
     background-color: #2c2c2c;
     color: #fff;
 }
@@ -286,12 +287,12 @@ a {
     .hero__box {
         padding: 2.5rem 1rem;
     }
-    
+
     .hero__title {
         margin-bottom: 1rem;
     }
 
-    .btn {
+    .hero__cta .btn {
         width: 100%;
         margin-bottom: 1rem;
         margin-left: 0;
@@ -303,31 +304,20 @@ a {
    ============================================ */
 @media (min-width: 1440px) {
     .hero__cta {
-        /* Switch from row to column layout */
         flex-direction: column;
-        
-        /* Center the buttons within the column */
         align-items: center;
-        
-        /* Optional: Add spacing to the top of the button group if needed */
         margin-top: 2rem;
     }
 
-    .btn {
-        /* Remove any horizontal margins (like margin-left) from side-by-side layout */
+    .hero__cta .btn {
         margin-left: 0 !important;
         margin-right: 0 !important;
-        
-        /* Add vertical space between the stacked buttons */
         margin-bottom: 1rem;
-        
-        /* Enforce a wide, balanced width for the buttons on the large screen */
-        min-width: 280px; 
+        min-width: 280px;
         text-align: center;
     }
 
-    /* Remove the bottom margin from the last button so it doesn't float */
-    .btn--outline {
+    .hero__cta .btn--outline {
         margin-bottom: 0;
     }
 }

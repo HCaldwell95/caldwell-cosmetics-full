@@ -78,6 +78,21 @@ def profile_edit(request):
     return render(request, "accounts/profile_edit.html", {"form": form, "profile": profile})
 
 @login_required
+def deactivate_account(request):
+    if request.method == "POST":
+        user = request.user
+        profile = user.profile
+        profile.deactivated_at = timezone.now()
+        profile.save(update_fields=["deactivated_at"])
+        user.is_active = False
+        user.save(update_fields=["is_active"])
+        logout(request)
+        messages.info(request, "Your account has been deactivated. We're sorry to see you go.")
+        return redirect("core:home")
+    return render(request, "accounts/deactivate_account.html")
+
+
+@login_required
 def profile_bookings(request):
     from apps.bookings.models import Booking
  

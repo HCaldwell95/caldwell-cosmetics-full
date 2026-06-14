@@ -6,8 +6,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Caldwell Cosmetics. A natural aesthetics clinic, specialising in skin and hair enhancement and rejuvenation. Based in Abergele, North Wales. Restore the beauty from within.">
-    <meta name="keywords" content="caldwell cosmetics aesthetics, caldwell cosmetics, aesthetic clinic, skin treatments, beauty, wales, natural, healthy, skin">
+    {% block meta_description %}<meta name="description" content="Caldwell Cosmetics — a natural aesthetics clinic in Abergele, North Wales, specialising in skin rejuvenation, laser hair removal, and injectable treatments. Book your consultation today.">{% endblock %}
+    <meta name="keywords" content="caldwell cosmetics, aesthetics clinic abergele, skin treatments north wales, laser hair removal, botox north wales, PRP treatment, skin rejuvenation">
+    <meta name="author" content="Caldwell Cosmetics">
+
+    <!-- Canonical URL -->
+    {% block canonical %}<link rel="canonical" href="https://caldwellcosmetics.co.uk{{ request.path }}">{% endblock %}
+
+    <!-- Open Graph -->
+    <meta property="og:site_name" content="Caldwell Cosmetics">
+    <meta property="og:type" content="{% block og_type %}website{% endblock %}">
+    <meta property="og:url" content="https://caldwellcosmetics.co.uk{{ request.path }}">
+    <meta property="og:title" content="{% block og_title %}Caldwell Cosmetics | Natural Aesthetics Clinic, Abergele{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}A natural aesthetics clinic in Abergele, North Wales. Skin rejuvenation, laser treatments and injectables — tailored to you.{% endblock %}">
+    <meta property="og:image" content="{% block og_image %}https://caldwellcosmetics.co.uk{% static 'images/mini-logo.png' %}{% endblock %}">
+    <meta property="og:locale" content="en_GB">
+
+    <!-- Twitter / X Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{% block twitter_title %}Caldwell Cosmetics | Natural Aesthetics Clinic, Abergele{% endblock %}">
+    <meta name="twitter:description" content="{% block twitter_description %}A natural aesthetics clinic in Abergele, North Wales. Skin rejuvenation, laser treatments and injectables — tailored to you.{% endblock %}">
+    <meta name="twitter:image" content="{% block twitter_image %}https://caldwellcosmetics.co.uk{% static 'images/mini-logo.png' %}{% endblock %}">
 
     <title>{% block title %}Caldwell Cosmetics{% endblock %}</title>
 
@@ -22,9 +41,43 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,300..700;1,300..700&family=Jost:ital,wght@0,100..900;1,100..900&family=Lora:ital,wght@0,400..700;1,400..700&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,300..700;1,300..700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Jost:ital,wght@0,100..900;1,100..900&family=Lora:ital,wght@0,400..700;1,400..700&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
     <!-- Font Awesome -->
     <script src="https://kit.fontawesome.com/62f7b1be0a.js" crossorigin="anonymous"></script>
+
+    <!-- Schema.org: LocalBusiness structured data -->
+    {% block schema_org %}
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "BeautySalon",
+        "name": "Caldwell Cosmetics",
+        "description": "A natural aesthetics clinic in Abergele, North Wales, specialising in skin rejuvenation, laser treatments and injectables.",
+        "url": "https://caldwellcosmetics.co.uk",
+        "telephone": "+447399098081",
+        "email": "info@caldwellcosmetics.co.uk",
+        "image": "https://caldwellcosmetics.co.uk{% static 'images/mini-logo.png' %}",
+        "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "14 Cae Eithin",
+            "addressLocality": "Abergele",
+            "postalCode": "LL22 8FN",
+            "addressRegion": "Conwy",
+            "addressCountry": "GB"
+        },
+        "geo": {
+            "@type": "GeoCoordinates",
+            "latitude": 53.2851,
+            "longitude": -3.5808
+        },
+        "sameAs": [
+            "https://www.facebook.com/profile.php?id=61560980317019",
+            "https://www.instagram.com/caldwell_cosmetics/"
+        ],
+        "priceRange": "££"
+    }
+    </script>
+    {% endblock schema_org %}
 
 </head>
 

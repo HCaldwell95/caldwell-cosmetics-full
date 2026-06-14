@@ -5,6 +5,10 @@
     box-sizing: border-box;
 }
 
+html {
+    overflow-x: hidden;
+}
+
 /* Remove list styles */
 ul, ol {
     list-style: none;

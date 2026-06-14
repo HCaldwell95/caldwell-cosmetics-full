@@ -29,11 +29,19 @@
             {% endif %}
         </div>
         <div class="profile-header__info">
-            <h1 class="profile-header__name">{{ profile.user.full_name }}</h1>
+            <h1 class="profile-header__name">
+                {{ profile.user.full_name }}
+                {% if profile.is_minor %}
+                    <span class="minor-badge-inline" title="Under 18 — parental consent required">Under 18</span>
+                {% endif %}
+            </h1>
             <p class="profile-header__email">{{ profile.user.email }}</p>
-            {% if profile.gdpr_consent %}
-                <span class="badge badge--success">GDPR Consent Given</span>
-            {% endif %}
+            <div class="profile-header__badges">
+                <span class="badge badge--success">Active</span>
+                {% if profile.gdpr_consent %}
+                    <span class="badge badge--success">GDPR Consent Given</span>
+                {% endif %}
+            </div>
         </div>
         <a href="{% url 'accounts:profile_edit' %}" class="btn btn--outline">Edit Profile</a>
     </div>
@@ -60,6 +68,33 @@
                 <dd>{{ profile.get_skin_type_display }}</dd>
             </dl>
         </section>
+
+        {% if profile.is_minor or profile.guardian_name %}
+        <section class="profile-card guardian-card profile-card--wide">
+            <h2 class="profile-card__title">Parent / Guardian Details</h2>
+            {% if profile.is_minor %}
+            <p style="font-family:var(--font-montserrat);font-size:0.82rem;color:#7c2d12;margin-bottom:1rem;line-height:1.5;">
+                This client is under 18. Parental or guardian consent is required before any treatment can take place.
+                They may need to be present at the appointment.
+            </p>
+            {% endif %}
+            <dl class="profile-dl">
+                <dt>Name</dt>
+                <dd>{{ profile.guardian_name|default:"Not provided" }}</dd>
+
+                <dt>Relationship</dt>
+                <dd>{{ profile.guardian_relationship|default:"Not provided" }}</dd>
+
+                <dt>Mobile</dt>
+                <dd>{{ profile.guardian_phone|default:"Not provided" }}</dd>
+
+                {% if profile.guardian_email %}
+                <dt>Email</dt>
+                <dd>{{ profile.guardian_email }}</dd>
+                {% endif %}
+            </dl>
+        </section>
+        {% endif %}
 
         <section class="profile-card">
             <h2 class="profile-card__title">Address</h2>
@@ -131,6 +166,9 @@
             {% csrf_token %}
             <button type="submit" class="btn btn--ghost">Sign Out</button>
         </form>
+        <a href="{% url 'accounts:deactivate_account' %}" class="btn btn--danger btn--sm">
+            Deactivate account
+        </a>
     </div>
 
 </div>

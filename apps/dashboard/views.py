@@ -446,7 +446,8 @@ def client_profile(request, pk):
             "joined":       user.date_joined.strftime("%d %b %Y"),
             "phone":        profile.phone_number if profile else "",
             "dob":          profile.date_of_birth.strftime("%d %b %Y") if profile and profile.date_of_birth else "",
-            "skin_type":    profile.get_skin_type_display() if profile else "",
+            "skin_type":     profile.get_skin_type_display() if profile else "",
+            "skin_type_key": profile.skin_type if profile else "",
             "address":      "\n".join(filter(None, [
                 profile.address_line_1 if profile else "",
                 profile.address_line_2 if profile else "",
@@ -524,6 +525,8 @@ def client_edit(request, pk):
 
     user.first_name = data.get("first_name", user.first_name)
     user.last_name  = data.get("last_name",  user.last_name)
+    if data.get("email"):
+        user.email = data["email"]
     user.save()
 
     if profile:
