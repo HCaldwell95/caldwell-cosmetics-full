@@ -40,7 +40,7 @@ class TreatmentCategorySitemap(Sitemap):
     protocol = "https"
 
     def items(self):
-        return TreatmentCategory.objects.all()
+        return TreatmentCategory.objects.filter(is_active=True)
 
     def location(self, obj):
         return reverse("treatments:category_detail", kwargs={"slug": obj.slug})

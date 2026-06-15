@@ -1,9 +1,10 @@
 import json
 from datetime import date, timedelta
+from decimal import Decimal, InvalidOperation
 
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.mail import send_mail
-from django.db import IntegrityError
+from django.db import IntegrityError, models
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
@@ -27,12 +28,21 @@ from apps.forms_system.models import (
     PRPConsentForm,
     LaserReConsent,
 )
+from .models import ClientNote
 
 try:
     from apps.accounts.models import User, PrepaidBundle, AccountCredit, CreditTransaction
 except ImportError:
     from django.contrib.auth import get_user_model
     User = get_user_model()
+
+
+def _parse_json(request):
+    """Return (data, None) on success or (None, error_response) on bad JSON."""
+    try:
+        return json.loads(request.body), None
+    except json.JSONDecodeError:
+        return None, JsonResponse({"ok": False, "error": "Invalid JSON body."}, status=400)
 
 
 def is_admin(user):
@@ -72,32 +82,35 @@ def _client_form_status(user):
         laser_latest = None
         laser_count  = 0
 
+    def fmt(dt):
+        return dt.strftime("%d/%m/%Y") if dt else None
+
     return {
         "consultation": {
             "completed":        consultation is not None,
-            "date":             consultation.completed_at if consultation else None,
+            "date":             fmt(consultation.completed_at) if consultation else None,
             "by_practitioner":  consultation.completed_by_practitioner if consultation else False,
         },
         "photography": {
             "completed":        photography is not None,
-            "date":             photography.completed_at if photography else None,
+            "date":             fmt(photography.completed_at) if photography else None,
             "by_practitioner":  photography.completed_by_practitioner if photography else False,
         },
         "botox": {
             "client_signed":    botox.client_signed if botox else False,
             "fully_complete":   botox.is_fully_complete if botox else False,
-            "date":             botox.completed_at if botox else None,
+            "date":             fmt(botox.completed_at) if botox else None,
             "id":               botox.pk if botox else None,
         },
         "prp": {
             "client_signed":    prp.client_signed if prp else False,
             "fully_complete":   prp.is_fully_complete if prp else False,
-            "date":             prp.completed_at if prp else None,
+            "date":             fmt(prp.completed_at) if prp else None,
             "id":               prp.pk if prp else None,
         },
         "laser_reconsent": {
             "count":            laser_count,
-            "last_date":        laser_latest.completed_at.strftime("%d %b %Y") if laser_latest else None,
+            "last_date":        fmt(laser_latest.completed_at) if laser_latest else None,
         },
         "record_cards": record_count,
     }
@@ -125,8 +138,8 @@ def _client_credit(user):
 
 @admin_view
 def dashboard(request):
-    treatments = Treatment.objects.filter(is_active=True).select_related("category")
-    categories = TreatmentCategory.objects.filter(is_active=True)
+    treatments = Treatment.objects.filter(is_active=True, category__is_bookable=True).select_related("category")
+    categories = TreatmentCategory.objects.filter(is_active=True, is_bookable=True)
 
     context = {
         "treatments": treatments,
@@ -192,7 +205,8 @@ def bookings_data(request):
 @admin_view
 @require_POST
 def booking_create(request):
-    data = json.loads(request.body)
+    data, err = _parse_json(request)
+    if err: return err
 
     user_id      = data.get("user_id")
     treatment_id = data.get("treatment_id")
@@ -210,7 +224,7 @@ def booking_create(request):
 
     try:
         user         = User.objects.get(pk=user_id)
-        treatment    = Treatment.objects.get(pk=treatment_id, is_active=True)
+        treatment    = Treatment.objects.get(pk=treatment_id, is_active=True, category__is_bookable=True)
         booking_date = date.fromisoformat(date_str)
     except (User.DoesNotExist, Treatment.DoesNotExist, ValueError) as e:
         return JsonResponse({"ok": False, "errors": {"__all__": str(e)}}, status=400)
@@ -262,7 +276,8 @@ def booking_create(request):
 @require_POST
 def booking_edit(request, pk):
     booking      = get_object_or_404(Booking, pk=pk)
-    data         = json.loads(request.body)
+    data, err    = _parse_json(request)
+    if err: return err
     treatment_id = data.get("treatment_id")
     date_str     = data.get("date")
     time_str     = data.get("start_time")
@@ -430,12 +445,19 @@ def client_profile(request, pk):
     credit  = _client_credit(user)
     forms   = _client_form_status(user)
 
-    treatments = Treatment.objects.filter(is_active=True).order_by("name")
+    treatments = Treatment.objects.filter(is_active=True, category__is_bookable=True).order_by("name")
 
     record_cards = (
         RecordCard.objects
         .filter(user=user)
         .order_by("-treatment_number")
+    )
+
+    notes = (
+        ClientNote.objects
+        .filter(user=user)
+        .select_related("author")
+        .order_by("-created_at")
     )
 
     return JsonResponse({
@@ -494,6 +516,15 @@ def client_profile(request, pk):
         ],
         "credit": {
             "balance": str(credit.balance) if credit else "0.00",
+            "transactions": [
+                {
+                    "date":        t.created_at.strftime("%d %b %Y"),
+                    "description": t.description,
+                    "amount":      str(t.amount),
+                    "type":        t.transaction_type,
+                }
+                for t in credit.transactions.order_by("-created_at")
+            ] if credit else [],
         },
         "forms": forms,
         "record_cards": [
@@ -509,6 +540,16 @@ def client_profile(request, pk):
             {"id": t.pk, "name": t.name}
             for t in treatments
         ],
+        "notes": [
+            {
+                "id":     n.pk,
+                "number": n.number,
+                "title":  n.title,
+                "date":   n.created_at.strftime("%d/%m/%Y"),
+                "author": n.author.get_full_name() if n.author else "Unknown",
+            }
+            for n in notes
+        ],
     })
 
 
@@ -521,7 +562,8 @@ def client_profile(request, pk):
 def client_edit(request, pk):
     user    = get_object_or_404(User, pk=pk)
     profile = getattr(user, "profile", None)
-    data    = json.loads(request.body)
+    data, err = _parse_json(request)
+    if err: return err
 
     user.first_name = data.get("first_name", user.first_name)
     user.last_name  = data.get("last_name",  user.last_name)
@@ -559,7 +601,8 @@ def client_edit(request, pk):
 @require_POST
 def bundle_add(request, pk):
     user = get_object_or_404(User, pk=pk)
-    data = json.loads(request.body)
+    data, err = _parse_json(request)
+    if err: return err
 
     treatment_name = data.get("treatment_name", "").strip()
     total_sessions = data.get("total_sessions")
@@ -585,20 +628,7 @@ def bundle_add(request, pk):
         expiry_date=expiry_date or None,
     )
 
-    return JsonResponse({
-        "ok": True,
-        "bundle": {
-            "id":                 bundle.pk,
-            "treatment_name":     bundle.treatment_name,
-            "total_sessions":     bundle.total_sessions,
-            "sessions_used":      bundle.sessions_used,
-            "sessions_remaining": bundle.sessions_remaining,
-            "status":             bundle.status,
-            "date_purchased":     bundle.date_purchased.strftime("%d %b %Y"),
-            "expiry_date":        bundle.expiry_date.strftime("%d %b %Y") if bundle.expiry_date else None,
-            "notes":              bundle.notes,
-        }
-    })
+    return JsonResponse({"ok": True, "id": bundle.pk})
 
 
 @admin_view
@@ -631,21 +661,22 @@ def bundle_use_session(request, pk, bundle_pk):
 @require_POST
 def credit_adjust(request, pk):
     user   = get_object_or_404(User, pk=pk)
-    data   = json.loads(request.body)
+    data, err = _parse_json(request)
+    if err: return err
     credit, _ = AccountCredit.objects.get_or_create(user=user)
 
     transaction_type = data.get("type")
     description      = data.get("description", "")
 
     try:
-        amount = abs(float(data.get("amount", 0)))
-    except (ValueError, TypeError):
+        amount = abs(Decimal(str(data.get("amount") or "0")))
+    except InvalidOperation:
         return JsonResponse({"ok": False, "error": "Invalid amount."}, status=400)
 
     if transaction_type not in ("credit", "deduct", "refund"):
         return JsonResponse({"ok": False, "error": "Invalid transaction type."}, status=400)
 
-    if transaction_type in ("deduct",) and amount > float(credit.balance):
+    if transaction_type in ("deduct",) and amount > credit.balance:
         return JsonResponse({"ok": False, "error": "Insufficient credit balance."}, status=400)
 
     if transaction_type == "deduct":
@@ -664,3 +695,49 @@ def credit_adjust(request, pk):
     )
 
     return JsonResponse({"ok": True, "balance": str(credit.balance)})
+
+
+# ---------------------------------------------------------------------------
+# Client notes (operator only)
+# ---------------------------------------------------------------------------
+
+@admin_view
+def note_new(request, pk):
+    user    = get_object_or_404(User, pk=pk)
+    profile = getattr(user, "profile", None)
+    error   = None
+
+    if request.method == "POST":
+        title   = request.POST.get("title", "").strip()
+        content = request.POST.get("content", "").strip()
+        if not title:
+            error = "A title is required."
+        elif not content:
+            error = "Note content cannot be empty."
+        else:
+            note = ClientNote.objects.create(
+                user=user,
+                author=request.user,
+                title=title,
+                content=content,
+            )
+            return redirect("dashboard:note_view", pk=user.pk, note_pk=note.pk)
+
+    return render(request, "dashboard/note_new.html", {
+        "client":  user,
+        "profile": profile,
+        "error":   error,
+    })
+
+
+@admin_view
+def note_view(request, pk, note_pk):
+    user    = get_object_or_404(User, pk=pk)
+    note    = get_object_or_404(ClientNote, pk=note_pk, user=user)
+    profile = getattr(user, "profile", None)
+
+    return render(request, "dashboard/note_view.html", {
+        "client":  user,
+        "profile": profile,
+        "note":    note,
+    })

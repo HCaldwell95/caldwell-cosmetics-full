@@ -28,7 +28,7 @@ cloudinary.config(
 # --------------------------------------------------
 # SECURITY
 # --------------------------------------------------
-SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "unsafe-dev-secret-key")
+SECRET_KEY = os.environ["DJANGO_SECRET_KEY"]
 
 # --------------------------------------------------
 # APPLICATIONS
@@ -190,7 +190,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # --------------------------------------------------
 LOGIN_URL           = "/accounts/login/"
 LOGIN_REDIRECT_URL  = "/accounts/profile/"
-LOGOUT_REDIRECT_URL = "/"
+LOGOUT_REDIRECT_URL = "/accounts/login/"
 
 AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",

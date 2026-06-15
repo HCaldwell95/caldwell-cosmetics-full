@@ -97,6 +97,43 @@
         <p class="cform-sig-name">{{ target_user.full_name }}</p>
     </div>
 
+    {% if is_minor %}
+    <!-- ===== MINOR / GUARDIAN SECTION ===== -->
+    <div class="cform-section" id="guardianSection">
+        <h2 class="cform-section__title">Parent / Guardian Consent</h2>
+        <div class="cform-behalf-banner cform-minor-banner">
+            This client is under 18. A parent or guardian must provide their details and countersign below.
+        </div>
+        <div class="cform-grid cform-grid--2">
+            <div class="cform-field">
+                <label class="cform-label">Guardian Full Name <span class="cform-req">*</span></label>
+                <input class="cform-input" type="text" name="guardian_name" required placeholder="Full name">
+            </div>
+            <div class="cform-field">
+                <label class="cform-label">Relationship to Client <span class="cform-req">*</span></label>
+                <input class="cform-input" type="text" name="guardian_relationship" required placeholder="e.g. Mother, Father, Guardian">
+            </div>
+            <div class="cform-field">
+                <label class="cform-label">Guardian Phone <span class="cform-req">*</span></label>
+                <input class="cform-input" type="tel" name="guardian_phone" required placeholder="e.g. 07700 900000">
+            </div>
+            <div class="cform-field">
+                <label class="cform-label">Guardian Email</label>
+                <input class="cform-input" type="email" name="guardian_email" placeholder="Email address (optional)">
+            </div>
+        </div>
+        <p class="cform-label" style="margin-top:1.25rem;">Guardian Signature <span class="cform-req">*</span></p>
+        <div class="cform-sig-wrap">
+            <canvas id="guardianSigCanvas" class="cform-sig-canvas"></canvas>
+            <div class="cform-sig-actions">
+                <button type="button" class="btn btn--ghost btn--sm" id="guardianSigClear">Clear</button>
+            </div>
+        </div>
+        <input type="hidden" name="guardian_signature" id="guardianSigData">
+        <p class="cform-hint" style="margin-top:0.5rem;">By signing, the parent / guardian confirms they consent to today's laser / IPL treatment being carried out on the client named above.</p>
+    </div>
+    {% endif %}
+
     <div class="cform-submit-row">
         <button type="submit" class="btn btn--primary btn--lg">Submit Re-Consent</button>
     </div>

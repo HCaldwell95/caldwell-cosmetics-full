@@ -1,0 +1,493 @@
+{% extends "base/base.html" %}
+{% load static %}
+{% block title %}Consultation Form | Caldwell Cosmetics{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/forms_system.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="cform-page">
+
+{% if on_behalf %}
+<div class="cform-behalf-banner">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    Completing on behalf of <strong>{{ target_user.full_name }}</strong>. This will be recorded with a practitioner note and timestamp.
+</div>
+{% endif %}
+
+{% if existing %}
+<div class="cform-existing-banner">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+    A consultation form was completed on {{ existing.completed_at|date:"j F Y" }}.
+    {% if is_practitioner %}Submitting this form will create a new record.{% else %}If your details have changed, you may complete an updated form below.{% endif %}
+</div>
+{% endif %}
+
+<div class="cform-header">
+    <span class="cform-header__eyebrow">Caldwell Cosmetics</span>
+    <h1 class="cform-header__title">Dynamix Consultation Form</h1>
+    <p class="cform-header__sub">Please complete all sections honestly and in full. This information is kept securely and used only to provide safe, effective treatment.</p>
+</div>
+
+<form id="consultationForm" class="cform" method="post" action="{% url 'forms_system:consultation' %}{% if on_behalf %}?on_behalf_of={{ target_user.pk }}{% endif %}">
+    {% csrf_token %}
+
+    <!-- ===== SECTION 1: CLIENT INFORMATION ===== -->
+    <div class="cform-section">
+        <h2 class="cform-section__title">Client Information</h2>
+        <div class="cform-grid cform-grid--2">
+            <div class="cform-field">
+                <label class="cform-label">Full Name <span class="cform-req">*</span></label>
+                <input class="cform-input" type="text" name="full_name" value="{{ target_user.full_name }}" required>
+            </div>
+            <div class="cform-field">
+                <label class="cform-label">Date of Birth <span class="cform-req">*</span></label>
+                <input class="cform-input" type="date" name="date_of_birth" id="dobField" required>
+            </div>
+            <div class="cform-field">
+                <label class="cform-label">Phone Number</label>
+                <input class="cform-input" type="tel" name="phone_number">
+            </div>
+            <div class="cform-field">
+                <label class="cform-label">Email Address</label>
+                <input class="cform-input" type="email" name="email" value="{{ target_user.email }}">
+            </div>
+            <div class="cform-field cform-field--full">
+                <label class="cform-label">Address</label>
+                <textarea class="cform-input" name="address" rows="2"></textarea>
+            </div>
+            <div class="cform-field">
+                <label class="cform-label">Emergency Contact Name</label>
+                <input class="cform-input" type="text" name="emergency_contact_name">
+            </div>
+            <div class="cform-field">
+                <label class="cform-label">Emergency Contact Phone</label>
+                <input class="cform-input" type="tel" name="emergency_contact_phone">
+            </div>
+            <div class="cform-field">
+                <label class="cform-label">Ethnic Origin</label>
+                <input class="cform-input" type="text" name="ethnic_origin">
+            </div>
+            <div class="cform-field">
+                <label class="cform-label">Occupation</label>
+                <input class="cform-input" type="text" name="occupation">
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== SECTION 2: TREATMENT REQUESTED ===== -->
+    <div class="cform-section">
+        <h2 class="cform-section__title">Treatment Requested</h2>
+        <div class="cform-check-grid">
+            {% for val, label in form_treatment_choices %}
+            <label class="cform-check">
+                <input type="radio" name="treatment_requested" value="{{ val }}">
+                <span>{{ label }}</span>
+            </label>
+            {% endfor %}
+        </div>
+        <div class="cform-grid cform-grid--2" style="margin-top:1rem;">
+            <div class="cform-field">
+                <label class="cform-label">Other (specify)</label>
+                <input class="cform-input" type="text" name="treatment_other">
+            </div>
+            <div class="cform-field">
+                <label class="cform-label">Body Area(s)</label>
+                <input class="cform-input" type="text" name="body_areas">
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== SECTION 3: LIFESTYLE & MEDICAL HISTORY ===== -->
+    <div class="cform-section">
+        <h2 class="cform-section__title">Lifestyle &amp; Medical History</h2>
+        <p class="cform-hint">Please tick all that apply. If you are unsure about a condition, please discuss with your operator.</p>
+        <div class="cform-check-grid cform-check-grid--2col">
+            <label class="cform-check"><input type="checkbox" name="pregnant"><span>Pregnant (or planning pregnancy)</span></label>
+            <label class="cform-check"><input type="checkbox" name="pcos_hormonal"><span>PCOS / Hormonal Imbalance</span></label>
+            <label class="cform-check"><input type="checkbox" name="sun_tanned"><span>Sun Tanned / Using Sun Beds or Fake Tan</span></label>
+            <label class="cform-check"><input type="checkbox" name="thyroid_condition"><span>Thyroid Condition</span></label>
+            <label class="cform-check"><input type="checkbox" name="skin_pigmentation"><span>Skin Pigmentation Disorders</span></label>
+            <label class="cform-check"><input type="checkbox" name="regular_smoker"><span>Regular Smoker</span></label>
+            <label class="cform-check"><input type="checkbox" name="history_of_cancer"><span>History of Cancer</span></label>
+            <label class="cform-check"><input type="checkbox" name="psoriasis_eczema"><span>Psoriasis / Eczema</span></label>
+            <label class="cform-check"><input type="checkbox" name="diabetes"><span>Diabetes</span></label>
+            <label class="cform-check"><input type="checkbox" name="depression_anxiety"><span>Depression / Anxiety</span></label>
+            <label class="cform-check"><input type="checkbox" name="epilepsy"><span>Epilepsy</span></label>
+            <label class="cform-check"><input type="checkbox" name="herpes"><span>Herpes (shingles / cold sores)</span></label>
+            <label class="cform-check"><input type="checkbox" name="lymphatic_immune"><span>Lymphatic / Immune System Disorders</span></label>
+            <label class="cform-check"><input type="checkbox" name="high_blood_pressure"><span>High Blood Pressure</span></label>
+            <label class="cform-check"><input type="checkbox" name="keloid_scarring"><span>History of Keloid Formation / Scarring</span></label>
+            <label class="cform-check"><input type="checkbox" name="photosensitive"><span>Photosensitive Conditions</span></label>
+            <label class="cform-check"><input type="checkbox" name="lupus"><span>Lupus</span></label>
+            <label class="cform-check"><input type="checkbox" name="allergies"><span>Allergies</span></label>
+            <label class="cform-check"><input type="checkbox" name="communicable_diseases"><span>Communicable Diseases (hepatitis / HIV)</span></label>
+        </div>
+        <div class="cform-field" style="margin-top:1rem;">
+            <label class="cform-label">Units of Alcohol per Week</label>
+            <input class="cform-input cform-input--short" type="text" name="alcohol_units_per_week">
+        </div>
+        <div class="cform-field">
+            <label class="cform-label">Comments</label>
+            <textarea class="cform-input" name="medical_comments" rows="3"></textarea>
+        </div>
+    </div>
+
+    <!-- ===== SECTION 4: MEDICATIONS ===== -->
+    <div class="cform-section">
+        <h2 class="cform-section__title">Medications &amp; Supplements</h2>
+        <div class="cform-field">
+            <label class="cform-label">Current medications or supplements</label>
+            <textarea class="cform-input" name="current_medications" rows="3"></textarea>
+        </div>
+        <p class="cform-hint">Are you currently using, or have used in the last 6 months, any of the following?</p>
+        <div class="cform-check-grid">
+            <label class="cform-check"><input type="checkbox" name="st_johns_wart"><span>St John's Wort</span></label>
+            <label class="cform-check"><input type="checkbox" name="amiodarone"><span>Amiodarone</span></label>
+            <label class="cform-check"><input type="checkbox" name="minocycline"><span>Minocycline</span></label>
+            <label class="cform-check"><input type="checkbox" name="anticoagulants"><span>Anticoagulants</span></label>
+            <label class="cform-check"><input type="checkbox" name="gold_medications"><span>Gold Medications</span></label>
+            <label class="cform-check"><input type="checkbox" name="retinoids"><span>Oral or Topical Retinoids (e.g. Roaccutane, Retin-A)</span></label>
+            <label class="cform-check"><input type="checkbox" name="steroids"><span>Oral or Topical Steroids</span></label>
+        </div>
+        <div class="cform-field" style="margin-top:1rem;">
+            <label class="cform-label">Comments</label>
+            <textarea class="cform-input" name="medication_comments" rows="2"></textarea>
+        </div>
+        <div class="cform-field">
+            <label class="cform-label">Recovering from major medical treatment or PDT within the last 6 months?</label>
+            <textarea class="cform-input" name="recent_major_treatment" rows="2" placeholder="No / Yes (please specify)"></textarea>
+        </div>
+    </div>
+
+    <!-- ===== SECTION 5: TREATMENT AREA ===== -->
+    <div class="cform-section">
+        <h2 class="cform-section__title">Treatment Area</h2>
+        <p class="cform-hint">Does the area for treatment have any of the following?</p>
+        <div class="cform-check-grid">
+            <label class="cform-check"><input type="checkbox" name="area_has_moles"><span>Moles</span></label>
+            <label class="cform-check"><input type="checkbox" name="area_has_birthmarks"><span>Birthmarks</span></label>
+            <label class="cform-check"><input type="checkbox" name="area_has_tattoos"><span>Tattoos</span></label>
+            <label class="cform-check"><input type="checkbox" name="area_has_permanent_makeup"><span>Permanent Makeup</span></label>
+            <label class="cform-check"><input type="checkbox" name="area_has_chemical_peel"><span>Chemical Peel</span></label>
+            <label class="cform-check"><input type="checkbox" name="area_has_botox"><span>Botox</span></label>
+            <label class="cform-check"><input type="checkbox" name="area_has_fillers"><span>Injectable Fillers</span></label>
+            <label class="cform-check"><input type="checkbox" name="area_has_tanning"><span>Tanning Injections or Enhancers</span></label>
+        </div>
+        <div class="cform-field" style="margin-top:1rem;">
+            <label class="cform-label">Skin Disorder / Disease? (Yes / No — if yes, please specify)</label>
+            <textarea class="cform-input" name="skin_disorder" rows="2"></textarea>
+        </div>
+        <div class="cform-field">
+            <label class="cform-label">Previous Laser or IPL Treatment? (Yes / No — if yes, please specify)</label>
+            <textarea class="cform-input" name="previous_laser_ipl" rows="2"></textarea>
+        </div>
+    </div>
+
+    <!-- ===== SECTION 6: YOUR SKIN ===== -->
+    <div class="cform-section">
+        <h2 class="cform-section__title">Your Skin</h2>
+        <div class="cform-field">
+            <label class="cform-label">Products you use on your skin</label>
+            <textarea class="cform-input" name="skin_products" rows="2"></textarea>
+        </div>
+        <p class="cform-hint">How does your skin respond to midday summer sun with no sunscreen?</p>
+        <div class="cform-check-grid cform-check-grid--1col">
+            <label class="cform-check"><input type="radio" name="skin_type" value="1"><span>Skin Type 1 – Always burns, never tans</span></label>
+            <label class="cform-check"><input type="radio" name="skin_type" value="2"><span>Skin Type 2 – Easily burnt, eventually gets a moderate tan</span></label>
+            <label class="cform-check"><input type="radio" name="skin_type" value="3"><span>Skin Type 3 – Sometimes burns, quickly gets an average tan</span></label>
+            <label class="cform-check"><input type="radio" name="skin_type" value="4"><span>Skin Type 4 – Rarely burns, quickly gets a deep tan</span></label>
+            <label class="cform-check"><input type="radio" name="skin_type" value="5"><span>Skin Type 5 – Very rarely burns, consistent tan</span></label>
+            <label class="cform-check"><input type="radio" name="skin_type" value="6"><span>Skin Type 6 – Never burns, consistent tan</span></label>
+        </div>
+        <div class="cform-grid cform-grid--2" style="margin-top:1rem;">
+            <div class="cform-field">
+                <label class="cform-label">Do you currently have a real or fake tan?</label>
+                <div class="cform-radio-row">
+                    <label class="cform-check"><input type="radio" name="current_tan" value="yes"><span>Yes</span></label>
+                    <label class="cform-check"><input type="radio" name="current_tan" value="no"><span>No</span></label>
+                </div>
+            </div>
+            <div class="cform-field">
+                <label class="cform-label">How long ago was your last UV exposure?</label>
+                <input class="cform-input" type="text" name="last_uv_exposure">
+            </div>
+            <div class="cform-field">
+                <label class="cform-label">Have you used tanning injections / Melanotan?</label>
+                <div class="cform-radio-row">
+                    <label class="cform-check"><input type="radio" name="tanning_injections" value="yes"><span>Yes</span></label>
+                    <label class="cform-check"><input type="radio" name="tanning_injections" value="no"><span>No</span></label>
+                </div>
+            </div>
+            <div class="cform-field">
+                <label class="cform-label">Where did you hear about the clinic?</label>
+                <input class="cform-input" type="text" name="referral_source" placeholder="Recommendation / Advert / Other">
+            </div>
+        </div>
+        <div class="cform-field">
+            <label class="cform-label">What are your goals / expectations for the treatment?</label>
+            <textarea class="cform-input" name="treatment_goals" rows="3"></textarea>
+        </div>
+    </div>
+
+    <!-- ===== SECTION 7: INFORMED CONSENT ===== -->
+    <div class="cform-section cform-section--consent">
+        <h2 class="cform-section__title">Informed Consent</h2>
+        <p class="cform-hint">Please read each statement carefully and tick to confirm you understand and agree.</p>
+        <div class="cform-consent-list">
+            <label class="cform-consent-item"><input type="checkbox" name="consent_info_correct" required><span>The information I have given is correct to the best of my knowledge, and I have not withheld any known medical state or condition. I will inform the operator before treatment if there has been any change.</span></label>
+            <label class="cform-consent-item"><input type="checkbox" name="consent_results_vary" required><span>I understand that the results from this treatment vary considerably and a small percentage of people will not respond satisfactorily to treatment.</span></label>
+            <label class="cform-consent-item"><input type="checkbox" name="consent_multiple_treatments" required><span>I understand multiple treatments are necessary to achieve satisfactory results.</span></label>
+            <label class="cform-consent-item"><input type="checkbox" name="consent_no_guarantee" required><span>I understand there is no guarantee of permanent results and maintenance treatments may be necessary.</span></label>
+            <label class="cform-consent-item"><input type="checkbox" name="consent_sun_exposure" required><span>I understand that I must avoid sun exposure on the treated area for the duration of the treatment (and for up to 1 month afterwards) or use a high SPF. I understand that tanned skin cannot be treated.</span></label>
+            <label class="cform-consent-item"><input type="checkbox" name="consent_side_effects" required><span>I understand there may be short-term side effects such as reddening, bruising, swelling, mild burning or blistering, hypo-pigmentation or hyper-pigmentation, as well as rare side effects such as scarring and permanent discolouration.</span></label>
+            <label class="cform-consent-item"><input type="checkbox" name="consent_pigmentation" required><span>I understand that pigmented areas caused by sun damage may initially turn darker, followed by micro-crusting of the lesion, after which it should flake away.</span></label>
+            <label class="cform-consent-item"><input type="checkbox" name="consent_goggles" required><span>I understand that I must wear protective eye goggles to prevent damage from the light.</span></label>
+            <label class="cform-consent-item"><input type="checkbox" name="consent_contact_details" required><span>I agree that my contact details can be used to be kept updated about special offers and other information about the clinic and its services.</span></label>
+            <label class="cform-consent-item"><input type="checkbox" name="consent_certified" required><span>I certify that I have read and understood all the information and my questions have been answered satisfactorily before signing this consent form. I consent to the terms of this agreement.</span></label>
+        </div>
+    </div>
+
+    {% if is_practitioner %}
+    <!-- ===== SECTION 8: PRE-TREATMENT CHECKLIST (operator) ===== -->
+    <div class="cform-section cform-section--operator">
+        <h2 class="cform-section__title">Pre-Treatment Checklist <span class="cform-operator-badge">Operator</span></h2>
+        <p class="cform-hint">Tick to confirm each point has been discussed with the client.</p>
+        <div class="cform-check-grid cform-check-grid--2col">
+            <label class="cform-check"><input type="checkbox" name="pretx_how_works"><span>How treatment works</span></label>
+            <label class="cform-check"><input type="checkbox" name="pretx_pre_post_care"><span>Pre / Post treatment care</span></label>
+            <label class="cform-check"><input type="checkbox" name="pretx_light_products"><span>Light Soothe / Light Protect recommended</span></label>
+            <label class="cform-check"><input type="checkbox" name="pretx_num_treatments"><span>Typical number of treatments / interval</span></label>
+            <label class="cform-check"><input type="checkbox" name="pretx_clinical_outcome"><span>Likely clinical outcome</span></label>
+            <label class="cform-check"><input type="checkbox" name="pretx_sensation"><span>Sensation during treatment</span></label>
+            <label class="cform-check"><input type="checkbox" name="pretx_side_effects"><span>Possible side effects</span></label>
+            <label class="cform-check"><input type="checkbox" name="pretx_photo_taken"><span>Photograph taken</span></label>
+        </div>
+        <div class="cform-grid cform-grid--2" style="margin-top:1rem;">
+            <div class="cform-field">
+                <label class="cform-label">Cost per Treatment</label>
+                <input class="cform-input" type="text" name="pretx_cost">
+            </div>
+        </div>
+        <div class="cform-field">
+            <label class="cform-label">Further questions / comments</label>
+            <textarea class="cform-input" name="pretx_comments" rows="3"></textarea>
+        </div>
+    </div>
+
+    <!-- ===== SECTION 9: TREATMENT ASSESSMENT (operator) ===== -->
+    <div class="cform-section cform-section--operator">
+        <h2 class="cform-section__title">Treatment Assessment <span class="cform-operator-badge">Operator</span></h2>
+
+        <h3 class="cform-subsection">Hair Removal</h3>
+        <div class="cform-grid cform-grid--3">
+            <div class="cform-field">
+                <label class="cform-label">Hair Colour</label>
+                <select class="cform-input" name="hair_colour">
+                    <option value="">—</option>
+                    <option value="black">Black</option>
+                    <option value="dark_brown">Dark Brown</option>
+                    <option value="light_brown">Light Brown</option>
+                    <option value="red">Red</option>
+                    <option value="blonde">Blonde</option>
+                    <option value="grey_white">Grey / White</option>
+                </select>
+            </div>
+            <div class="cform-field">
+                <label class="cform-label">Hair Texture</label>
+                <select class="cform-input" name="hair_texture">
+                    <option value="">—</option>
+                    <option value="coarse">Coarse</option>
+                    <option value="medium">Medium</option>
+                    <option value="fine">Fine</option>
+                </select>
+            </div>
+            <div class="cform-field">
+                <label class="cform-label">Handpiece</label>
+                <input class="cform-input" type="text" name="hair_handpiece" placeholder="ReMove 650 / ReMove LP1064">
+            </div>
+        </div>
+        <div class="cform-field">
+            <label class="cform-label">Previous / Current Treatments</label>
+            <textarea class="cform-input" name="hair_previous_treatments" rows="2"></textarea>
+        </div>
+
+        <h3 class="cform-subsection">Vascular</h3>
+        <div class="cform-field">
+            <label class="cform-label">Type</label>
+            <select class="cform-input" name="vascular_type">
+                <option value="">—</option>
+                <option value="rosacea">Rosacea</option>
+                <option value="thread_veins">Thread Veins</option>
+                <option value="spider_nevi">Spider Nevi</option>
+                <option value="pws">PWS</option>
+                <option value="leg_veins">Leg Veins</option>
+                <option value="other">Other</option>
+            </select>
+        </div>
+        <div class="cform-field">
+            <label class="cform-label">Previous / Current Treatments</label>
+            <textarea class="cform-input" name="vascular_previous_treatments" rows="2"></textarea>
+        </div>
+
+        <h3 class="cform-subsection">Pigmentation</h3>
+        <div class="cform-field">
+            <label class="cform-label">Type</label>
+            <select class="cform-input" name="pigmentation_type">
+                <option value="">—</option>
+                <option value="lentigines">Lentigines (liver spots)</option>
+                <option value="freckles">Freckles</option>
+                <option value="birthmark">Birthmark</option>
+            </select>
+        </div>
+        <div class="cform-field">
+            <label class="cform-label">Previous / Current Treatments</label>
+            <textarea class="cform-input" name="pigmentation_previous_treatments" rows="2"></textarea>
+        </div>
+
+        <h3 class="cform-subsection">Acne</h3>
+        <div class="cform-field">
+            <label class="cform-label">Type</label>
+            <select class="cform-input" name="acne_type">
+                <option value="">—</option>
+                <option value="mild">Mild</option>
+                <option value="moderate">Moderate</option>
+                <option value="severe">Severe</option>
+            </select>
+        </div>
+        <div class="cform-field">
+            <label class="cform-label">Previous / Current Treatments</label>
+            <textarea class="cform-input" name="acne_previous_treatments" rows="2"></textarea>
+        </div>
+
+        <h3 class="cform-subsection">Skin</h3>
+        <div class="cform-grid cform-grid--2">
+            <div class="cform-field">
+                <label class="cform-label">Assessment Type</label>
+                <input class="cform-input" type="text" name="skin_assessment_type" placeholder="Laxity / Fine Lines / Sun Damage…">
+            </div>
+            <div class="cform-field">
+                <label class="cform-label">Handpiece</label>
+                <input class="cform-input" type="text" name="skin_handpiece">
+            </div>
+        </div>
+        <div class="cform-field">
+            <label class="cform-label">Previous / Current Treatments</label>
+            <textarea class="cform-input" name="skin_previous_treatments" rows="2"></textarea>
+        </div>
+
+        <h3 class="cform-subsection">Tattoo Removal</h3>
+        <div class="cform-field">
+            <label class="cform-label">Colours</label>
+            <input class="cform-input" type="text" name="tattoo_colour" placeholder="Black / Red / Green…">
+        </div>
+        <div class="cform-field">
+            <label class="cform-label">Previous / Current Treatments</label>
+            <textarea class="cform-input" name="tattoo_previous_treatments" rows="2"></textarea>
+        </div>
+
+        <h3 class="cform-subsection">Fractional Laser</h3>
+        <div class="cform-grid cform-grid--2">
+            <div class="cform-field">
+                <label class="cform-label">Indication</label>
+                <input class="cform-input" type="text" name="fractional_indication" placeholder="General Aging / Acne Scarring…">
+            </div>
+            <div class="cform-field">
+                <label class="cform-label">Comments</label>
+                <textarea class="cform-input" name="fractional_comments" rows="2"></textarea>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- ===== SIGNATURE ===== -->
+    <div class="cform-section">
+        <h2 class="cform-section__title">{% if on_behalf %}Operator Signature{% else %}Client Signature{% endif %}</h2>
+        {% if on_behalf %}
+        <p class="cform-hint cform-hint--warn">You are signing on behalf of {{ target_user.full_name }}. This will be recorded as completed by practitioner with your name and the current timestamp.</p>
+        {% endif %}
+        <div class="cform-sig-wrap">
+            <canvas id="sigCanvas" class="cform-sig-canvas"></canvas>
+            <div class="cform-sig-actions">
+                <button type="button" class="btn btn--ghost btn--sm" id="sigClear">Clear</button>
+            </div>
+        </div>
+        <input type="hidden" name="signature" id="sigData">
+        <p class="cform-sig-name">{{ target_user.full_name }}</p>
+    </div>
+
+    <!-- ===== MINOR / GUARDIAN SECTION ===== -->
+    <div class="cform-section" id="guardianSection" hidden>
+        <h2 class="cform-section__title">Parent / Guardian Consent</h2>
+        <div class="cform-behalf-banner cform-minor-banner">
+            This client is under 18. A parent or guardian must provide their details and countersign below.
+        </div>
+        <div class="cform-grid cform-grid--2">
+            <div class="cform-field">
+                <label class="cform-label">Guardian Full Name <span class="cform-req">*</span></label>
+                <input class="cform-input" type="text" name="guardian_name" id="guardianName" placeholder="Full name">
+            </div>
+            <div class="cform-field">
+                <label class="cform-label">Relationship to Client <span class="cform-req">*</span></label>
+                <input class="cform-input" type="text" name="guardian_relationship" id="guardianRelationship" placeholder="e.g. Mother, Father, Guardian">
+            </div>
+            <div class="cform-field">
+                <label class="cform-label">Guardian Phone <span class="cform-req">*</span></label>
+                <input class="cform-input" type="tel" name="guardian_phone" id="guardianPhone" placeholder="e.g. 07700 900000">
+            </div>
+            <div class="cform-field">
+                <label class="cform-label">Guardian Email</label>
+                <input class="cform-input" type="email" name="guardian_email" placeholder="Email address (optional)">
+            </div>
+        </div>
+        <p class="cform-label" style="margin-top:1.25rem;">Guardian Signature <span class="cform-req">*</span></p>
+        <div class="cform-sig-wrap">
+            <canvas id="guardianSigCanvas" class="cform-sig-canvas"></canvas>
+            <div class="cform-sig-actions">
+                <button type="button" class="btn btn--ghost btn--sm" id="guardianSigClear">Clear</button>
+            </div>
+        </div>
+        <input type="hidden" name="guardian_signature" id="guardianSigData">
+        <p class="cform-hint" style="margin-top:0.5rem;">By signing, the parent / guardian confirms they give consent for treatment to be carried out on the client named above.</p>
+    </div>
+
+    <div class="cform-submit-row">
+        <button type="submit" class="btn btn--primary btn--lg" id="submitBtn">Submit Consultation Form</button>
+    </div>
+
+</form>
+</div>
+
+<script src="{% static 'js/sig_pad.js' %}"></script>
+<script>
+(function () {
+    var dob     = document.getElementById('dobField');
+    var section = document.getElementById('guardianSection');
+    var nameEl  = document.getElementById('guardianName');
+    var relEl   = document.getElementById('guardianRelationship');
+    var phoneEl = document.getElementById('guardianPhone');
+
+    function updateMinor() {
+        var val = dob.value;
+        if (!val) { section.hidden = true; setReq(false); return; }
+        var d = new Date(val), today = new Date();
+        var age = today.getFullYear() - d.getFullYear();
+        var m = today.getMonth() - d.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < d.getDate())) age--;
+        var minor = age < 18;
+        section.hidden = !minor;
+        setReq(minor);
+    }
+
+    function setReq(r) {
+        nameEl.required  = r;
+        relEl.required   = r;
+        phoneEl.required = r;
+    }
+
+    dob.addEventListener('change', updateMinor);
+    {% if profile_is_minor %}section.hidden = false; setReq(true);{% endif %}
+    updateMinor();
+})();
+</script>
+{% endblock %}

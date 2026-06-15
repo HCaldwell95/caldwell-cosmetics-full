@@ -4,6 +4,26 @@ document.addEventListener('DOMContentLoaded', function () {
     // State
     // ---------------------------------------------------------------
 
+    function esc(s) {
+        return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+    function safeColour(c) {
+        return (c || '').replace(/[^a-zA-Z0-9#()%., ]/g, '');
+    }
+
+    // Toast notification
+    let _toastTimer = null;
+    function showToast(message, type = 'success') {
+        const el = document.getElementById('dashToast');
+        if (!el) return;
+        el.textContent = message;
+        el.className = `dash-toast dash-toast--${type} dash-toast--visible`;
+        clearTimeout(_toastTimer);
+        _toastTimer = setTimeout(() => {
+            el.classList.remove('dash-toast--visible');
+        }, 3500);
+    }
+
     let currentView    = 'month';
     let currentDate    = new Date();
     let allEvents      = [];
@@ -206,11 +226,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function eventPill(e) {
         const cls    = e.status === 'cancelled' ? 'dash-event-pill--cancelled' : '';
-        const colour = e.status === 'cancelled' ? '' : `style="background:${e.category_colour || '#b8965a'}"`;
+        const colour = e.status === 'cancelled' ? '' : `style="background:${safeColour(e.category_colour) || '#b8965a'}"`;
         return `
-            <div class="dash-event-pill ${cls}" ${colour} data-id="${e.id}" title="${e.client} — ${e.treatment}">
-                <span class="dash-event-pill__time">${e.start_time}</span>
-                <span class="dash-event-pill__name">${e.client}</span>
+            <div class="dash-event-pill ${cls}" ${colour} data-id="${e.id}" title="${esc(e.client)} — ${esc(e.treatment)}">
+                <span class="dash-event-pill__time">${esc(e.start_time)}</span>
+                <span class="dash-event-pill__name">${esc(e.client)}</span>
             </div>`;
     }
 
@@ -464,9 +484,9 @@ document.addEventListener('DOMContentLoaded', function () {
                         return;
                     }
                     clientResults.innerHTML = data.users.map(u => `
-                        <div class="dash-search-result" data-id="${u.id}" data-name="${u.name}" data-email="${u.email}">
-                            <span class="dash-search-result__name">${u.name}</span>
-                            <span class="dash-search-result__email">${u.email}</span>
+                        <div class="dash-search-result" data-id="${u.id}" data-name="${esc(u.name)}" data-email="${esc(u.email)}">
+                            <span class="dash-search-result__name">${esc(u.name)}</span>
+                            <span class="dash-search-result__email">${esc(u.email)}</span>
                         </div>`).join('');
                     clientResults.style.display = 'block';
 
@@ -587,10 +607,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 clientTableBody.innerHTML = data.clients.map(c => `
                     <tr class="dash-client-row" data-id="${c.id}">
-                        <td class="dash-client-name">${c.name}</td>
-                        <td>${c.email}</td>
-                        <td>${c.phone || '—'}</td>
-                        <td>${c.joined}</td>
+                        <td class="dash-client-name">${esc(c.name)}</td>
+                        <td>${esc(c.email)}</td>
+                        <td>${esc(c.phone) || '—'}</td>
+                        <td>${esc(c.joined)}</td>
                         <td>
                             <button class="dash-client-view-btn" data-id="${c.id}">
                                 <span class="dash-client-view-btn__full">View Profile</span>
@@ -652,51 +672,52 @@ document.addEventListener('DOMContentLoaded', function () {
         // Store for edit
         profilePanel.dataset.userId = u.id;
 
-        // Form status pills — clickable links
-        function pill(label, complete, href, tooltip) {
-            const cls = complete ? 'dash-form-pill--complete' : 'dash-form-pill--incomplete';
-            const tip = tooltip || '';
-            if (href) {
-                return `<a href="${href}" class="dash-form-pill ${cls}" title="${tip}" target="_blank">${label}</a>`;
+        // Form status pills — view-only cards with name + date/status line
+        function pill(label, complete, href, subline) {
+            const cls  = complete ? 'dash-form-pill--complete' : 'dash-form-pill--incomplete';
+            const sub  = `<span class="dash-form-pill__sub">${subline}</span>`;
+            const inner = `<span class="dash-form-pill__name">${label}</span>${sub}`;
+            if (href && complete) {
+                return `<a href="${href}" class="dash-form-pill ${cls}" target="_blank">${inner}</a>`;
             }
-            return `<span class="dash-form-pill ${cls}" title="${tip}">${label}</span>`;
+            return `<span class="dash-form-pill ${cls}">${inner}</span>`;
         }
 
         const consultPill = pill(
             'Consultation',
             forms.consultation.completed,
-            DASHBOARD_URLS.formConsultation.replace('{id}', u.id),
-            forms.consultation.date ? `Completed ${forms.consultation.date}` : 'Not completed'
+            DASHBOARD_URLS.formConsultationView.replace('{id}', u.id),
+            forms.consultation.date ? `Completed ${forms.consultation.date}` : 'Incomplete'
         );
         const photoPill = pill(
             'Photography',
             forms.photography.completed,
             DASHBOARD_URLS.formPhotography.replace('{id}', u.id),
-            forms.photography.date ? `Completed ${forms.photography.date}` : 'Not completed'
+            forms.photography.date ? `Completed ${forms.photography.date}` : 'Incomplete'
         );
         const botoxClientPill = pill(
-            'Botox (Client)',
+            'Botox — Client',
             forms.botox.client_signed,
             DASHBOARD_URLS.formBotoxClient.replace('{id}', u.id),
-            forms.botox.date ? `Signed ${forms.botox.date}` : 'Not signed'
+            forms.botox.date ? `Signed ${forms.botox.date}` : 'Incomplete'
         );
         const botoxOpPill = pill(
-            'Botox (Operator)',
+            'Botox — Operator',
             forms.botox.fully_complete,
             forms.botox.id ? DASHBOARD_URLS.botoxOperator.replace('{id}', forms.botox.id) : null,
-            forms.botox.fully_complete ? 'Fully complete' : (forms.botox.client_signed ? 'Awaiting operator sign-off' : 'Client has not signed yet')
+            forms.botox.fully_complete ? `Completed ${forms.botox.date}` : (forms.botox.client_signed ? 'Awaiting operator' : 'Incomplete')
         );
         const prpClientPill = pill(
-            'PRP (Client)',
+            'PRP — Client',
             forms.prp.client_signed,
             DASHBOARD_URLS.formPrpClient.replace('{id}', u.id),
-            forms.prp.date ? `Signed ${forms.prp.date}` : 'Not signed'
+            forms.prp.date ? `Signed ${forms.prp.date}` : 'Incomplete'
         );
         const prpOpPill = pill(
-            'PRP (Operator)',
+            'PRP — Operator',
             forms.prp.fully_complete,
             forms.prp.id ? DASHBOARD_URLS.prpOperator.replace('{id}', forms.prp.id) : null,
-            forms.prp.fully_complete ? 'Fully complete' : (forms.prp.client_signed ? 'Awaiting operator sign-off' : 'Client has not signed yet')
+            forms.prp.fully_complete ? `Completed ${forms.prp.date}` : (forms.prp.client_signed ? 'Awaiting operator' : 'Incomplete')
         );
         const laserPill = pill(
             forms.laser_reconsent.count > 0
@@ -704,7 +725,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 : 'Laser Re-Consent',
             forms.laser_reconsent.count > 0,
             DASHBOARD_URLS.formLaserReconsent.replace('{id}', u.id),
-            forms.laser_reconsent.last_date ? `Last: ${forms.laser_reconsent.last_date}` : 'None completed'
+            forms.laser_reconsent.last_date ? `Last: ${forms.laser_reconsent.last_date}` : 'Incomplete'
         );
 
         // Bundle pips
@@ -720,11 +741,11 @@ document.addEventListener('DOMContentLoaded', function () {
             ? bundles.filter(b => b.status === 'active').map(b => `
                 <div class="dash-bundle-row">
                     <div class="dash-bundle-row__info">
-                        <span class="dash-bundle-row__name">${b.treatment_name}</span>
+                        <span class="dash-bundle-row__name">${esc(b.treatment_name)}</span>
                         <div class="dash-bundle-row__pips">${bundlePips(b)}</div>
                         <span class="dash-bundle-row__count">${b.sessions_remaining} of ${b.total_sessions} remaining</span>
                     </div>
-                    <button class="btn btn--ghost btn--sm dash-bundle-use-btn" data-bundle-id="${b.id}" data-bundle-name="${b.treatment_name}">
+                    <button class="btn btn--ghost btn--sm dash-bundle-use-btn" data-bundle-id="${b.id}" data-bundle-name="${esc(b.treatment_name)}">
                         Use Session
                     </button>
                 </div>`).join('') || '<p class="dash-muted">No active bundles.</p>'
@@ -735,10 +756,20 @@ document.addEventListener('DOMContentLoaded', function () {
             ? data.record_cards.map(rc => `
                 <a href="${DASHBOARD_URLS.recordCardView.replace('{id}', rc.id)}" target="_blank" class="dash-record-row">
                     <span class="dash-record-row__num">#${rc.treatment_number}</span>
-                    <span class="dash-record-row__date">${rc.date}</span>
-                    <span class="dash-record-row__treatment">${rc.treatment_for || '—'}</span>
+                    <span class="dash-record-row__date">${esc(rc.date)}</span>
+                    <span class="dash-record-row__treatment">${rc.treatment_for ? esc(rc.treatment_for) : '—'}</span>
                 </a>`).join('')
             : '<p class="dash-muted">No record cards yet.</p>';
+
+        // Notes
+        const notesHtml = data.notes && data.notes.length
+            ? data.notes.map(n => `
+                <a href="${DASHBOARD_URLS.noteView.replace('{pk}', u.id).replace('{note_pk}', n.id)}" target="_blank" class="dash-note-row">
+                    <span class="dash-note-row__num">#${n.number}</span>
+                    <span class="dash-note-row__title">${esc(n.title)}</span>
+                    <span class="dash-note-row__date">${esc(n.date)}</span>
+                </a>`).join('')
+            : '<p class="dash-muted">No notes yet.</p>';
 
         profilePanelBody.innerHTML = `
 
@@ -748,31 +779,31 @@ document.addEventListener('DOMContentLoaded', function () {
                     <h3 class="dash-panel-section__title">Personal Details</h3>
                 </div>
                 <dl class="dash-panel-dl">
-                    <dt>Phone</dt>        <dd>${u.phone || '—'}</dd>
-                    <dt>Date of birth</dt><dd>${u.dob || '—'}</dd>
-                    <dt>Skin type</dt>    <dd>${u.skin_type || '—'}</dd>
-                    <dt>Address</dt>      <dd>${u.address ? u.address.replace(/\n/g, '<br>') : '—'}</dd>
+                    <dt>Phone</dt>        <dd>${u.phone ? esc(u.phone) : '—'}</dd>
+                    <dt>Date of birth</dt><dd>${u.dob ? esc(u.dob) : '—'}</dd>
+                    <dt>Skin type</dt>    <dd>${u.skin_type ? esc(u.skin_type) : '—'}</dd>
+                    <dt>Address</dt>      <dd>${u.address ? u.address.split('\n').map(esc).join('<br>') : '—'}</dd>
                     <dt>GDPR consent</dt> <dd>${u.gdpr_consent ? '✓ Given' : '✗ Not given'}</dd>
                 </dl>
                 <div class="dash-panel-section__header" style="margin-top:1rem;">
                     <h3 class="dash-panel-section__title">Medical Notes <span class="dash-operator-only">Operator only</span></h3>
                 </div>
-                <p class="dash-medical-notes">${u.medical_notes || 'No notes on file.'}</p>
+                <p class="dash-medical-notes">${u.medical_notes ? esc(u.medical_notes) : 'No notes on file.'}</p>
             </div>
 
             <!-- Edit mode (hidden by default) -->
             <div class="dash-panel-section" id="panelEditMode" style="display:none;">
                 <h3 class="dash-panel-section__title">Edit Profile</h3>
                 <div class="cform-grid cform-grid--2" style="gap:0.75rem;">
-                    <div class="dash-form-group"><label class="dash-label">First Name</label><input class="dash-input" id="editFirstName" value="${u.name.split(' ')[0] || ''}"></div>
-                    <div class="dash-form-group"><label class="dash-label">Last Name</label><input class="dash-input" id="editLastName" value="${u.name.split(' ').slice(1).join(' ') || ''}"></div>
-                    <div class="dash-form-group" style="grid-column:1/-1;"><label class="dash-label">Email</label><input class="dash-input" type="email" id="editEmail" value="${u.email || ''}"></div>
-                    <div class="dash-form-group"><label class="dash-label">Phone</label><input class="dash-input" id="editPhone" value="${u.phone || ''}"></div>
+                    <div class="dash-form-group"><label class="dash-label">First Name</label><input class="dash-input" id="editFirstName" value="${esc(u.name.split(' ')[0] || '')}"></div>
+                    <div class="dash-form-group"><label class="dash-label">Last Name</label><input class="dash-input" id="editLastName" value="${esc(u.name.split(' ').slice(1).join(' ') || '')}"></div>
+                    <div class="dash-form-group" style="grid-column:1/-1;"><label class="dash-label">Email</label><input class="dash-input" type="email" id="editEmail" value="${esc(u.email || '')}"></div>
+                    <div class="dash-form-group"><label class="dash-label">Phone</label><input class="dash-input" id="editPhone" value="${esc(u.phone || '')}"></div>
                     <div class="dash-form-group"><label class="dash-label">Date of Birth</label><input class="dash-input" type="date" id="editDob" value="${u.dob ? new Date(u.dob).toISOString().split('T')[0] : ''}"></div>
-                    <div class="dash-form-group"><label class="dash-label">Address Line 1</label><input class="dash-input" id="editAddr1" value="${u.address.split('\n')[0] || ''}"></div>
-                    <div class="dash-form-group"><label class="dash-label">Address Line 2</label><input class="dash-input" id="editAddr2" value="${u.address.split('\n')[1] || ''}"></div>
-                    <div class="dash-form-group"><label class="dash-label">Town / City</label><input class="dash-input" id="editCity" value="${u.address.split('\n')[2] || ''}"></div>
-                    <div class="dash-form-group"><label class="dash-label">Postcode</label><input class="dash-input" id="editPostcode" value="${u.address.split('\n')[3] || ''}"></div>
+                    <div class="dash-form-group"><label class="dash-label">Address Line 1</label><input class="dash-input" id="editAddr1" value="${esc(u.address.split('\n')[0] || '')}"></div>
+                    <div class="dash-form-group"><label class="dash-label">Address Line 2</label><input class="dash-input" id="editAddr2" value="${esc(u.address.split('\n')[1] || '')}"></div>
+                    <div class="dash-form-group"><label class="dash-label">Town / City</label><input class="dash-input" id="editCity" value="${esc(u.address.split('\n')[2] || '')}"></div>
+                    <div class="dash-form-group"><label class="dash-label">Postcode</label><input class="dash-input" id="editPostcode" value="${esc(u.address.split('\n')[3] || '')}"></div>
                     <div class="dash-form-group" style="grid-column:1/-1;">
                         <label class="dash-label">Skin Type</label>
                         <select class="dash-input" id="editSkinType">
@@ -785,7 +816,7 @@ document.addEventListener('DOMContentLoaded', function () {
                             <option value="type_6"  ${u.skin_type_key === 'type_6'  ? 'selected' : ''}>Type 6 – Never burns, consistent tan</option>
                         </select>
                     </div>
-                    <div class="dash-form-group" style="grid-column:1/-1;"><label class="dash-label">Medical Notes</label><textarea class="dash-input" id="editMedicalNotes" rows="3">${u.medical_notes || ''}</textarea></div>
+                    <div class="dash-form-group" style="grid-column:1/-1;"><label class="dash-label">Medical Notes</label><textarea class="dash-input" id="editMedicalNotes" rows="3">${esc(u.medical_notes || '')}</textarea></div>
                 </div>
                 <div class="dash-modal__actions" style="padding:1rem 0 0;">
                     <button class="btn btn--ghost btn--sm" id="panelEditCancel">Cancel</button>
@@ -800,8 +831,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     ? data.upcoming_bookings.map(b => `
                         <div class="dash-appt-row">
                             <div class="dash-appt-row__info">
-                                <span class="dash-appt-row__treatment">${b.treatment}</span>
-                                <span class="dash-appt-row__date">${b.date} at ${b.time}</span>
+                                <span class="dash-appt-row__treatment">${esc(b.treatment)}</span>
+                                <span class="dash-appt-row__date">${esc(b.date)} at ${esc(b.time)}</span>
                             </div>
                             <span class="dash-appt-row__duration">${b.duration} min</span>
                         </div>`).join('')
@@ -819,52 +850,36 @@ document.addEventListener('DOMContentLoaded', function () {
                         ? data.past_bookings.map(b => `
                             <div class="dash-appt-row dash-appt-row--past">
                                 <div class="dash-appt-row__info">
-                                    <span class="dash-appt-row__treatment">${b.treatment}</span>
-                                    <span class="dash-appt-row__date">${b.date} at ${b.time}</span>
+                                    <span class="dash-appt-row__treatment">${esc(b.treatment)}</span>
+                                    <span class="dash-appt-row__date">${esc(b.date)} at ${esc(b.time)}</span>
                                 </div>
-                                <span class="dash-appt-badge dash-appt-badge--${b.status}">${b.status}</span>
+                                <span class="dash-appt-badge dash-appt-badge--${esc(b.status)}">${esc(b.status)}</span>
                             </div>`).join('')
                         : '<p class="dash-muted">No past appointments.</p>'
                     }
                 </div>
             </div>
 
-            <!-- Forms -->
+            <!-- Forms: General -->
             <div class="dash-panel-section">
                 <div class="dash-panel-section__header">
-                    <h3 class="dash-panel-section__title">Consent Forms</h3>
+                    <h3 class="dash-panel-section__title">General</h3>
                     <div class="dash-form-launch">
                         <button class="dash-form-launch-btn" id="formPickerToggle">
-                            Open a form
+                            Create a new form
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
                         </button>
                         <div class="dash-form-dropdown" id="formPickerDropdown" hidden>
-                            <a href="${DASHBOARD_URLS.formConsultation.replace('{id}', u.id)}" class="dash-form-dropdown__item" target="_blank">
-                                <span class="dash-form-dropdown__dot ${forms.consultation.completed ? 'dash-form-dropdown__dot--complete' : 'dash-form-dropdown__dot--incomplete'}"></span>
+                            <a href="${DASHBOARD_URLS.formConsultationNew.replace('{id}', u.id)}" class="dash-form-dropdown__item" target="_blank">
                                 Consultation Form
                             </a>
-                            <a href="${DASHBOARD_URLS.formPhotography.replace('{id}', u.id)}" class="dash-form-dropdown__item" target="_blank">
-                                <span class="dash-form-dropdown__dot ${forms.photography.completed ? 'dash-form-dropdown__dot--complete' : 'dash-form-dropdown__dot--incomplete'}"></span>
-                                Photography Consent
-                            </a>
                             <a href="${DASHBOARD_URLS.formBotoxClient.replace('{id}', u.id)}" class="dash-form-dropdown__item" target="_blank">
-                                <span class="dash-form-dropdown__dot ${forms.botox.client_signed ? 'dash-form-dropdown__dot--complete' : 'dash-form-dropdown__dot--incomplete'}"></span>
-                                Botox Consent — Client
-                            </a>
-                            <a href="${forms.botox.id ? DASHBOARD_URLS.botoxOperator.replace('{id}', forms.botox.id) : DASHBOARD_URLS.formBotoxClient.replace('{id}', u.id)}" class="dash-form-dropdown__item" target="_blank">
-                                <span class="dash-form-dropdown__dot ${forms.botox.fully_complete ? 'dash-form-dropdown__dot--complete' : 'dash-form-dropdown__dot--incomplete'}"></span>
-                                Botox Consent — Operator
+                                Botox Consent
                             </a>
                             <a href="${DASHBOARD_URLS.formPrpClient.replace('{id}', u.id)}" class="dash-form-dropdown__item" target="_blank">
-                                <span class="dash-form-dropdown__dot ${forms.prp.client_signed ? 'dash-form-dropdown__dot--complete' : 'dash-form-dropdown__dot--incomplete'}"></span>
-                                PRP Consent — Client
-                            </a>
-                            <a href="${forms.prp.id ? DASHBOARD_URLS.prpOperator.replace('{id}', forms.prp.id) : DASHBOARD_URLS.formPrpClient.replace('{id}', u.id)}" class="dash-form-dropdown__item" target="_blank">
-                                <span class="dash-form-dropdown__dot ${forms.prp.fully_complete ? 'dash-form-dropdown__dot--complete' : 'dash-form-dropdown__dot--incomplete'}"></span>
-                                PRP Consent — Operator
+                                PRP Consent
                             </a>
                             <a href="${DASHBOARD_URLS.formLaserReconsent.replace('{id}', u.id)}" class="dash-form-dropdown__item" target="_blank">
-                                <span class="dash-form-dropdown__dot ${forms.laser_reconsent.count > 0 ? 'dash-form-dropdown__dot--complete' : 'dash-form-dropdown__dot--incomplete'}"></span>
                                 Laser Re-Consent
                             </a>
                         </div>
@@ -873,10 +888,28 @@ document.addEventListener('DOMContentLoaded', function () {
                 <div class="dash-form-pills">
                     ${consultPill}
                     ${photoPill}
+                </div>
+            </div>
+
+            <!-- Forms: Injectables -->
+            <div class="dash-panel-section">
+                <div class="dash-panel-section__header">
+                    <h3 class="dash-panel-section__title">Injectables</h3>
+                </div>
+                <div class="dash-form-pills">
                     ${botoxClientPill}
                     ${botoxOpPill}
                     ${prpClientPill}
                     ${prpOpPill}
+                </div>
+            </div>
+
+            <!-- Forms: Laser -->
+            <div class="dash-panel-section">
+                <div class="dash-panel-section__header">
+                    <h3 class="dash-panel-section__title">Laser</h3>
+                </div>
+                <div class="dash-form-pills">
                     ${laserPill}
                 </div>
             </div>
@@ -888,6 +921,15 @@ document.addEventListener('DOMContentLoaded', function () {
                     <a href="${DASHBOARD_URLS.recordCardNew.replace('{id}', u.id)}" class="btn btn--ghost btn--sm" target="_blank">+ New Record Card</a>
                 </div>
                 <div class="dash-record-list">${cardsHtml}</div>
+            </div>
+
+            <!-- Notes -->
+            <div class="dash-panel-section">
+                <div class="dash-panel-section__header">
+                    <h3 class="dash-panel-section__title">Notes</h3>
+                    <a href="${DASHBOARD_URLS.noteNew.replace('{id}', u.id)}" class="btn btn--ghost btn--sm" target="_blank">+ New Note</a>
+                </div>
+                <div class="dash-notes-list">${notesHtml}</div>
             </div>
 
             <!-- Bundles -->
@@ -906,6 +948,21 @@ document.addEventListener('DOMContentLoaded', function () {
                     <button class="btn btn--ghost btn--sm" id="adjustCreditBtn">Adjust</button>
                 </div>
                 <p class="dash-credit-balance">£<span id="creditBalance">${credit.balance}</span></p>
+                <button class="dash-collapsible-toggle" id="creditHistoryToggle">
+                    Show history <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+                <div id="creditHistoryContent" style="display:none;margin-top:0.75rem;">
+                    ${credit.transactions.length ? `<ul style="list-style:none;padding:0;margin:0;">
+                        ${credit.transactions.map(t => `
+                        <li style="display:flex;align-items:center;gap:0.75rem;padding:0.5rem 0;border-bottom:1px solid #f0ece5;font-size:0.82rem;">
+                            <span style="color:#999;white-space:nowrap;min-width:72px;">${esc(t.date)}</span>
+                            <span style="flex:1;color:var(--color-text);">${esc(t.description) || (t.type === 'credit' ? 'Credit added' : t.type === 'deduct' ? 'Credit deducted' : 'Refund')}</span>
+                            <span style="font-weight:600;white-space:nowrap;color:${t.type === 'deduct' ? '#dc2626' : t.type === 'refund' ? '#2563eb' : '#16a34a'};">
+                                ${t.type === 'deduct' ? '−' : '+'}£${parseFloat(t.amount).toFixed(2)}
+                            </span>
+                        </li>`).join('')}
+                    </ul>` : '<p class="dash-muted">No transactions yet.</p>'}
+                </div>
             </div>
         `;
 
@@ -976,6 +1033,15 @@ document.addEventListener('DOMContentLoaded', function () {
             this.classList.toggle('dash-collapsible-toggle--open', !open);
         });
 
+        // Credit history toggle
+        document.getElementById('creditHistoryToggle').addEventListener('click', function () {
+            const content = document.getElementById('creditHistoryContent');
+            const open    = content.style.display !== 'none';
+            content.style.display = open ? 'none' : 'block';
+            this.classList.toggle('dash-collapsible-toggle--open', !open);
+            this.innerHTML = `${open ? 'Show' : 'Hide'} history <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="transform:${open ? '' : 'rotate(180deg)'}"><polyline points="6 9 12 15 18 9"/></svg>`;
+        });
+
         // Bundle use session
         profilePanelBody.querySelectorAll('.dash-bundle-use-btn').forEach(btn => {
             btn.addEventListener('click', () => {
@@ -1022,24 +1088,36 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (!name || !sessions) { errEl.textContent = 'Treatment name and sessions are required.'; return; }
 
-        fetch(DASHBOARD_URLS.bundleAdd.replace('{id}', activePanelUserId), {
+        bundleModalSave.disabled = true;
+        bundleModalSave.textContent = 'Saving…';
+
+        const targetUserId = activePanelUserId;
+
+        fetch(DASHBOARD_URLS.bundleAdd.replace('{id}', targetUserId), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF_TOKEN },
             body: JSON.stringify({ treatment_name: name, total_sessions: sessions, expiry_date: expiry, notes }),
         })
         .then(r => r.json())
         .then(data => {
+            bundleModalSave.disabled = false;
+            bundleModalSave.textContent = 'Add Bundle';
             if (data.ok) {
                 closeModal(bundleModalOverlay);
-                // Clear fields
                 document.getElementById('bundleTreatmentName').value = '';
                 document.getElementById('bundleTotalSessions').value = '6';
                 document.getElementById('bundleExpiryDate').value    = '';
                 document.getElementById('bundleNotes').value         = '';
-                openProfilePanel(activePanelUserId);
+                showToast(`Bundle "${name}" added successfully.`);
+                openProfilePanel(targetUserId);
             } else {
                 errEl.textContent = data.error || 'Something went wrong.';
             }
+        })
+        .catch(() => {
+            bundleModalSave.disabled = false;
+            bundleModalSave.textContent = 'Add Bundle';
+            errEl.textContent = 'Network error — please try again.';
         });
     });
 
@@ -1059,22 +1137,35 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (!amount || parseFloat(amount) <= 0) { errEl.textContent = 'Please enter a valid amount.'; return; }
 
-        fetch(DASHBOARD_URLS.creditAdjust.replace('{id}', activePanelUserId), {
+        creditModalSave.disabled = true;
+        creditModalSave.textContent = 'Saving…';
+
+        const targetUserId = activePanelUserId;
+
+        fetch(DASHBOARD_URLS.creditAdjust.replace('{id}', targetUserId), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF_TOKEN },
             body: JSON.stringify({ type, amount, description: desc }),
         })
         .then(r => r.json())
         .then(data => {
+            creditModalSave.disabled = false;
+            creditModalSave.textContent = 'Confirm';
             if (data.ok) {
                 closeModal(creditModalOverlay);
                 document.getElementById('creditAmount').value      = '';
                 document.getElementById('creditDescription').value = '';
-                const balEl = document.getElementById('creditBalance');
-                if (balEl) balEl.textContent = data.balance;
+                const typeLabel = type === 'credit' ? 'Credit added' : type === 'deduct' ? 'Credit deducted' : 'Refund applied';
+                showToast(`${typeLabel}: £${parseFloat(amount).toFixed(2)}`);
+                openProfilePanel(targetUserId);
             } else {
                 errEl.textContent = data.error || 'Something went wrong.';
             }
+        })
+        .catch(() => {
+            creditModalSave.disabled = false;
+            creditModalSave.textContent = 'Confirm';
+            errEl.textContent = 'Network error — please try again.';
         });
     });
 

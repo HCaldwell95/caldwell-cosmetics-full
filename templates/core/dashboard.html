@@ -209,6 +209,9 @@
         </div>
     </div>
 
+    <!-- Dashboard toast notification -->
+    <div id="dashToast" class="dash-toast" role="alert" aria-live="polite"></div>
+
     <!-- Bundle add modal -->
     <div class="dash-modal-overlay" id="bundleModalOverlay" style="display:none;">
         <div class="dash-modal">
@@ -292,8 +295,11 @@
         creditAdjust:    "/dashboard/clients/{id}/credit/adjust/",
         recordCardNew:   "/forms/records/{id}/new/",
         recordCardView:  "/forms/records/{id}/view/",
+        noteNew:         "/dashboard/clients/{id}/notes/new/",
+        noteView:        "/dashboard/clients/{pk}/notes/{note_pk}/",
         botoxOperator:   "/forms/botox/{id}/operator/",
-        formConsultation: "/forms/consultation/?on_behalf_of={id}",
+        formConsultationView: "/forms/consultation/{id}/view/",
+        formConsultationNew:  "/forms/consultation/{id}/new/",
         formPhotography:  "/forms/photography/?on_behalf_of={id}",
         formBotoxClient:  "/forms/botox/?on_behalf_of={id}",
         formPrpClient:    "/forms/prp/?on_behalf_of={id}",

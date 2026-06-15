@@ -1,4 +1,4 @@
-from django.db import models
+from django.db import models, transaction
 from django.conf import settings
 
 
@@ -29,6 +29,13 @@ class BaseForm(models.Model):
     signature = models.TextField(
         help_text="Base64-encoded PNG of the client signature.",
     )
+
+    # ---- Minor / guardian fields ----
+    guardian_name         = models.CharField(max_length=200, blank=True)
+    guardian_relationship = models.CharField(max_length=100, blank=True)
+    guardian_phone        = models.CharField(max_length=20,  blank=True)
+    guardian_email        = models.EmailField(blank=True)
+    guardian_signature    = models.TextField(blank=True, help_text="Base64-encoded PNG of guardian/parent signature.")
 
     class Meta:
         abstract = True
@@ -488,6 +495,13 @@ class RecordCard(models.Model):
     )
     created_at          = models.DateTimeField(auto_now_add=True)
 
+    # Guardian (minors only)
+    guardian_name         = models.CharField(max_length=200, blank=True)
+    guardian_relationship = models.CharField(max_length=100, blank=True)
+    guardian_phone        = models.CharField(max_length=20,  blank=True)
+    guardian_email        = models.EmailField(blank=True)
+    guardian_signature    = models.TextField(blank=True)
+
     class Meta:
         ordering            = ["-date", "-time"]
         unique_together     = ("user", "treatment_number")
@@ -497,13 +511,17 @@ class RecordCard(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.pk and not self.treatment_number:
-            last = (
-                RecordCard.objects
-                .filter(user=self.user)
-                .order_by("-treatment_number")
-                .first()
-            )
-            self.treatment_number = (last.treatment_number + 1) if last else 1
+            with transaction.atomic():
+                last = (
+                    RecordCard.objects
+                    .select_for_update()
+                    .filter(user=self.user)
+                    .order_by("-treatment_number")
+                    .first()
+                )
+                self.treatment_number = (last.treatment_number + 1) if last else 1
+                super().save(*args, **kwargs)
+            return
         super().save(*args, **kwargs)
 
 
@@ -628,6 +646,13 @@ class LaserReConsent(models.Model):
     operator_signature          = models.TextField(blank=True)
     operator_signed             = models.BooleanField(default=False)
     operator_signed_at          = models.DateTimeField(null=True, blank=True)
+
+    # Guardian (minors only)
+    guardian_name         = models.CharField(max_length=200, blank=True)
+    guardian_relationship = models.CharField(max_length=100, blank=True)
+    guardian_phone        = models.CharField(max_length=20,  blank=True)
+    guardian_email        = models.EmailField(blank=True)
+    guardian_signature    = models.TextField(blank=True)
 
     class Meta:
         ordering = ["-completed_at"]

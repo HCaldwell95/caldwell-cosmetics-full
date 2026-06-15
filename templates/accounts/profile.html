@@ -11,9 +11,11 @@
 {% block content %}
 
 {% if messages %}
+<div class="profile-toast-bar">
     {% for message in messages %}
-        <div class="alert alert--{{ message.tags }}">{{ message }}</div>
+        <div class="profile-toast profile-toast--{{ message.tags }}">{{ message }}</div>
     {% endfor %}
+</div>
 {% endif %}
 
 <div class="profile-container">
@@ -112,15 +114,15 @@
 
         <section class="profile-card profile-card--wide">
             <h2 class="profile-card__title">My Forms</h2>
-            <p class="profile-card__subtitle text-muted" style="margin-bottom:0.75rem;font-size:0.875rem;">
-                Complete your consent forms before your appointment. A green badge means complete, red means action required.
+            <p class="profile-card__subtitle" style="margin-bottom:1.25rem;">
+                Complete your consent forms before your appointment.
             </p>
-            <div class="profile-forms-bar" id="profileFormsBar">
-                <span class="text-muted" style="font-size:0.875rem;">Loading…</span>
+            <div class="pforms-grid" id="profileFormsBar">
+                <div class="pforms-loading">Loading…</div>
             </div>
         </section>
 
-        <section class="profile-card profile-card--wide">
+        <section class="profile-card">
             <h2 class="profile-card__title">Pre-Paid Treatments</h2>
             {% for bundle in profile.user.bundles.all %}
                 {% if bundle.status == 'active' %}
@@ -137,6 +139,26 @@
             {% empty %}
                 <p class="text-muted">No active pre-paid treatments.</p>
             {% endfor %}
+        </section>
+
+        <section class="profile-card">
+            <h2 class="profile-card__title">Account Credit</h2>
+            <div class="credit-card" id="creditCard">
+                <div>
+                    <span class="credit-card__label">Available Balance</span>
+                    <p class="credit-card__balance"><span>£</span><span id="creditBalanceDisplay">—</span></p>
+                </div>
+                <div class="credit-card__icon">💳</div>
+            </div>
+            <div class="profile-history-header" style="margin-bottom:0;">
+                <button class="profile-history-toggle" id="creditHistoryToggle" aria-expanded="false">
+                    Show history
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+            </div>
+            <div id="creditHistoryBody" style="display:none;margin-top:1rem;">
+                <p class="text-muted" style="font-size:0.875rem;">Loading…</p>
+            </div>
         </section>
 
         <section class="profile-card profile-card--wide">
@@ -166,59 +188,161 @@
             {% csrf_token %}
             <button type="submit" class="btn btn--ghost">Sign Out</button>
         </form>
+        {% if not request.user.is_staff %}
         <a href="{% url 'accounts:deactivate_account' %}" class="btn btn--danger btn--sm">
             Deactivate account
         </a>
+        {% endif %}
     </div>
 
 </div>
 
 <script>
+function esc(s) {
+    return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+function safeColour(c) {
+    return (c || '').replace(/[^a-zA-Z0-9#()%., ]/g, '');
+}
+
 // Forms status
 (function () {
-    const bar    = document.getElementById('profileFormsBar');
+    const grid   = document.getElementById('profileFormsBar');
     const userId = {{ request.user.pk }};
 
     fetch(`/forms/status/${userId}/`)
         .then(r => r.json())
         .then(data => {
-            function pill(label, complete, url) {
-                const cls = complete ? 'profile-form-pill--complete' : 'profile-form-pill--incomplete';
-                return `<a href="${url}" class="profile-form-pill ${cls}">
-                    <span class="profile-form-pill__dot"></span>${label}
-                </a>`;
+
+            function statusIcon(state) {
+                if (state === 'complete') return `<svg class="pform-icon pform-icon--complete" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="9" stroke="currentColor" stroke-width="1.5"/><polyline points="6,10 9,13 14,7" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+                if (state === 'partial')  return `<svg class="pform-icon pform-icon--partial"  viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="9" stroke="currentColor" stroke-width="1.5"/><line x1="10" y1="6" x2="10" y2="10" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/><circle cx="10" cy="13.5" r="0.75" fill="currentColor"/></svg>`;
+                return `<svg class="pform-icon pform-icon--incomplete" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="9" stroke="currentColor" stroke-width="1.5"/></svg>`;
             }
 
-            const pills = [
-                pill('Consultation Form', data.consultation.completed, '/forms/consultation/'),
-                pill('Photography Consent', data.photography.completed, '/forms/photography/'),
-                pill(
-                    data.botox.fully_complete ? 'Botox Consent ✓'
-                        : data.botox.client_signed ? 'Botox Consent (Awaiting Practitioner)'
-                        : 'Botox Consent',
-                    data.botox.fully_complete,
-                    '/forms/botox/'
-                ),
-                pill(
-                    data.prp.fully_complete ? 'PRP Consent ✓'
-                        : data.prp.client_signed ? 'PRP Consent (Awaiting Practitioner)'
-                        : 'PRP Consent',
-                    data.prp.fully_complete,
-                    '/forms/prp/'
-                ),
-                pill(
-                    data.laser_reconsent.count > 0
-                        ? `Laser Re-Consent (${data.laser_reconsent.count})`
-                        : 'Laser Re-Consent',
-                    data.laser_reconsent.count > 0,
-                    '/forms/laser/reconsent/'
-                ),
-            ];
+            function formRow(label, state, statusText, url) {
+                const tag = url ? 'a' : 'div';
+                const href = url ? `href="${url}"` : '';
+                return `<${tag} ${href} class="pform-row pform-row--${state}${url ? '' : ' pform-row--no-link'}">
+                    ${statusIcon(state)}
+                    <span class="pform-row__name">${label}</span>
+                    <span class="pform-row__status">${statusText}</span>
+                    ${url ? `<svg class="pform-row__arrow" viewBox="0 0 16 16" fill="none"><polyline points="5,3 11,8 5,13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>` : '<span class="pform-row__arrow"></span>'}
+                </${tag}>`;
+            }
 
-            bar.innerHTML = pills.join('');
+            function group(title, rows) {
+                return `<div class="pforms-group">
+                    <p class="pforms-group__label">${title}</p>
+                    <div class="pforms-group__rows">${rows.join('')}</div>
+                </div>`;
+            }
+
+            // Consultation
+            const consultState = data.consultation.completed ? 'complete' : 'incomplete';
+            const consultSub   = data.consultation.completed
+                ? `Completed ${data.consultation.date}${data.consultation.by_practitioner ? ' · by practitioner' : ''}`
+                : 'Action required';
+
+            // Photography
+            const photoState = data.photography.completed ? 'complete' : 'incomplete';
+            const photoSub   = data.photography.completed
+                ? `Completed ${data.photography.date}${data.photography.by_practitioner ? ' · by practitioner' : ''}`
+                : 'Action required';
+
+            // Botox
+            const botoxState = data.botox.fully_complete ? 'complete'
+                             : data.botox.client_signed  ? 'partial' : 'incomplete';
+            const botoxSub   = data.botox.fully_complete ? `Completed ${data.botox.date}`
+                             : data.botox.client_signed  ? 'Awaiting practitioner countersignature'
+                             : 'Action required';
+
+            // PRP
+            const prpState = data.prp.fully_complete ? 'complete'
+                           : data.prp.client_signed  ? 'partial' : 'incomplete';
+            const prpSub   = data.prp.fully_complete ? `Completed ${data.prp.date}`
+                           : data.prp.client_signed  ? 'Awaiting practitioner countersignature'
+                           : 'Action required';
+
+            // Laser re-consent
+            const laserCount = data.laser_reconsent.count || 0;
+            const laserState = laserCount > 0 ? 'complete' : 'incomplete';
+            const laserSub   = laserCount > 0
+                ? `${laserCount} form${laserCount > 1 ? 's' : ''} on file · last ${data.laser_reconsent.last_date}`
+                : 'Action required';
+
+            // Record cards (practitioner-completed — view only)
+            const rc       = data.record_cards || {};
+            const rcCount  = rc.count || 0;
+            const rcState  = rcCount > 0 ? 'complete' : 'info';
+            const rcSub    = rcCount > 0
+                ? `${rcCount} session${rcCount > 1 ? 's' : ''} recorded · last ${rc.last_date}`
+                : 'No sessions recorded yet';
+            const rcUrl    = rc.latest_id ? `/forms/records/${rc.latest_id}/view/` : null;
+
+            grid.innerHTML = [
+                group('General', [
+                    formRow('Consultation Form',   consultState, consultSub, '/forms/consultation/'),
+                    formRow('Photography Consent', photoState,   photoSub,   '/forms/photography/'),
+                ]),
+                group('Injectables', [
+                    formRow('Botox Consent', botoxState, botoxSub, '/forms/botox/'),
+                    formRow('PRP Consent',   prpState,   prpSub,   '/forms/prp/'),
+                ]),
+                group('Laser', [
+                    formRow('Laser Re-Consent',  laserState, laserSub, '/forms/laser/reconsent/'),
+                    formRow('Treatment Records', rcState,    rcSub,    rcUrl),
+                ]),
+            ].join('');
         })
         .catch(() => {
-            bar.innerHTML = '<span class="text-muted">Could not load form status.</span>';
+            grid.innerHTML = '<p class="pforms-loading">Could not load form status.</p>';
+        });
+})();
+
+// Account credit
+(function () {
+    const balanceEl = document.getElementById('creditBalanceDisplay');
+    const toggle    = document.getElementById('creditHistoryToggle');
+    const body      = document.getElementById('creditHistoryBody');
+    let loaded = false;
+
+    fetch('/accounts/credit-history/')
+        .then(r => r.json())
+        .then(data => {
+            balanceEl.textContent = parseFloat(data.balance).toFixed(2);
+
+            function renderHistory() {
+                if (!data.transactions.length) {
+                    body.innerHTML = '<p class="text-muted" style="font-size:0.875rem;">No credit transactions yet.</p>';
+                    return;
+                }
+                const typeLabel = { credit: 'Credit added', deduct: 'Deducted', refund: 'Refund' };
+                body.innerHTML = `<ul class="credit-history">
+                    ${data.transactions.map(t => `
+                    <li class="credit-history__item">
+                        <span class="credit-history__date">${esc(t.date)}</span>
+                        <span class="credit-history__desc">${esc(t.description) || esc(typeLabel[t.type] || t.type)}</span>
+                        <span class="credit-history__amount credit-history__amount--${esc(t.type)}">
+                            ${t.type === 'deduct' ? '−' : '+'}£${parseFloat(t.amount).toFixed(2)}
+                        </span>
+                    </li>`).join('')}
+                </ul>`;
+                loaded = true;
+            }
+
+            toggle.addEventListener('click', function () {
+                const open = body.style.display !== 'none';
+                body.style.display = open ? 'none' : 'block';
+                toggle.setAttribute('aria-expanded', String(!open));
+                const label = open ? 'Show history' : 'Hide history';
+                const rotation = open ? '' : 'rotate(180deg)';
+                toggle.innerHTML = `${label}<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="transform:${rotation}"><polyline points="6 9 12 15 18 9"/></svg>`;
+                if (!open && !loaded) renderHistory();
+            });
+        })
+        .catch(() => {
+            balanceEl.textContent = '—';
         });
 })();
 
@@ -238,10 +362,10 @@
             } else {
                 upcomingEl.innerHTML = data.upcoming.map(b => `
                     <div class="profile-booking-row">
-                        <span class="profile-booking-dot" style="background:${b.category_colour || 'var(--color-primary)'}"></span>
+                        <span class="profile-booking-dot" style="background:${safeColour(b.category_colour) || 'var(--color-primary)'}"></span>
                         <div class="profile-booking-row__info">
-                            <span class="profile-booking-row__treatment">${b.treatment}</span>
-                            <span class="profile-booking-row__meta">${b.date} &middot; ${b.start_time} &middot; ${b.duration} min</span>
+                            <span class="profile-booking-row__treatment">${esc(b.treatment)}</span>
+                            <span class="profile-booking-row__meta">${esc(b.date)} &middot; ${esc(b.start_time)} &middot; ${b.duration} min</span>
                         </div>
                         <span class="badge badge--success">Confirmed</span>
                     </div>`).join('');
@@ -252,10 +376,10 @@
             } else {
                 pastEl.innerHTML = data.past.map(b => `
                     <div class="profile-booking-row profile-booking-row--past">
-                        <span class="profile-booking-dot" style="background:${b.category_colour || 'var(--color-primary)'}"></span>
+                        <span class="profile-booking-dot" style="background:${safeColour(b.category_colour) || 'var(--color-primary)'}"></span>
                         <div class="profile-booking-row__info">
-                            <span class="profile-booking-row__treatment">${b.treatment}</span>
-                            <span class="profile-booking-row__meta">${b.date} &middot; ${b.start_time}</span>
+                            <span class="profile-booking-row__treatment">${esc(b.treatment)}</span>
+                            <span class="profile-booking-row__meta">${esc(b.date)} &middot; ${esc(b.start_time)}</span>
                         </div>
                         <span class="badge ${b.status === 'cancelled' ? 'badge--pending' : ''}"
                               style="${b.status !== 'cancelled' ? 'background:#f0ece5;color:var(--color-text-light);border-color:#e5e0d8;' : ''}">

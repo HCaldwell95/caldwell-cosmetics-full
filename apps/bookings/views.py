@@ -133,12 +133,12 @@ def overview(request):
     treatments = (
         Treatment.objects
         .select_related('category', 'group')
-        .filter(is_active=True)
+        .filter(is_active=True, category__is_bookable=True)
     )
 
     categories = (
         TreatmentCategory.objects
-        .filter(is_active=True)
+        .filter(is_active=True, is_bookable=True)
         .prefetch_related('treatments')
     )
 
@@ -179,7 +179,7 @@ def create_booking(request):
 
     # ── 2. Treatment exists and is active ────────────────────────────────────
     try:
-        treatment = Treatment.objects.get(id=treatment_id, is_active=True)
+        treatment = Treatment.objects.get(id=treatment_id, is_active=True, category__is_bookable=True)
     except Treatment.DoesNotExist:
         return redirect(reverse('bookings:overview') + '?error=invalid')
 

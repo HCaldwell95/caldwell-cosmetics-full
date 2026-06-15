@@ -1,0 +1,85 @@
+{% extends "base/base.html" %}
+{% load static %}
+{% block title %}New Note — {{ client.full_name }} | Caldwell Cosmetics{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/pages/forms_system.css' %}">{% endblock %}
+{% block content %}
+<div class="cform-page">
+
+    <div class="cform-behalf-banner">
+        Operator only — this note will not be visible to the client.
+    </div>
+
+    <div class="cform-header">
+        <span class="cform-header__eyebrow">Client Notes</span>
+        <h1 class="cform-header__title">New Note — {{ client.full_name }}</h1>
+    </div>
+
+    <!-- Client details (read-only) -->
+    <div class="cform-section">
+        <h2 class="cform-section__title">Client Details <span class="cform-readonly-badge">Read Only</span></h2>
+        <dl class="cform-summary-dl">
+            <dt>Full name</dt>
+            <dd>{{ client.full_name }}</dd>
+
+            <dt>Email</dt>
+            <dd>{{ client.email }}</dd>
+
+            {% if profile %}
+            <dt>Phone</dt>
+            <dd>{{ profile.phone_number|default:"—" }}</dd>
+
+            <dt>Date of birth</dt>
+            <dd>{% if profile.date_of_birth %}{{ profile.date_of_birth|date:"j F Y" }}{% else %}—{% endif %}</dd>
+
+            <dt>Address</dt>
+            <dd>
+                {% if profile.address_line_1 %}
+                    {{ profile.address_line_1 }}{% if profile.address_line_2 %}, {{ profile.address_line_2 }}{% endif %},
+                    {{ profile.town_city }}, {{ profile.postcode }}
+                {% else %}—{% endif %}
+            </dd>
+            {% endif %}
+        </dl>
+    </div>
+
+    <!-- Note content -->
+    <form method="post">
+        {% csrf_token %}
+        <div class="cform-section">
+            <h2 class="cform-section__title">Note</h2>
+            {% if error %}
+            <p class="dash-field-error" style="margin-bottom:0.75rem;">{{ error }}</p>
+            {% endif %}
+            <div class="cform-field">
+                <label class="cform-label" for="noteTitle">Title <span class="cform-req">*</span></label>
+                <input
+                    class="cform-input"
+                    type="text"
+                    id="noteTitle"
+                    name="title"
+                    placeholder="e.g. Initial consultation notes"
+                    value="{{ request.POST.title }}"
+                    required
+                >
+            </div>
+            <div class="cform-field">
+                <label class="cform-label" for="noteContent">Content <span class="cform-req">*</span></label>
+                <textarea
+                    class="cform-input"
+                    id="noteContent"
+                    name="content"
+                    rows="10"
+                    placeholder="Write your note here…"
+                    required
+                >{{ request.POST.content }}</textarea>
+            </div>
+        </div>
+
+        <div class="cform-submit-row">
+            <a href="javascript:history.back()" class="btn btn--ghost">Cancel</a>
+            <button type="submit" class="btn btn--primary btn--lg">Save Note</button>
+        </div>
+    </form>
+
+</div>
+{% endblock %}

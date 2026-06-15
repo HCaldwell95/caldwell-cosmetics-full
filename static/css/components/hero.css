@@ -2,7 +2,7 @@ body {
     font-family: var(--font-lora);
     color: var(--color-text-dark);
     background-color: #ffffff;
-    overflow-x: hidden;
+    overflow-x: clip; /* clip prevents horizontal scroll without creating a scroll container — hidden would break position:sticky */
     line-height: 1.6;
 }
 

@@ -7,7 +7,7 @@ from django.http import JsonResponse
 from django.utils import timezone
 
 from .forms import LoginForm, ProfileEditForm, RegistrationForm
-from .models import Profile
+from .models import Profile, AccountCredit
 
 
 # --------------------------------------------------
@@ -48,7 +48,7 @@ def logout_view(request):
     if request.method == "POST":
         logout(request)
         messages.info(request, "You have been logged out.")
-    return redirect("core:home")
+    return redirect("accounts:login")
 
 
 # --------------------------------------------------
@@ -73,12 +73,17 @@ def profile_edit(request):
     if request.method == "POST" and form.is_valid():
         form.save()
         messages.success(request, "Your profile has been updated.")
+        if request.user.is_staff:
+            return redirect("dashboard:dashboard")
         return redirect("accounts:profile")
 
     return render(request, "accounts/profile_edit.html", {"form": form, "profile": profile})
 
 @login_required
 def deactivate_account(request):
+    if request.user.is_staff or request.user.is_superuser:
+        messages.error(request, "Staff accounts cannot be deactivated here. Contact your system administrator.")
+        return redirect("accounts:profile")
     if request.method == "POST":
         user = request.user
         profile = user.profile
@@ -125,5 +130,26 @@ def profile_bookings(request):
  
     # Most recent past first
     past.reverse()
- 
+
     return JsonResponse({'upcoming': upcoming, 'past': past})
+
+
+@login_required
+def credit_history(request):
+    try:
+        credit = AccountCredit.objects.get(user=request.user)
+        balance = str(credit.balance)
+        transactions = [
+            {
+                'date':        t.created_at.strftime('%d %b %Y'),
+                'description': t.description,
+                'amount':      str(t.amount),
+                'type':        t.transaction_type,
+            }
+            for t in credit.transactions.order_by('-created_at')
+        ]
+    except AccountCredit.DoesNotExist:
+        balance = '0.00'
+        transactions = []
+
+    return JsonResponse({'balance': balance, 'transactions': transactions})

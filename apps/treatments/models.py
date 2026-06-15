@@ -31,6 +31,10 @@ class TreatmentCategory(models.Model):
         default=True,
         help_text="Uncheck to hide from the page"
     )
+    is_bookable = models.BooleanField(
+        default=True,
+        help_text="Uncheck to hide this category from the booking form (the content page remains visible)",
+    )
 
     class Meta:
         ordering = ['order', 'name']

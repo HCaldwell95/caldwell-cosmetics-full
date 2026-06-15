@@ -37,7 +37,12 @@
 
                 <div class="ti-hero__cta">
                     <a href="/bookings" class="ti-btn ti-btn--primary">Book Now</a>
-                    <a href="#details" class="ti-btn ti-btn--ghost">View Details</a>
+                    {% if pre_treatment_url %}
+                    <div class="ti-hero__cta-advice">
+                        <a href="{{ pre_treatment_url }}" class="ti-btn ti-btn--ghost">Pre-Treatment Advice</a>
+                        <a href="{{ post_treatment_url }}" class="ti-btn ti-btn--ghost">Post-Treatment Advice</a>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
 

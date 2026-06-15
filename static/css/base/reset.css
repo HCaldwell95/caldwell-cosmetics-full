@@ -6,7 +6,7 @@
 }
 
 html {
-    overflow-x: hidden;
+    overflow-x: clip; /* clip prevents horizontal scroll without creating a scroll container — hidden would break position:sticky */
 }
 
 /* Remove list styles */

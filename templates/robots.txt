@@ -1,5 +1,7 @@
 User-agent: *
 Allow: /
+Allow: /accounts/login/
+Allow: /accounts/register/
 Disallow: /admin/
 Disallow: /accounts/
 Disallow: /dashboard/

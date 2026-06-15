@@ -108,10 +108,11 @@ class RegistrationForm(UserCreationForm):
             profile.gdpr_consent_date = timezone.now()
             profile.phone_number = self.cleaned_data["phone_number"]
             profile.date_of_birth = self.cleaned_data["date_of_birth"]
-            profile.guardian_name         = self.cleaned_data.get("guardian_name", "")
-            profile.guardian_relationship = self.cleaned_data.get("guardian_relationship", "")
-            profile.guardian_phone        = self.cleaned_data.get("guardian_phone", "")
-            profile.guardian_email        = self.cleaned_data.get("guardian_email", "")
+            if self._is_minor():
+                profile.guardian_name         = self.cleaned_data.get("guardian_name", "")
+                profile.guardian_relationship = self.cleaned_data.get("guardian_relationship", "")
+                profile.guardian_phone        = self.cleaned_data.get("guardian_phone", "")
+                profile.guardian_email        = self.cleaned_data.get("guardian_email", "")
             profile.save()
         return user
 
@@ -179,6 +180,15 @@ class ProfileEditForm(forms.ModelForm):
             self.fields["first_name"].initial = self.user.first_name
             self.fields["last_name"].initial  = self.user.last_name
             self.fields["email"].initial      = self.user.email
+
+    def clean_email(self):
+        email = self.cleaned_data["email"]
+        qs = User.objects.filter(email=email)
+        if self.user:
+            qs = qs.exclude(pk=self.user.pk)
+        if qs.exists():
+            raise forms.ValidationError("An account with this email address already exists.")
+        return email
 
     def save(self, commit=True):
         profile = super().save(commit=False)

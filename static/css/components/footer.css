@@ -261,7 +261,8 @@ footer {
 
     /* Centre Quick Links and Services columns specifically */
     .footer-column:nth-child(2),
-    .footer-column:nth-child(3) {
+    .footer-column:nth-child(3),
+    .footer-column:nth-child(4) {
         text-align: center;
     }
 

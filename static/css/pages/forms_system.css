@@ -85,6 +85,82 @@
 }
 
 /* =====================================================
+   Completed-state card (one-time forms)
+   ===================================================== */
+
+.cform-complete-card {
+    max-width: 600px;
+    margin: 2.5rem auto 3rem;
+    background: #f9f7f4;
+    border: 1px solid #e8e0d4;
+    border-radius: 12px;
+    padding: 2.5rem 2rem;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.cform-complete-card__icon {
+    width: 52px;
+    height: 52px;
+    color: #16a34a;
+    flex-shrink: 0;
+}
+
+.cform-complete-card__title {
+    font-family: var(--font-lora, 'Lora', serif);
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: var(--color-text-dark, #1a1a2e);
+    margin: 0;
+}
+
+.cform-complete-card__body {
+    font-family: var(--font-montserrat, 'Montserrat', sans-serif);
+    font-size: 0.875rem;
+    color: var(--color-text-light, #555);
+    line-height: 1.6;
+    margin: 0;
+}
+
+.cform-complete-card__summary {
+    width: 100%;
+    max-width: 400px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.4rem 1.25rem;
+    text-align: left;
+    font-family: var(--font-montserrat, 'Montserrat', sans-serif);
+    font-size: 0.78rem;
+    margin: 0.5rem 0;
+}
+
+.cform-complete-card__summary dt {
+    color: var(--color-text-light, #555);
+}
+
+.cform-complete-card__summary dd {
+    font-weight: 600;
+    color: var(--color-text-dark, #1a1a2e);
+    margin: 0;
+}
+
+.cform-complete-card__hint {
+    font-family: var(--font-montserrat, 'Montserrat', sans-serif);
+    font-size: 0.75rem;
+    color: #9ca3af;
+    margin: 0;
+}
+
+.cform-minor-banner {
+    background-color: #fffbeb;
+    border-color: #f59e0b;
+    color: #92400e;
+}
+
+/* =====================================================
    Form sections
    ===================================================== */
 
@@ -469,8 +545,16 @@ textarea.cform-input {
     border: 1px solid var(--color-border, #e8e0d5);
     border-radius: 10px;
     padding: 1.75rem;
-    position: sticky;
-    top: 1.5rem;
+}
+
+@media (min-width: 1440px) {
+    .record-card-prev {
+        position: sticky;
+        top: 121px; /* 105px fixed navbar (≥1200px breakpoint) + 16px gap */
+        max-height: calc(100vh - 137px);
+        overflow-y: auto;
+        align-self: start;
+    }
 }
 
 .record-card-new {
@@ -690,10 +774,6 @@ textarea.cform-input {
         grid-template-columns: 1fr;
     }
 
-    .record-card-prev {
-        position: static;
-    }
-
     .record-card-table--prev .record-card-table__head,
     .record-card-table--prev .record-card-table__row {
         /* Collapse less important cols */
@@ -775,4 +855,83 @@ textarea.cform-input {
     .btn {
         transition: none;
     }
+}
+
+/* =====================================================
+   Consultation view — history pills
+   ===================================================== */
+
+.cform-history-pill {
+    font-family: var(--font-montserrat, 'Montserrat', sans-serif);
+    font-size: 0.72rem;
+    font-weight: 500;
+    padding: 4px 12px;
+    border-radius: 20px;
+    background: #f1f5f9;
+    color: #64748b;
+    border: 1px solid #cbd5e1;
+}
+
+.cform-history-pill--active {
+    background: #fffbeb;
+    color: #92400e;
+    border-color: #fde68a;
+}
+
+/* =====================================================
+   Previous form reference panel — <details> accordions
+   ===================================================== */
+
+.cform-prev-details {
+    border: 1px solid var(--color-border, #e8e0d5);
+    border-radius: 6px;
+    margin-bottom: 0.6rem;
+    overflow: hidden;
+}
+
+.cform-prev-summary {
+    font-family: var(--font-montserrat, 'Montserrat', sans-serif);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--color-text-light, #888);
+    padding: 0.6rem 0.9rem;
+    cursor: pointer;
+    list-style: none;
+    background: #fafaf8;
+    user-select: none;
+}
+
+.cform-prev-summary::-webkit-details-marker { display: none; }
+
+.cform-prev-summary::after {
+    content: ' ▸';
+    font-size: 0.65rem;
+    opacity: 0.5;
+}
+
+details[open] .cform-prev-summary::after {
+    content: ' ▾';
+}
+
+.cform-prev-details > *:not(summary) {
+    padding: 0.75rem 0.9rem;
+}
+
+/* =====================================================
+   Read-only checked / unchecked state in view pages
+   ===================================================== */
+
+.cform-check--unchecked input[type="checkbox"],
+.cform-check--unchecked input[type="radio"] {
+    opacity: 0.3;
+}
+
+/* =====================================================
+   Submit row — gap between multiple buttons
+   ===================================================== */
+
+.cform-submit-row {
+    gap: 0.75rem;
 }

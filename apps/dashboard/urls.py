@@ -22,4 +22,8 @@ urlpatterns = [
 
     # Credit management
     path("clients/<int:pk>/credit/adjust/", views.credit_adjust,    name="credit_adjust"),
+
+    # Client notes (operator only)
+    path("clients/<int:pk>/notes/new/",              views.note_new,  name="note_new"),
+    path("clients/<int:pk>/notes/<int:note_pk>/",    views.note_view, name="note_view"),
 ]

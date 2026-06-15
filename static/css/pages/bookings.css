@@ -216,6 +216,7 @@
 .category-strip__viewport {
     flex: 1;
     overflow: hidden;
+    padding: 2px 0;
 }
 
 .category-tabs {

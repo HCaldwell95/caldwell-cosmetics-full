@@ -47,7 +47,7 @@
         <h2 class="cform-section__title">Client Information</h2>
         <div class="cform-grid cform-grid--2">
             <div class="cform-field"><label class="cform-label">Full Name</label><input class="cform-input" type="text" name="full_name" value="{{ target_user.full_name }}" required></div>
-            <div class="cform-field"><label class="cform-label">Date of Birth</label><input class="cform-input" type="date" name="date_of_birth" required></div>
+            <div class="cform-field"><label class="cform-label">Date of Birth</label><input class="cform-input" type="date" name="date_of_birth" id="dobField" required></div>
             <div class="cform-field"><label class="cform-label">Phone</label><input class="cform-input" type="tel" name="phone_number"></div>
             <div class="cform-field"><label class="cform-label">Email</label><input class="cform-input" type="email" name="email" value="{{ target_user.email }}"></div>
             <div class="cform-field cform-field--full"><label class="cform-label">Address</label><textarea class="cform-input" name="address" rows="2"></textarea></div>
@@ -161,10 +161,76 @@
         <p class="cform-sig-name">{{ target_user.full_name }}</p>
     </div>
 
+    <!-- ===== MINOR / GUARDIAN SECTION ===== -->
+    <div class="cform-section" id="guardianSection" hidden>
+        <h2 class="cform-section__title">Parent / Guardian Consent</h2>
+        <div class="cform-behalf-banner cform-minor-banner">
+            This client is under 18. A parent or guardian must provide their details and countersign below.
+        </div>
+        <div class="cform-grid cform-grid--2">
+            <div class="cform-field">
+                <label class="cform-label">Guardian Full Name <span class="cform-req">*</span></label>
+                <input class="cform-input" type="text" name="guardian_name" id="guardianName" placeholder="Full name">
+            </div>
+            <div class="cform-field">
+                <label class="cform-label">Relationship to Client <span class="cform-req">*</span></label>
+                <input class="cform-input" type="text" name="guardian_relationship" id="guardianRelationship" placeholder="e.g. Mother, Father, Guardian">
+            </div>
+            <div class="cform-field">
+                <label class="cform-label">Guardian Phone <span class="cform-req">*</span></label>
+                <input class="cform-input" type="tel" name="guardian_phone" id="guardianPhone" placeholder="e.g. 07700 900000">
+            </div>
+            <div class="cform-field">
+                <label class="cform-label">Guardian Email</label>
+                <input class="cform-input" type="email" name="guardian_email" placeholder="Email address (optional)">
+            </div>
+        </div>
+        <p class="cform-label" style="margin-top:1.25rem;">Guardian Signature <span class="cform-req">*</span></p>
+        <div class="cform-sig-wrap">
+            <canvas id="guardianSigCanvas" class="cform-sig-canvas"></canvas>
+            <div class="cform-sig-actions">
+                <button type="button" class="btn btn--ghost btn--sm" id="guardianSigClear">Clear</button>
+            </div>
+        </div>
+        <input type="hidden" name="guardian_signature" id="guardianSigData">
+        <p class="cform-hint" style="margin-top:0.5rem;">By signing, the parent / guardian confirms they give consent for the Botulinum Toxin treatment described in this form.</p>
+    </div>
+
     <div class="cform-submit-row">
         <button type="submit" class="btn btn--primary btn--lg">Submit Client Section</button>
     </div>
 </form>
 </div>
 <script src="{% static 'js/sig_pad.js' %}"></script>
+<script>
+(function () {
+    var dob     = document.getElementById('dobField');
+    var section = document.getElementById('guardianSection');
+    var nameEl  = document.getElementById('guardianName');
+    var relEl   = document.getElementById('guardianRelationship');
+    var phoneEl = document.getElementById('guardianPhone');
+
+    function updateMinor() {
+        var val = dob.value;
+        if (!val) { section.hidden = true; setReq(false); return; }
+        var d = new Date(val), today = new Date();
+        var age = today.getFullYear() - d.getFullYear();
+        var m = today.getMonth() - d.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < d.getDate())) age--;
+        var minor = age < 18;
+        section.hidden = !minor;
+        setReq(minor);
+    }
+
+    function setReq(r) {
+        nameEl.required  = r;
+        relEl.required   = r;
+        phoneEl.required = r;
+    }
+
+    dob.addEventListener('change', updateMinor);
+    {% if profile_is_minor %}section.hidden = false; setReq(true);{% endif %}
+    updateMinor();
+})();
+</script>
 {% endblock %}

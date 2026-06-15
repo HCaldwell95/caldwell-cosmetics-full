@@ -36,6 +36,166 @@ def _get_or_none(model, **kwargs):
         return None
 
 
+def _dob_is_minor(dob_str):
+    from datetime import date as date_type
+    try:
+        dob = date_type.fromisoformat(str(dob_str))
+        today = date_type.today()
+        age = today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
+        return age < 18
+    except (ValueError, TypeError, AttributeError):
+        return False
+
+
+def _profile_is_minor(user):
+    try:
+        dob = user.profile.date_of_birth
+        return _dob_is_minor(dob.isoformat()) if dob else False
+    except Exception:
+        return False
+
+
+def _extract_guardian(data):
+    return {
+        "guardian_name":         data.get("guardian_name", ""),
+        "guardian_relationship": data.get("guardian_relationship", ""),
+        "guardian_phone":        data.get("guardian_phone", ""),
+        "guardian_email":        data.get("guardian_email", ""),
+        "guardian_signature":    data.get("guardian_signature", ""),
+    }
+
+
+def _validate_guardian(data, is_minor):
+    if not is_minor:
+        return None
+    g = _extract_guardian(data)
+    if not g["guardian_name"]:
+        return JsonResponse({"ok": False, "error": "Guardian name is required for clients under 18."}, status=400)
+    if not g["guardian_phone"]:
+        return JsonResponse({"ok": False, "error": "Guardian phone is required for clients under 18."}, status=400)
+    if not g["guardian_signature"]:
+        return JsonResponse({"ok": False, "error": "Guardian signature is required for clients under 18."}, status=400)
+    return None
+
+
+def _post_submit_redirect(request):
+    """Staff go back to the dashboard; clients go to their profile."""
+    if request.user.is_staff:
+        return redirect("dashboard:dashboard")
+    return redirect("accounts:profile")
+
+
+def _build_consultation_kwargs(data):
+    """Map all ConsultationForm fields from POST data to a dict."""
+    return dict(
+        full_name=data.get("full_name", ""),
+        date_of_birth=data.get("date_of_birth"),
+        phone_number=data.get("phone_number", ""),
+        email=data.get("email", ""),
+        address=data.get("address", ""),
+        emergency_contact_name=data.get("emergency_contact_name", ""),
+        emergency_contact_phone=data.get("emergency_contact_phone", ""),
+        ethnic_origin=data.get("ethnic_origin", ""),
+        occupation=data.get("occupation", ""),
+        treatment_requested=data.get("treatment_requested", ""),
+        treatment_other=data.get("treatment_other", ""),
+        body_areas=data.get("body_areas", ""),
+
+        pregnant=bool(data.get("pregnant")),
+        pcos_hormonal=bool(data.get("pcos_hormonal")),
+        sun_tanned=bool(data.get("sun_tanned")),
+        thyroid_condition=bool(data.get("thyroid_condition")),
+        skin_pigmentation=bool(data.get("skin_pigmentation")),
+        regular_smoker=bool(data.get("regular_smoker")),
+        history_of_cancer=bool(data.get("history_of_cancer")),
+        psoriasis_eczema=bool(data.get("psoriasis_eczema")),
+        diabetes=bool(data.get("diabetes")),
+        depression_anxiety=bool(data.get("depression_anxiety")),
+        epilepsy=bool(data.get("epilepsy")),
+        herpes=bool(data.get("herpes")),
+        lymphatic_immune=bool(data.get("lymphatic_immune")),
+        high_blood_pressure=bool(data.get("high_blood_pressure")),
+        keloid_scarring=bool(data.get("keloid_scarring")),
+        photosensitive=bool(data.get("photosensitive")),
+        lupus=bool(data.get("lupus")),
+        allergies=bool(data.get("allergies")),
+        communicable_diseases=bool(data.get("communicable_diseases")),
+        alcohol_units_per_week=data.get("alcohol_units_per_week", ""),
+        medical_comments=data.get("medical_comments", ""),
+
+        current_medications=data.get("current_medications", ""),
+        st_johns_wart=bool(data.get("st_johns_wart")),
+        amiodarone=bool(data.get("amiodarone")),
+        minocycline=bool(data.get("minocycline")),
+        anticoagulants=bool(data.get("anticoagulants")),
+        gold_medications=bool(data.get("gold_medications")),
+        retinoids=bool(data.get("retinoids")),
+        steroids=bool(data.get("steroids")),
+        medication_comments=data.get("medication_comments", ""),
+        recent_major_treatment=data.get("recent_major_treatment", ""),
+
+        area_has_moles=bool(data.get("area_has_moles")),
+        area_has_birthmarks=bool(data.get("area_has_birthmarks")),
+        area_has_tattoos=bool(data.get("area_has_tattoos")),
+        area_has_permanent_makeup=bool(data.get("area_has_permanent_makeup")),
+        area_has_chemical_peel=bool(data.get("area_has_chemical_peel")),
+        area_has_botox=bool(data.get("area_has_botox")),
+        area_has_fillers=bool(data.get("area_has_fillers")),
+        area_has_tanning=bool(data.get("area_has_tanning")),
+        skin_disorder=data.get("skin_disorder", ""),
+        previous_laser_ipl=data.get("previous_laser_ipl", ""),
+
+        skin_products=data.get("skin_products", ""),
+        skin_type=data.get("skin_type", ""),
+        current_tan=bool(data.get("current_tan")),
+        last_uv_exposure=data.get("last_uv_exposure", ""),
+        tanning_injections=bool(data.get("tanning_injections")),
+        treatment_goals=data.get("treatment_goals", ""),
+        referral_source=data.get("referral_source", ""),
+
+        consent_info_correct=bool(data.get("consent_info_correct")),
+        consent_results_vary=bool(data.get("consent_results_vary")),
+        consent_multiple_treatments=bool(data.get("consent_multiple_treatments")),
+        consent_no_guarantee=bool(data.get("consent_no_guarantee")),
+        consent_sun_exposure=bool(data.get("consent_sun_exposure")),
+        consent_side_effects=bool(data.get("consent_side_effects")),
+        consent_pigmentation=bool(data.get("consent_pigmentation")),
+        consent_goggles=bool(data.get("consent_goggles")),
+        consent_contact_details=bool(data.get("consent_contact_details")),
+        consent_certified=bool(data.get("consent_certified")),
+
+        pretx_how_works=bool(data.get("pretx_how_works")),
+        pretx_pre_post_care=bool(data.get("pretx_pre_post_care")),
+        pretx_light_products=bool(data.get("pretx_light_products")),
+        pretx_num_treatments=bool(data.get("pretx_num_treatments")),
+        pretx_clinical_outcome=bool(data.get("pretx_clinical_outcome")),
+        pretx_sensation=bool(data.get("pretx_sensation")),
+        pretx_side_effects=bool(data.get("pretx_side_effects")),
+        pretx_cost=data.get("pretx_cost", ""),
+        pretx_photo_taken=bool(data.get("pretx_photo_taken")),
+        pretx_comments=data.get("pretx_comments", ""),
+        operator_signature=data.get("operator_signature", ""),
+
+        hair_colour=data.get("hair_colour", ""),
+        hair_texture=data.get("hair_texture", ""),
+        hair_handpiece=data.get("hair_handpiece", ""),
+        hair_previous_treatments=data.get("hair_previous_treatments", ""),
+        vascular_type=data.get("vascular_type", ""),
+        vascular_previous_treatments=data.get("vascular_previous_treatments", ""),
+        pigmentation_type=data.get("pigmentation_type", ""),
+        pigmentation_previous_treatments=data.get("pigmentation_previous_treatments", ""),
+        acne_type=data.get("acne_type", ""),
+        acne_previous_treatments=data.get("acne_previous_treatments", ""),
+        skin_assessment_type=data.get("skin_assessment_type", ""),
+        skin_handpiece=data.get("skin_handpiece", ""),
+        skin_previous_treatments=data.get("skin_previous_treatments", ""),
+        tattoo_colour=data.get("tattoo_colour", ""),
+        tattoo_previous_treatments=data.get("tattoo_previous_treatments", ""),
+        fractional_indication=data.get("fractional_indication", ""),
+        fractional_comments=data.get("fractional_comments", ""),
+    )
+
+
 def _is_practitioner_mode(request):
     return request.user.is_superuser and request.GET.get("on_behalf_of") is not None
 
@@ -72,6 +232,7 @@ def form_status(request, user_id):
     botox         = _get_or_none(BotoxConsentForm, user=user)
     prp           = _get_or_none(PRPConsentForm, user=user)
     record_count  = RecordCard.objects.filter(user=user).count()
+    record_latest = RecordCard.objects.filter(user=user).order_by("-date").first()
 
     try:
         laser_latest = LaserReConsent.objects.filter(user=user).latest("completed_at")
@@ -107,7 +268,11 @@ def form_status(request, user_id):
             "count": laser_count,
             "last_date": laser_latest.completed_at.strftime("%d %b %Y") if laser_latest else None,
         },
-        "record_cards": record_count,
+        "record_cards": {
+            "count":      record_count,
+            "latest_id":  record_latest.pk if record_latest else None,
+            "last_date":  record_latest.date.strftime("%d %b %Y") if record_latest else None,
+        },
     })
 
 
@@ -122,134 +287,99 @@ def consultation_form(request):
     existing        = _get_or_none(ConsultationForm, user=target_user)
 
     if request.method == "POST":
-        data = request.POST
-        sig  = data.get("signature", "")
+        data     = request.POST
+        sig      = data.get("signature", "")
+        is_minor = _dob_is_minor(data.get("date_of_birth", ""))
 
         if not sig:
             return JsonResponse({"ok": False, "error": "Signature is required."}, status=400)
+
+        err = _validate_guardian(data, is_minor)
+        if err:
+            return err
+
+        g = _extract_guardian(data) if is_minor else {}
 
         ConsultationForm.objects.create(
             user=target_user,
             completed_by_practitioner=on_behalf,
             practitioner=request.user if on_behalf else None,
             signature=sig,
-
-            full_name=data.get("full_name", ""),
-            date_of_birth=data.get("date_of_birth"),
-            phone_number=data.get("phone_number", ""),
-            email=data.get("email", ""),
-            address=data.get("address", ""),
-            emergency_contact_name=data.get("emergency_contact_name", ""),
-            emergency_contact_phone=data.get("emergency_contact_phone", ""),
-            ethnic_origin=data.get("ethnic_origin", ""),
-            occupation=data.get("occupation", ""),
-            treatment_requested=data.get("treatment_requested", ""),
-            treatment_other=data.get("treatment_other", ""),
-            body_areas=data.get("body_areas", ""),
-
-            pregnant=bool(data.get("pregnant")),
-            pcos_hormonal=bool(data.get("pcos_hormonal")),
-            sun_tanned=bool(data.get("sun_tanned")),
-            thyroid_condition=bool(data.get("thyroid_condition")),
-            skin_pigmentation=bool(data.get("skin_pigmentation")),
-            regular_smoker=bool(data.get("regular_smoker")),
-            history_of_cancer=bool(data.get("history_of_cancer")),
-            psoriasis_eczema=bool(data.get("psoriasis_eczema")),
-            diabetes=bool(data.get("diabetes")),
-            depression_anxiety=bool(data.get("depression_anxiety")),
-            epilepsy=bool(data.get("epilepsy")),
-            herpes=bool(data.get("herpes")),
-            lymphatic_immune=bool(data.get("lymphatic_immune")),
-            high_blood_pressure=bool(data.get("high_blood_pressure")),
-            keloid_scarring=bool(data.get("keloid_scarring")),
-            photosensitive=bool(data.get("photosensitive")),
-            lupus=bool(data.get("lupus")),
-            allergies=bool(data.get("allergies")),
-            communicable_diseases=bool(data.get("communicable_diseases")),
-            alcohol_units_per_week=data.get("alcohol_units_per_week", ""),
-            medical_comments=data.get("medical_comments", ""),
-
-            current_medications=data.get("current_medications", ""),
-            st_johns_wart=bool(data.get("st_johns_wart")),
-            amiodarone=bool(data.get("amiodarone")),
-            minocycline=bool(data.get("minocycline")),
-            anticoagulants=bool(data.get("anticoagulants")),
-            gold_medications=bool(data.get("gold_medications")),
-            retinoids=bool(data.get("retinoids")),
-            steroids=bool(data.get("steroids")),
-            medication_comments=data.get("medication_comments", ""),
-            recent_major_treatment=data.get("recent_major_treatment", ""),
-
-            area_has_moles=bool(data.get("area_has_moles")),
-            area_has_birthmarks=bool(data.get("area_has_birthmarks")),
-            area_has_tattoos=bool(data.get("area_has_tattoos")),
-            area_has_permanent_makeup=bool(data.get("area_has_permanent_makeup")),
-            area_has_chemical_peel=bool(data.get("area_has_chemical_peel")),
-            area_has_botox=bool(data.get("area_has_botox")),
-            area_has_fillers=bool(data.get("area_has_fillers")),
-            area_has_tanning=bool(data.get("area_has_tanning")),
-            skin_disorder=data.get("skin_disorder", ""),
-            previous_laser_ipl=data.get("previous_laser_ipl", ""),
-
-            skin_products=data.get("skin_products", ""),
-            skin_type=data.get("skin_type", ""),
-            current_tan=bool(data.get("current_tan")),
-            last_uv_exposure=data.get("last_uv_exposure", ""),
-            tanning_injections=bool(data.get("tanning_injections")),
-            treatment_goals=data.get("treatment_goals", ""),
-            referral_source=data.get("referral_source", ""),
-
-            consent_info_correct=bool(data.get("consent_info_correct")),
-            consent_results_vary=bool(data.get("consent_results_vary")),
-            consent_multiple_treatments=bool(data.get("consent_multiple_treatments")),
-            consent_no_guarantee=bool(data.get("consent_no_guarantee")),
-            consent_sun_exposure=bool(data.get("consent_sun_exposure")),
-            consent_side_effects=bool(data.get("consent_side_effects")),
-            consent_pigmentation=bool(data.get("consent_pigmentation")),
-            consent_goggles=bool(data.get("consent_goggles")),
-            consent_contact_details=bool(data.get("consent_contact_details")),
-            consent_certified=bool(data.get("consent_certified")),
-
-            pretx_how_works=bool(data.get("pretx_how_works")),
-            pretx_pre_post_care=bool(data.get("pretx_pre_post_care")),
-            pretx_light_products=bool(data.get("pretx_light_products")),
-            pretx_num_treatments=bool(data.get("pretx_num_treatments")),
-            pretx_clinical_outcome=bool(data.get("pretx_clinical_outcome")),
-            pretx_sensation=bool(data.get("pretx_sensation")),
-            pretx_side_effects=bool(data.get("pretx_side_effects")),
-            pretx_cost=data.get("pretx_cost", ""),
-            pretx_photo_taken=bool(data.get("pretx_photo_taken")),
-            pretx_comments=data.get("pretx_comments", ""),
-            operator_signature=data.get("operator_signature", ""),
-
-            hair_colour=data.get("hair_colour", ""),
-            hair_texture=data.get("hair_texture", ""),
-            hair_handpiece=data.get("hair_handpiece", ""),
-            hair_previous_treatments=data.get("hair_previous_treatments", ""),
-            vascular_type=data.get("vascular_type", ""),
-            vascular_previous_treatments=data.get("vascular_previous_treatments", ""),
-            pigmentation_type=data.get("pigmentation_type", ""),
-            pigmentation_previous_treatments=data.get("pigmentation_previous_treatments", ""),
-            acne_type=data.get("acne_type", ""),
-            acne_previous_treatments=data.get("acne_previous_treatments", ""),
-            skin_assessment_type=data.get("skin_assessment_type", ""),
-            skin_handpiece=data.get("skin_handpiece", ""),
-            skin_previous_treatments=data.get("skin_previous_treatments", ""),
-            tattoo_colour=data.get("tattoo_colour", ""),
-            tattoo_previous_treatments=data.get("tattoo_previous_treatments", ""),
-            fractional_indication=data.get("fractional_indication", ""),
-            fractional_comments=data.get("fractional_comments", ""),
+            **g,
+            **_build_consultation_kwargs(data),
         )
 
         if request.headers.get("X-Requested-With") == "XMLHttpRequest":
             return JsonResponse({"ok": True})
-        return redirect("accounts:profile")
+        return _post_submit_redirect(request)
 
-    return render(request, "forms_system/consultation_form.html", {
+    return render(request, "forms_system/consultation/form.html", {
         "existing": existing,
         "target_user": target_user,
         "on_behalf": on_behalf,
         "is_practitioner": request.user.is_superuser,
+        "profile_is_minor": _profile_is_minor(target_user),
+        "form_treatment_choices": ConsultationForm.TREATMENT_CHOICES,
+    })
+
+
+# ---------------------------------------------------------------------------
+# Consultation Form — operator view / history
+# ---------------------------------------------------------------------------
+
+@staff_required
+def consultation_view(request, user_id):
+    """Read-only view of the latest (or a specific) consultation form for a client."""
+    target_user = get_object_or_404(User, pk=user_id)
+    all_forms   = list(ConsultationForm.objects.filter(user=target_user).order_by("-completed_at"))
+    latest      = all_forms[0] if all_forms else None
+
+    return render(request, "forms_system/consultation/view.html", {
+        "target_user": target_user,
+        "form":        latest,
+        "all_forms":   all_forms,
+    })
+
+
+@staff_required
+def consultation_new(request, user_id):
+    """Operator creates a new consultation form; the most recent previous is shown for reference."""
+    target_user = get_object_or_404(User, pk=user_id)
+    is_minor    = _profile_is_minor(target_user)
+    previous    = ConsultationForm.objects.filter(user=target_user).order_by("-completed_at").first()
+
+    if request.method == "POST":
+        data     = request.POST
+        sig      = data.get("signature", "")
+        is_minor_dob = _dob_is_minor(data.get("date_of_birth", ""))
+
+        if not sig:
+            return JsonResponse({"ok": False, "error": "Signature is required."}, status=400)
+
+        err = _validate_guardian(data, is_minor_dob)
+        if err:
+            return err
+
+        g = _extract_guardian(data) if is_minor_dob else {}
+
+        ConsultationForm.objects.create(
+            user=target_user,
+            completed_by_practitioner=True,
+            practitioner=request.user,
+            signature=sig,
+            **g,
+            **_build_consultation_kwargs(data),
+        )
+
+        return redirect("forms_system:consultation_view", user_id=user_id)
+
+    return render(request, "forms_system/consultation/new.html", {
+        "target_user":            target_user,
+        "previous":               previous,
+        "on_behalf":              True,
+        "is_practitioner":        True,
+        "profile_is_minor":       is_minor,
+        "form_treatment_choices": ConsultationForm.TREATMENT_CHOICES,
     })
 
 
@@ -264,11 +394,24 @@ def photography_consent(request):
     existing    = _get_or_none(PhotographyConsent, user=target_user)
 
     if request.method == "POST":
-        data = request.POST
-        sig  = data.get("signature", "")
+        # One-time form — block resubmission even if the client bypasses the UI
+        if existing:
+            if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+                return JsonResponse({"ok": False, "error": "Photography consent already completed."}, status=409)
+            return redirect("forms_system:photography")
+
+        data     = request.POST
+        sig      = data.get("signature", "")
+        is_minor = _dob_is_minor(data.get("date_of_birth", ""))
 
         if not sig:
             return JsonResponse({"ok": False, "error": "Signature is required."}, status=400)
+
+        err = _validate_guardian(data, is_minor)
+        if err:
+            return err
+
+        g = _extract_guardian(data) if is_minor else {}
 
         PhotographyConsent.objects.create(
             user=target_user,
@@ -283,16 +426,18 @@ def photography_consent(request):
             consent_3=bool(data.get("consent_3")),
             consent_4=bool(data.get("consent_4")),
             consent_5=bool(data.get("consent_5")),
+            **g,
         )
 
         if request.headers.get("X-Requested-With") == "XMLHttpRequest":
             return JsonResponse({"ok": True})
-        return redirect("accounts:profile")
+        return _post_submit_redirect(request)
 
-    return render(request, "forms_system/photography_consent.html", {
+    return render(request, "forms_system/photography/consent.html", {
         "existing": existing,
         "target_user": target_user,
         "on_behalf": on_behalf,
+        "profile_is_minor": _profile_is_minor(target_user),
     })
 
 
@@ -307,12 +452,18 @@ def botox_client(request):
     existing    = _get_or_none(BotoxConsentForm, user=target_user)
 
     if request.method == "POST":
-        data = request.POST
-        sig  = data.get("signature", "")
+        data     = request.POST
+        sig      = data.get("signature", "")
+        is_minor = _dob_is_minor(data.get("date_of_birth", ""))
 
         if not sig:
             return JsonResponse({"ok": False, "error": "Signature is required."}, status=400)
 
+        err = _validate_guardian(data, is_minor)
+        if err:
+            return err
+
+        g   = _extract_guardian(data) if is_minor else {}
         now = timezone.now()
 
         botox = BotoxConsentForm.objects.create(
@@ -320,6 +471,7 @@ def botox_client(request):
             completed_by_practitioner=on_behalf,
             practitioner=request.user if on_behalf else None,
             signature=sig,
+            **g,
 
             full_name=data.get("full_name", ""),
             date_of_birth=data.get("date_of_birth"),
@@ -374,12 +526,13 @@ def botox_client(request):
 
         if request.headers.get("X-Requested-With") == "XMLHttpRequest":
             return JsonResponse({"ok": True, "botox_id": botox.pk})
-        return redirect("accounts:profile")
+        return _post_submit_redirect(request)
 
-    return render(request, "forms_system/botox_client.html", {
+    return render(request, "forms_system/botox/client.html", {
         "existing": existing,
         "target_user": target_user,
         "on_behalf": on_behalf,
+        "profile_is_minor": _profile_is_minor(target_user),
     })
 
 
@@ -426,9 +579,9 @@ def botox_operator(request, pk):
 
         if request.headers.get("X-Requested-With") == "XMLHttpRequest":
             return JsonResponse({"ok": True})
-        return redirect("accounts:profile")
+        return _post_submit_redirect(request)
 
-    return render(request, "forms_system/botox_operator.html", {
+    return render(request, "forms_system/botox/operator.html", {
         "botox": botox,
     })
 
@@ -440,6 +593,7 @@ def botox_operator(request, pk):
 @staff_required
 def record_card_new(request, user_id):
     target_user = get_object_or_404(User, pk=user_id)
+    is_minor    = _profile_is_minor(target_user)
     previous    = (
         RecordCard.objects
         .filter(user=target_user)
@@ -455,6 +609,12 @@ def record_card_new(request, user_id):
             return JsonResponse(
                 {"ok": False, "error": "Re-consent signature is required."}, status=400
             )
+
+        err = _validate_guardian(data, is_minor)
+        if err:
+            return err
+
+        g = _extract_guardian(data) if is_minor else {}
 
         def decimal_or_none(val):
             try:
@@ -513,15 +673,17 @@ def record_card_new(request, user_id):
 
             operator_comments=data.get("operator_comments", ""),
             created_by=request.user,
+            **g,
         )
 
         if request.headers.get("X-Requested-With") == "XMLHttpRequest":
             return JsonResponse({"ok": True})
-        return redirect("accounts:profile")
+        return _post_submit_redirect(request)
 
-    return render(request, "forms_system/record_card_new.html", {
+    return render(request, "forms_system/record_card/new.html", {
         "target_user": target_user,
         "previous": previous,
+        "is_minor": is_minor,
     })
 
 
@@ -535,9 +697,9 @@ def record_card_view(request, pk):
 
     # Clients can only see their own; staff can see all
     if not request.user.is_superuser and card.user != request.user:
-        return redirect("accounts:profile")
+        return _post_submit_redirect(request)
 
-    return render(request, "forms_system/record_card_view.html", {"card": card})
+    return render(request, "forms_system/record_card/view.html", {"card": card})
 
 
 # ---------------------------------------------------------------------------
@@ -551,17 +713,25 @@ def prp_client(request):
     existing    = _get_or_none(PRPConsentForm, user=target_user)
 
     if request.method == "POST":
-        data = request.POST
-        sig  = data.get("signature", "")
+        data     = request.POST
+        sig      = data.get("signature", "")
+        is_minor = _dob_is_minor(data.get("date_of_birth", ""))
 
         if not sig:
             return JsonResponse({"ok": False, "error": "Signature is required."}, status=400)
+
+        err = _validate_guardian(data, is_minor)
+        if err:
+            return err
+
+        g = _extract_guardian(data) if is_minor else {}
 
         prp = PRPConsentForm.objects.create(
             user=target_user,
             completed_by_practitioner=on_behalf,
             practitioner=request.user if on_behalf else None,
             signature=sig,
+            **g,
 
             full_name=data.get("full_name", ""),
             date_of_birth=data.get("date_of_birth"),
@@ -608,12 +778,13 @@ def prp_client(request):
 
         if request.headers.get("X-Requested-With") == "XMLHttpRequest":
             return JsonResponse({"ok": True, "prp_id": prp.pk})
-        return redirect("accounts:profile")
+        return _post_submit_redirect(request)
 
-    return render(request, "forms_system/prp_client.html", {
+    return render(request, "forms_system/prp/client.html", {
         "existing": existing,
         "target_user": target_user,
         "on_behalf": on_behalf,
+        "profile_is_minor": _profile_is_minor(target_user),
     })
 
 
@@ -649,9 +820,9 @@ def prp_operator(request, pk):
 
         if request.headers.get("X-Requested-With") == "XMLHttpRequest":
             return JsonResponse({"ok": True})
-        return redirect("accounts:profile")
+        return _post_submit_redirect(request)
 
-    return render(request, "forms_system/prp_operator.html", {"prp": prp})
+    return render(request, "forms_system/prp/operator.html", {"prp": prp})
 
 
 # ---------------------------------------------------------------------------
@@ -662,6 +833,7 @@ def prp_operator(request, pk):
 def laser_reconsent(request):
     target_user = _get_target_user(request)
     on_behalf   = _is_practitioner_mode(request)
+    is_minor    = _profile_is_minor(target_user)
 
     if request.method == "POST":
         data = request.POST
@@ -669,6 +841,12 @@ def laser_reconsent(request):
 
         if not sig:
             return JsonResponse({"ok": False, "error": "Signature is required."}, status=400)
+
+        err = _validate_guardian(data, is_minor)
+        if err:
+            return err
+
+        g = _extract_guardian(data) if is_minor else {}
 
         LaserReConsent.objects.create(
             user=target_user,
@@ -683,15 +861,17 @@ def laser_reconsent(request):
             client_signature=sig,
             client_signed_at=timezone.now(),
             treatment_notes=data.get("treatment_notes", ""),
+            **g,
         )
 
         if request.headers.get("X-Requested-With") == "XMLHttpRequest":
             return JsonResponse({"ok": True})
-        return redirect("accounts:profile")
+        return _post_submit_redirect(request)
 
-    return render(request, "forms_system/laser_reconsent.html", {
+    return render(request, "forms_system/laser/reconsent.html", {
         "target_user": target_user,
         "on_behalf": on_behalf,
+        "is_minor": is_minor,
     })
 
 
@@ -701,29 +881,29 @@ def laser_reconsent(request):
 
 @login_required
 def botox_pre_treatment(request):
-    return render(request, "forms_system/botox_pre_treatment.html")
+    return render(request, "forms_system/botox/pre_treatment.html")
 
 
 @login_required
 def botox_post_treatment(request):
-    return render(request, "forms_system/botox_post_treatment.html")
+    return render(request, "forms_system/botox/post_treatment.html")
 
 
 @login_required
 def prp_pre_treatment(request):
-    return render(request, "forms_system/prp_pre_treatment.html")
+    return render(request, "forms_system/prp/pre_treatment.html")
 
 
 @login_required
 def prp_post_treatment(request):
-    return render(request, "forms_system/prp_post_treatment.html")
+    return render(request, "forms_system/prp/post_treatment.html")
 
 
 @login_required
 def laser_pre_treatment(request):
-    return render(request, "forms_system/laser_pre_treatment.html")
+    return render(request, "forms_system/laser/pre_treatment.html")
 
 
 @login_required
 def laser_post_treatment(request):
-    return render(request, "forms_system/laser_post_treatment.html")
+    return render(request, "forms_system/laser/post_treatment.html")

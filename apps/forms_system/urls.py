@@ -5,7 +5,9 @@ app_name = "forms_system"
 
 urlpatterns = [
     # Client-facing consent forms
-    path("consultation/",              views.consultation_form,    name="consultation"),
+    path("consultation/",                          views.consultation_form,   name="consultation"),
+    path("consultation/<int:user_id>/view/",       views.consultation_view,   name="consultation_view"),
+    path("consultation/<int:user_id>/new/",        views.consultation_new,    name="consultation_new"),
     path("photography/",               views.photography_consent,  name="photography"),
     path("botox/",                     views.botox_client,         name="botox_client"),
     path("prp/",                       views.prp_client,           name="prp_client"),

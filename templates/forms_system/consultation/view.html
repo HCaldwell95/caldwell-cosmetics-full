@@ -1,0 +1,253 @@
+{% extends "base/base.html" %}
+{% load static %}
+{% block title %}Consultation Form — {{ target_user.full_name }} | Caldwell Cosmetics{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/pages/forms_system.css' %}">{% endblock %}
+
+{% block content %}
+<div class="cform-page">
+
+<div class="cform-header">
+    <span class="cform-header__eyebrow">Operator View</span>
+    <h1 class="cform-header__title">Consultation Form — {{ target_user.full_name }}</h1>
+    {% if all_forms %}
+    <p class="cform-header__sub">{{ all_forms|length }} form{{ all_forms|length|pluralize }} on record. Showing most recent.</p>
+    {% else %}
+    <p class="cform-header__sub">No consultation form has been completed for this client yet.</p>
+    {% endif %}
+</div>
+
+<!-- Action bar -->
+<div style="display:flex; gap:1rem; align-items:center; margin-bottom:1.75rem; flex-wrap:wrap;">
+    <a href="{% url 'forms_system:consultation_new' target_user.pk %}" class="btn btn--primary">+ New Consultation Form</a>
+    <a href="{% url 'dashboard:dashboard' %}" class="btn btn--ghost">← Back to Dashboard</a>
+</div>
+
+{% if not form %}
+<div class="cform-section">
+    <p class="cform-hint">No forms have been submitted for this client. Use the button above to create the first one.</p>
+</div>
+{% else %}
+
+<!-- History strip (only shown when more than one form exists) -->
+{% if all_forms|length > 1 %}
+<div class="cform-section" style="padding:1rem 1.25rem;">
+    <h2 class="cform-section__title">Form History</h2>
+    <div style="display:flex; flex-wrap:wrap; gap:0.5rem;">
+        {% for f in all_forms %}
+        <span class="cform-history-pill {% if forloop.first %}cform-history-pill--active{% endif %}">
+            {{ f.completed_at|date:"j M Y" }}{% if f.completed_by_practitioner %} <em>(practitioner)</em>{% endif %}
+        </span>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- ===== SECTION 1: CLIENT INFORMATION ===== -->
+<div class="cform-section cform-section--readonly">
+    <h2 class="cform-section__title">Client Information</h2>
+    <dl class="cform-summary-dl">
+        <dt>Full Name</dt><dd>{{ form.full_name|default:"—" }}</dd>
+        <dt>Date of Birth</dt><dd>{{ form.date_of_birth|date:"j F Y"|default:"—" }}</dd>
+        <dt>Phone</dt><dd>{{ form.phone_number|default:"—" }}</dd>
+        <dt>Email</dt><dd>{{ form.email|default:"—" }}</dd>
+        <dt>Address</dt><dd>{{ form.address|linebreaksbr|default:"—" }}</dd>
+        <dt>Emergency Contact</dt><dd>{{ form.emergency_contact_name|default:"—" }}{% if form.emergency_contact_phone %} · {{ form.emergency_contact_phone }}{% endif %}</dd>
+        <dt>Ethnic Origin</dt><dd>{{ form.ethnic_origin|default:"—" }}</dd>
+        <dt>Occupation</dt><dd>{{ form.occupation|default:"—" }}</dd>
+    </dl>
+</div>
+
+<!-- ===== SECTION 2: TREATMENT ===== -->
+<div class="cform-section">
+    <h2 class="cform-section__title">Treatment Requested</h2>
+    <dl class="cform-summary-dl">
+        <dt>Treatment</dt><dd>{{ form.get_treatment_requested_display|default:"—" }}</dd>
+        {% if form.treatment_other %}<dt>Other</dt><dd>{{ form.treatment_other }}</dd>{% endif %}
+        {% if form.body_areas %}<dt>Body Areas</dt><dd>{{ form.body_areas }}</dd>{% endif %}
+    </dl>
+</div>
+
+<!-- ===== SECTION 3: MEDICAL HISTORY ===== -->
+<div class="cform-section">
+    <h2 class="cform-section__title">Lifestyle &amp; Medical History</h2>
+    <div class="cform-check-grid cform-check-grid--2col" style="pointer-events:none;">
+        <label class="cform-check {% if not form.pregnant %}cform-check--unchecked{% endif %}"><input type="checkbox" {% if form.pregnant %}checked{% endif %} disabled><span>Pregnant (or planning pregnancy)</span></label>
+        <label class="cform-check {% if not form.pcos_hormonal %}cform-check--unchecked{% endif %}"><input type="checkbox" {% if form.pcos_hormonal %}checked{% endif %} disabled><span>PCOS / Hormonal Imbalance</span></label>
+        <label class="cform-check {% if not form.sun_tanned %}cform-check--unchecked{% endif %}"><input type="checkbox" {% if form.sun_tanned %}checked{% endif %} disabled><span>Sun Tanned / Using Sun Beds or Fake Tan</span></label>
+        <label class="cform-check {% if not form.thyroid_condition %}cform-check--unchecked{% endif %}"><input type="checkbox" {% if form.thyroid_condition %}checked{% endif %} disabled><span>Thyroid Condition</span></label>
+        <label class="cform-check {% if not form.skin_pigmentation %}cform-check--unchecked{% endif %}"><input type="checkbox" {% if form.skin_pigmentation %}checked{% endif %} disabled><span>Skin Pigmentation Disorders</span></label>
+        <label class="cform-check {% if not form.regular_smoker %}cform-check--unchecked{% endif %}"><input type="checkbox" {% if form.regular_smoker %}checked{% endif %} disabled><span>Regular Smoker</span></label>
+        <label class="cform-check {% if not form.history_of_cancer %}cform-check--unchecked{% endif %}"><input type="checkbox" {% if form.history_of_cancer %}checked{% endif %} disabled><span>History of Cancer</span></label>
+        <label class="cform-check {% if not form.psoriasis_eczema %}cform-check--unchecked{% endif %}"><input type="checkbox" {% if form.psoriasis_eczema %}checked{% endif %} disabled><span>Psoriasis / Eczema</span></label>
+        <label class="cform-check {% if not form.diabetes %}cform-check--unchecked{% endif %}"><input type="checkbox" {% if form.diabetes %}checked{% endif %} disabled><span>Diabetes</span></label>
+        <label class="cform-check {% if not form.depression_anxiety %}cform-check--unchecked{% endif %}"><input type="checkbox" {% if form.depression_anxiety %}checked{% endif %} disabled><span>Depression / Anxiety</span></label>
+        <label class="cform-check {% if not form.epilepsy %}cform-check--unchecked{% endif %}"><input type="checkbox" {% if form.epilepsy %}checked{% endif %} disabled><span>Epilepsy</span></label>
+        <label class="cform-check {% if not form.herpes %}cform-check--unchecked{% endif %}"><input type="checkbox" {% if form.herpes %}checked{% endif %} disabled><span>Herpes (shingles / cold sores)</span></label>
+        <label class="cform-check {% if not form.lymphatic_immune %}cform-check--unchecked{% endif %}"><input type="checkbox" {% if form.lymphatic_immune %}checked{% endif %} disabled><span>Lymphatic / Immune System Disorders</span></label>
+        <label class="cform-check {% if not form.high_blood_pressure %}cform-check--unchecked{% endif %}"><input type="checkbox" {% if form.high_blood_pressure %}checked{% endif %} disabled><span>High Blood Pressure</span></label>
+        <label class="cform-check {% if not form.keloid_scarring %}cform-check--unchecked{% endif %}"><input type="checkbox" {% if form.keloid_scarring %}checked{% endif %} disabled><span>History of Keloid Formation / Scarring</span></label>
+        <label class="cform-check {% if not form.photosensitive %}cform-check--unchecked{% endif %}"><input type="checkbox" {% if form.photosensitive %}checked{% endif %} disabled><span>Photosensitive Conditions</span></label>
+        <label class="cform-check {% if not form.lupus %}cform-check--unchecked{% endif %}"><input type="checkbox" {% if form.lupus %}checked{% endif %} disabled><span>Lupus</span></label>
+        <label class="cform-check {% if not form.allergies %}cform-check--unchecked{% endif %}"><input type="checkbox" {% if form.allergies %}checked{% endif %} disabled><span>Allergies</span></label>
+        <label class="cform-check {% if not form.communicable_diseases %}cform-check--unchecked{% endif %}"><input type="checkbox" {% if form.communicable_diseases %}checked{% endif %} disabled><span>Communicable Diseases (hepatitis / HIV)</span></label>
+    </div>
+    {% if form.alcohol_units_per_week or form.medical_comments %}
+    <dl class="cform-summary-dl" style="margin-top:1rem;">
+        {% if form.alcohol_units_per_week %}<dt>Units/week</dt><dd>{{ form.alcohol_units_per_week }}</dd>{% endif %}
+        {% if form.medical_comments %}<dt>Comments</dt><dd>{{ form.medical_comments }}</dd>{% endif %}
+    </dl>
+    {% endif %}
+</div>
+
+<!-- ===== SECTION 4: MEDICATIONS ===== -->
+<div class="cform-section">
+    <h2 class="cform-section__title">Medications &amp; Supplements</h2>
+    {% if form.current_medications %}
+    <dl class="cform-summary-dl"><dt>Current medications</dt><dd>{{ form.current_medications }}</dd></dl>
+    {% endif %}
+    <div class="cform-check-grid" style="margin-top:0.75rem; pointer-events:none;">
+        <label class="cform-check {% if not form.st_johns_wart %}cform-check--unchecked{% endif %}"><input type="checkbox" {% if form.st_johns_wart %}checked{% endif %} disabled><span>St John's Wort</span></label>
+        <label class="cform-check {% if not form.amiodarone %}cform-check--unchecked{% endif %}"><input type="checkbox" {% if form.amiodarone %}checked{% endif %} disabled><span>Amiodarone</span></label>
+        <label class="cform-check {% if not form.minocycline %}cform-check--unchecked{% endif %}"><input type="checkbox" {% if form.minocycline %}checked{% endif %} disabled><span>Minocycline</span></label>
+        <label class="cform-check {% if not form.anticoagulants %}cform-check--unchecked{% endif %}"><input type="checkbox" {% if form.anticoagulants %}checked{% endif %} disabled><span>Anticoagulants</span></label>
+        <label class="cform-check {% if not form.gold_medications %}cform-check--unchecked{% endif %}"><input type="checkbox" {% if form.gold_medications %}checked{% endif %} disabled><span>Gold Medications</span></label>
+        <label class="cform-check {% if not form.retinoids %}cform-check--unchecked{% endif %}"><input type="checkbox" {% if form.retinoids %}checked{% endif %} disabled><span>Retinoids</span></label>
+        <label class="cform-check {% if not form.steroids %}cform-check--unchecked{% endif %}"><input type="checkbox" {% if form.steroids %}checked{% endif %} disabled><span>Steroids</span></label>
+    </div>
+    {% if form.medication_comments or form.recent_major_treatment %}
+    <dl class="cform-summary-dl" style="margin-top:1rem;">
+        {% if form.medication_comments %}<dt>Comments</dt><dd>{{ form.medication_comments }}</dd>{% endif %}
+        {% if form.recent_major_treatment %}<dt>Recent major treatment</dt><dd>{{ form.recent_major_treatment }}</dd>{% endif %}
+    </dl>
+    {% endif %}
+</div>
+
+<!-- ===== SECTION 5: TREATMENT AREA ===== -->
+<div class="cform-section">
+    <h2 class="cform-section__title">Treatment Area</h2>
+    <div class="cform-check-grid" style="pointer-events:none;">
+        <label class="cform-check {% if not form.area_has_moles %}cform-check--unchecked{% endif %}"><input type="checkbox" {% if form.area_has_moles %}checked{% endif %} disabled><span>Moles</span></label>
+        <label class="cform-check {% if not form.area_has_birthmarks %}cform-check--unchecked{% endif %}"><input type="checkbox" {% if form.area_has_birthmarks %}checked{% endif %} disabled><span>Birthmarks</span></label>
+        <label class="cform-check {% if not form.area_has_tattoos %}cform-check--unchecked{% endif %}"><input type="checkbox" {% if form.area_has_tattoos %}checked{% endif %} disabled><span>Tattoos</span></label>
+        <label class="cform-check {% if not form.area_has_permanent_makeup %}cform-check--unchecked{% endif %}"><input type="checkbox" {% if form.area_has_permanent_makeup %}checked{% endif %} disabled><span>Permanent Makeup</span></label>
+        <label class="cform-check {% if not form.area_has_chemical_peel %}cform-check--unchecked{% endif %}"><input type="checkbox" {% if form.area_has_chemical_peel %}checked{% endif %} disabled><span>Chemical Peel</span></label>
+        <label class="cform-check {% if not form.area_has_botox %}cform-check--unchecked{% endif %}"><input type="checkbox" {% if form.area_has_botox %}checked{% endif %} disabled><span>Botox</span></label>
+        <label class="cform-check {% if not form.area_has_fillers %}cform-check--unchecked{% endif %}"><input type="checkbox" {% if form.area_has_fillers %}checked{% endif %} disabled><span>Injectable Fillers</span></label>
+        <label class="cform-check {% if not form.area_has_tanning %}cform-check--unchecked{% endif %}"><input type="checkbox" {% if form.area_has_tanning %}checked{% endif %} disabled><span>Tanning Injections or Enhancers</span></label>
+    </div>
+    {% if form.skin_disorder or form.previous_laser_ipl %}
+    <dl class="cform-summary-dl" style="margin-top:1rem;">
+        {% if form.skin_disorder %}<dt>Skin disorder</dt><dd>{{ form.skin_disorder }}</dd>{% endif %}
+        {% if form.previous_laser_ipl %}<dt>Previous laser / IPL</dt><dd>{{ form.previous_laser_ipl }}</dd>{% endif %}
+    </dl>
+    {% endif %}
+</div>
+
+<!-- ===== SECTION 6: SKIN ===== -->
+<div class="cform-section">
+    <h2 class="cform-section__title">Your Skin</h2>
+    <dl class="cform-summary-dl">
+        {% if form.skin_products %}<dt>Products used</dt><dd>{{ form.skin_products }}</dd>{% endif %}
+        {% if form.skin_type %}<dt>Skin type</dt><dd>{{ form.get_skin_type_display }}</dd>{% endif %}
+        <dt>Current tan</dt><dd>{% if form.current_tan %}Yes{% else %}No{% endif %}</dd>
+        {% if form.last_uv_exposure %}<dt>Last UV exposure</dt><dd>{{ form.last_uv_exposure }}</dd>{% endif %}
+        <dt>Tanning injections</dt><dd>{% if form.tanning_injections %}Yes{% else %}No{% endif %}</dd>
+        {% if form.referral_source %}<dt>Referral source</dt><dd>{{ form.referral_source }}</dd>{% endif %}
+        {% if form.treatment_goals %}<dt>Treatment goals</dt><dd>{{ form.treatment_goals }}</dd>{% endif %}
+    </dl>
+</div>
+
+<!-- ===== SECTION 7: CONSENT ===== -->
+<div class="cform-section">
+    <h2 class="cform-section__title">Informed Consent</h2>
+    <div class="cform-check-grid cform-check-grid--1col" style="pointer-events:none;">
+        <label class="cform-check {% if not form.consent_info_correct %}cform-check--unchecked{% endif %}"><input type="checkbox" {% if form.consent_info_correct %}checked{% endif %} disabled><span>Information correct</span></label>
+        <label class="cform-check {% if not form.consent_results_vary %}cform-check--unchecked{% endif %}"><input type="checkbox" {% if form.consent_results_vary %}checked{% endif %} disabled><span>Results vary</span></label>
+        <label class="cform-check {% if not form.consent_multiple_treatments %}cform-check--unchecked{% endif %}"><input type="checkbox" {% if form.consent_multiple_treatments %}checked{% endif %} disabled><span>Multiple treatments required</span></label>
+        <label class="cform-check {% if not form.consent_no_guarantee %}cform-check--unchecked{% endif %}"><input type="checkbox" {% if form.consent_no_guarantee %}checked{% endif %} disabled><span>No guarantee of permanent results</span></label>
+        <label class="cform-check {% if not form.consent_sun_exposure %}cform-check--unchecked{% endif %}"><input type="checkbox" {% if form.consent_sun_exposure %}checked{% endif %} disabled><span>Avoid sun exposure</span></label>
+        <label class="cform-check {% if not form.consent_side_effects %}cform-check--unchecked{% endif %}"><input type="checkbox" {% if form.consent_side_effects %}checked{% endif %} disabled><span>Possible side effects understood</span></label>
+        <label class="cform-check {% if not form.consent_pigmentation %}cform-check--unchecked{% endif %}"><input type="checkbox" {% if form.consent_pigmentation %}checked{% endif %} disabled><span>Pigmentation response understood</span></label>
+        <label class="cform-check {% if not form.consent_goggles %}cform-check--unchecked{% endif %}"><input type="checkbox" {% if form.consent_goggles %}checked{% endif %} disabled><span>Protective goggles required</span></label>
+        <label class="cform-check {% if not form.consent_contact_details %}cform-check--unchecked{% endif %}"><input type="checkbox" {% if form.consent_contact_details %}checked{% endif %} disabled><span>Contact details consent</span></label>
+        <label class="cform-check {% if not form.consent_certified %}cform-check--unchecked{% endif %}"><input type="checkbox" {% if form.consent_certified %}checked{% endif %} disabled><span>Certified &amp; agreed</span></label>
+    </div>
+</div>
+
+<!-- ===== SECTION 8: PRE-TREATMENT (operator) ===== -->
+{% if form.pretx_how_works or form.pretx_pre_post_care or form.pretx_light_products or form.pretx_num_treatments or form.pretx_clinical_outcome or form.pretx_sensation or form.pretx_side_effects or form.pretx_photo_taken or form.pretx_comments or form.pretx_cost %}
+<div class="cform-section cform-section--operator">
+    <h2 class="cform-section__title">Pre-Treatment Checklist <span class="cform-operator-badge">Operator</span></h2>
+    <div class="cform-check-grid cform-check-grid--2col" style="pointer-events:none;">
+        <label class="cform-check {% if not form.pretx_how_works %}cform-check--unchecked{% endif %}"><input type="checkbox" {% if form.pretx_how_works %}checked{% endif %} disabled><span>How treatment works</span></label>
+        <label class="cform-check {% if not form.pretx_pre_post_care %}cform-check--unchecked{% endif %}"><input type="checkbox" {% if form.pretx_pre_post_care %}checked{% endif %} disabled><span>Pre / Post treatment care</span></label>
+        <label class="cform-check {% if not form.pretx_light_products %}cform-check--unchecked{% endif %}"><input type="checkbox" {% if form.pretx_light_products %}checked{% endif %} disabled><span>Light Soothe / Light Protect recommended</span></label>
+        <label class="cform-check {% if not form.pretx_num_treatments %}cform-check--unchecked{% endif %}"><input type="checkbox" {% if form.pretx_num_treatments %}checked{% endif %} disabled><span>Typical number of treatments / interval</span></label>
+        <label class="cform-check {% if not form.pretx_clinical_outcome %}cform-check--unchecked{% endif %}"><input type="checkbox" {% if form.pretx_clinical_outcome %}checked{% endif %} disabled><span>Likely clinical outcome</span></label>
+        <label class="cform-check {% if not form.pretx_sensation %}cform-check--unchecked{% endif %}"><input type="checkbox" {% if form.pretx_sensation %}checked{% endif %} disabled><span>Sensation during treatment</span></label>
+        <label class="cform-check {% if not form.pretx_side_effects %}cform-check--unchecked{% endif %}"><input type="checkbox" {% if form.pretx_side_effects %}checked{% endif %} disabled><span>Possible side effects</span></label>
+        <label class="cform-check {% if not form.pretx_photo_taken %}cform-check--unchecked{% endif %}"><input type="checkbox" {% if form.pretx_photo_taken %}checked{% endif %} disabled><span>Photograph taken</span></label>
+    </div>
+    {% if form.pretx_cost or form.pretx_comments %}
+    <dl class="cform-summary-dl" style="margin-top:1rem;">
+        {% if form.pretx_cost %}<dt>Cost per treatment</dt><dd>{{ form.pretx_cost }}</dd>{% endif %}
+        {% if form.pretx_comments %}<dt>Comments</dt><dd>{{ form.pretx_comments }}</dd>{% endif %}
+    </dl>
+    {% endif %}
+</div>
+{% endif %}
+
+<!-- ===== SECTION 9: TREATMENT ASSESSMENT (operator) ===== -->
+{% if form.hair_colour or form.vascular_type or form.pigmentation_type or form.acne_type or form.skin_assessment_type or form.tattoo_colour or form.fractional_indication %}
+<div class="cform-section cform-section--operator">
+    <h2 class="cform-section__title">Treatment Assessment <span class="cform-operator-badge">Operator</span></h2>
+    <dl class="cform-summary-dl">
+        {% if form.hair_colour %}<dt>Hair colour</dt><dd>{{ form.get_hair_colour_display }}</dd>{% endif %}
+        {% if form.hair_texture %}<dt>Hair texture</dt><dd>{{ form.get_hair_texture_display }}</dd>{% endif %}
+        {% if form.hair_handpiece %}<dt>Handpiece</dt><dd>{{ form.hair_handpiece }}</dd>{% endif %}
+        {% if form.hair_previous_treatments %}<dt>Hair prev. treatments</dt><dd>{{ form.hair_previous_treatments }}</dd>{% endif %}
+        {% if form.vascular_type %}<dt>Vascular type</dt><dd>{{ form.get_vascular_type_display }}</dd>{% endif %}
+        {% if form.vascular_previous_treatments %}<dt>Vascular prev. treatments</dt><dd>{{ form.vascular_previous_treatments }}</dd>{% endif %}
+        {% if form.pigmentation_type %}<dt>Pigmentation type</dt><dd>{{ form.get_pigmentation_type_display }}</dd>{% endif %}
+        {% if form.pigmentation_previous_treatments %}<dt>Pigmentation prev. treatments</dt><dd>{{ form.pigmentation_previous_treatments }}</dd>{% endif %}
+        {% if form.acne_type %}<dt>Acne type</dt><dd>{{ form.get_acne_type_display }}</dd>{% endif %}
+        {% if form.acne_previous_treatments %}<dt>Acne prev. treatments</dt><dd>{{ form.acne_previous_treatments }}</dd>{% endif %}
+        {% if form.skin_assessment_type %}<dt>Skin assessment</dt><dd>{{ form.skin_assessment_type }}</dd>{% endif %}
+        {% if form.skin_handpiece %}<dt>Skin handpiece</dt><dd>{{ form.skin_handpiece }}</dd>{% endif %}
+        {% if form.skin_previous_treatments %}<dt>Skin prev. treatments</dt><dd>{{ form.skin_previous_treatments }}</dd>{% endif %}
+        {% if form.tattoo_colour %}<dt>Tattoo colours</dt><dd>{{ form.tattoo_colour }}</dd>{% endif %}
+        {% if form.tattoo_previous_treatments %}<dt>Tattoo prev. treatments</dt><dd>{{ form.tattoo_previous_treatments }}</dd>{% endif %}
+        {% if form.fractional_indication %}<dt>Fractional indication</dt><dd>{{ form.fractional_indication }}</dd>{% endif %}
+        {% if form.fractional_comments %}<dt>Fractional comments</dt><dd>{{ form.fractional_comments }}</dd>{% endif %}
+    </dl>
+</div>
+{% endif %}
+
+<!-- ===== SIGNATURE ===== -->
+<div class="cform-section">
+    <h2 class="cform-section__title">Signature</h2>
+    {% if form.signature %}
+    <img class="cform-sig-preview" src="{{ form.signature }}" alt="Client signature">
+    {% else %}
+    <p class="cform-readonly-value">No signature captured.</p>
+    {% endif %}
+    <p class="cform-sig-name">
+        Submitted {{ form.completed_at|date:"j F Y \a\t H:i" }}
+        {% if form.completed_by_practitioner %} — completed by practitioner{% if form.practitioner %} ({{ form.practitioner.full_name }}){% endif %}{% endif %}
+    </p>
+    {% if form.guardian_signature %}
+    <p class="cform-label" style="margin-top:1.25rem;">Guardian / Parent Signature</p>
+    <img class="cform-sig-preview" src="{{ form.guardian_signature }}" alt="Guardian signature">
+    <dl class="cform-summary-dl" style="margin-top:0.75rem;">
+        <dt>Name</dt><dd>{{ form.guardian_name }}</dd>
+        <dt>Relationship</dt><dd>{{ form.guardian_relationship|default:"—" }}</dd>
+        <dt>Phone</dt><dd>{{ form.guardian_phone }}</dd>
+        {% if form.guardian_email %}<dt>Email</dt><dd>{{ form.guardian_email }}</dd>{% endif %}
+    </dl>
+    {% endif %}
+</div>
+
+{% endif %}{# end if form #}
+
+</div>
+{% endblock %}
