@@ -903,6 +903,7 @@
 .tx-strip__viewport {
     flex: 1;
     overflow: hidden;
+    padding: 3px 0;
 }
 
 .tx-strip__track {
