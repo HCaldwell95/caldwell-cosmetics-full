@@ -244,11 +244,12 @@ function safeColour(c) {
                 ? `Completed ${data.consultation.date}${data.consultation.by_practitioner ? ' · by practitioner' : ''}`
                 : 'Action required';
 
-            // Photography
+            // Photography — one-off form: no link once completed
             const photoState = data.photography.completed ? 'complete' : 'incomplete';
             const photoSub   = data.photography.completed
                 ? `Completed ${data.photography.date}${data.photography.by_practitioner ? ' · by practitioner' : ''}`
                 : 'Action required';
+            const photoUrl   = data.photography.completed ? null : '/forms/photography/';
 
             // Botox
             const botoxState = data.botox.fully_complete ? 'complete'
@@ -283,7 +284,7 @@ function safeColour(c) {
             grid.innerHTML = [
                 group('General', [
                     formRow('Consultation Form',   consultState, consultSub, '/forms/consultation/'),
-                    formRow('Photography Consent', photoState,   photoSub,   '/forms/photography/'),
+                    formRow('Photography Consent', photoState,   photoSub,   photoUrl),
                 ]),
                 group('Injectables', [
                     formRow('Botox Consent', botoxState, botoxSub, '/forms/botox/'),
