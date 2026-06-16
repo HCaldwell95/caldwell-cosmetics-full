@@ -97,6 +97,10 @@ CONTENT_SECURITY_POLICY = {
             "'self'",
             "https://ka-f.fontawesome.com",
         ],
+        "media-src": [
+            "'self'",
+            "https://res.cloudinary.com",
+        ],
     }
 }
 
