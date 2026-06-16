@@ -84,10 +84,10 @@ CONTENT_SECURITY_POLICY = {
         "img-src": [
             "'self'",
             "data:",                    # base64 signature/canvas images
-            "https://res.cloudinary.com",
-            "https://cdn.lightwidget.com",
-            "https://www.instagram.com",
-            "https://scontent.cdninstagram.com",
+            "res.cloudinary.com",       # no scheme prefix = allows both http:// and https://
+            "cdn.lightwidget.com",
+            "www.instagram.com",
+            "scontent.cdninstagram.com",
         ],
         "frame-src": [
             "'self'",
