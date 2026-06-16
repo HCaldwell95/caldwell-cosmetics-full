@@ -1,6 +1,6 @@
 from .base import *
 
-DEBUG = os.environ.get('DEBUG', 'False') == 'True'
+DEBUG = False
 
 ALLOWED_HOSTS = [
     "caldwellcosmetics.co.uk",
@@ -43,4 +43,60 @@ EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 # --------------------------------------------------
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+# --------------------------------------------------
+# CONTENT SECURITY POLICY (django-csp)
+# --------------------------------------------------
+
+MIDDLEWARE = [
+    "django.middleware.security.SecurityMiddleware",
+    'whitenoise.middleware.WhiteNoiseMiddleware',
+    "csp.middleware.CSPMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "axes.middleware.AxesMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
+]
+
+CONTENT_SECURITY_POLICY = {
+    "DIRECTIVES": {
+        "default-src": ["'self'"],
+        "script-src": [
+            "'self'",
+            "'unsafe-inline'",          # inline <script> blocks throughout templates
+            "https://kit.fontawesome.com",
+            "https://cdn.lightwidget.com",
+            "https://fonts.googleapis.com",
+        ],
+        "style-src": [
+            "'self'",
+            "'unsafe-inline'",          # inline style= attributes throughout templates
+            "https://fonts.googleapis.com",
+        ],
+        "font-src": [
+            "'self'",
+            "https://fonts.gstatic.com",
+            "https://ka-f.fontawesome.com",
+        ],
+        "img-src": [
+            "'self'",
+            "data:",                    # base64 signature/canvas images
+            "https://res.cloudinary.com",
+            "https://cdn.lightwidget.com",
+            "https://www.instagram.com",
+            "https://scontent.cdninstagram.com",
+        ],
+        "frame-src": [
+            "'self'",
+            "https://cdn.lightwidget.com",
+        ],
+        "connect-src": [
+            "'self'",
+            "https://ka-f.fontawesome.com",
+        ],
+    }
+}
 

@@ -6,7 +6,7 @@ from django.views.generic import TemplateView
 from apps.core.sitemaps import sitemaps
 
 urlpatterns = [
-    path("admin/", admin.site.urls),
+    path("cc-mgmt-9f3k/", admin.site.urls),
 
     # SEO
     path("robots.txt", TemplateView.as_view(template_name="robots.txt", content_type="text/plain")),

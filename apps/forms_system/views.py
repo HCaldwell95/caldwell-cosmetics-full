@@ -1,3 +1,4 @@
+import base64
 import json
 from datetime import datetime
 
@@ -63,6 +64,17 @@ def _extract_guardian(data):
         "guardian_email":        data.get("guardian_email", ""),
         "guardian_signature":    data.get("guardian_signature", ""),
     }
+
+
+def _validate_sig(sig):
+    """Return True only if sig is a valid base64-encoded PNG data URL."""
+    if not sig or not sig.startswith("data:image/png;base64,"):
+        return False
+    try:
+        decoded = base64.b64decode(sig.split(",", 1)[1])
+        return decoded[:8] == b"\x89PNG\r\n\x1a\n"
+    except Exception:
+        return False
 
 
 def _validate_guardian(data, is_minor):
@@ -291,8 +303,8 @@ def consultation_form(request):
         sig      = data.get("signature", "")
         is_minor = _dob_is_minor(data.get("date_of_birth", ""))
 
-        if not sig:
-            return JsonResponse({"ok": False, "error": "Signature is required."}, status=400)
+        if not _validate_sig(sig):
+            return JsonResponse({"ok": False, "error": "A valid signature is required."}, status=400)
 
         err = _validate_guardian(data, is_minor)
         if err:
@@ -353,8 +365,8 @@ def consultation_new(request, user_id):
         sig      = data.get("signature", "")
         is_minor_dob = _dob_is_minor(data.get("date_of_birth", ""))
 
-        if not sig:
-            return JsonResponse({"ok": False, "error": "Signature is required."}, status=400)
+        if not _validate_sig(sig):
+            return JsonResponse({"ok": False, "error": "A valid signature is required."}, status=400)
 
         err = _validate_guardian(data, is_minor_dob)
         if err:
@@ -404,8 +416,8 @@ def photography_consent(request):
         sig      = data.get("signature", "")
         is_minor = _dob_is_minor(data.get("date_of_birth", ""))
 
-        if not sig:
-            return JsonResponse({"ok": False, "error": "Signature is required."}, status=400)
+        if not _validate_sig(sig):
+            return JsonResponse({"ok": False, "error": "A valid signature is required."}, status=400)
 
         err = _validate_guardian(data, is_minor)
         if err:
@@ -456,8 +468,8 @@ def botox_client(request):
         sig      = data.get("signature", "")
         is_minor = _dob_is_minor(data.get("date_of_birth", ""))
 
-        if not sig:
-            return JsonResponse({"ok": False, "error": "Signature is required."}, status=400)
+        if not _validate_sig(sig):
+            return JsonResponse({"ok": False, "error": "A valid signature is required."}, status=400)
 
         err = _validate_guardian(data, is_minor)
         if err:
@@ -548,9 +560,9 @@ def botox_operator(request, pk):
         data = request.POST
         sig  = data.get("operator_signature", "")
 
-        if not sig:
+        if not _validate_sig(sig):
             return JsonResponse(
-                {"ok": False, "error": "Operator signature is required."}, status=400
+                {"ok": False, "error": "A valid operator signature is required."}, status=400
             )
 
         botox.treatment_notes        = data.get("treatment_notes", "")
@@ -569,7 +581,18 @@ def botox_operator(request, pk):
         botox.units_masseter         = data.get("units_masseter", "")
         botox.units_neck_bands       = data.get("units_neck_bands", "")
         botox.units_total            = data.get("units_total", "")
-        botox.treatment_cost         = data.get("treatment_cost") or None
+        raw_cost = data.get("treatment_cost") or ""
+        if raw_cost:
+            try:
+                from decimal import Decimal, InvalidOperation
+                cost_val = Decimal(str(raw_cost))
+                if cost_val < 0 or cost_val > 10000:
+                    return JsonResponse({"ok": False, "error": "Invalid treatment cost."}, status=400)
+                botox.treatment_cost = cost_val
+            except (InvalidOperation, ValueError):
+                return JsonResponse({"ok": False, "error": "Invalid treatment cost."}, status=400)
+        else:
+            botox.treatment_cost = None
         botox.operator_notes         = data.get("operator_notes", "")
         botox.operator_signature   = sig
         botox.operator_signed      = True
@@ -717,8 +740,8 @@ def prp_client(request):
         sig      = data.get("signature", "")
         is_minor = _dob_is_minor(data.get("date_of_birth", ""))
 
-        if not sig:
-            return JsonResponse({"ok": False, "error": "Signature is required."}, status=400)
+        if not _validate_sig(sig):
+            return JsonResponse({"ok": False, "error": "A valid signature is required."}, status=400)
 
         err = _validate_guardian(data, is_minor)
         if err:
@@ -810,7 +833,18 @@ def prp_operator(request, pk):
         prp.application_method       = data.get("application_method", "")
         prp.treatment_areas_operator = data.get("treatment_areas_operator", "")
         prp.next_appointment         = data.get("next_appointment", "")
-        prp.treatment_cost           = data.get("treatment_cost") or None
+        raw_cost = data.get("treatment_cost") or ""
+        if raw_cost:
+            try:
+                from decimal import Decimal, InvalidOperation
+                cost_val = Decimal(str(raw_cost))
+                if cost_val < 0 or cost_val > 10000:
+                    return JsonResponse({"ok": False, "error": "Invalid treatment cost."}, status=400)
+                prp.treatment_cost = cost_val
+            except (InvalidOperation, ValueError):
+                return JsonResponse({"ok": False, "error": "Invalid treatment cost."}, status=400)
+        else:
+            prp.treatment_cost = None
         prp.operator_notes           = data.get("operator_notes", "")
         prp.operator_signature       = sig
         prp.operator_signed          = True
@@ -839,8 +873,8 @@ def laser_reconsent(request):
         data = request.POST
         sig  = data.get("client_signature", "")
 
-        if not sig:
-            return JsonResponse({"ok": False, "error": "Signature is required."}, status=400)
+        if not _validate_sig(sig):
+            return JsonResponse({"ok": False, "error": "A valid signature is required."}, status=400)
 
         err = _validate_guardian(data, is_minor)
         if err:

@@ -54,9 +54,9 @@ LOCAL_APPS = [
 ]
 
 THIRD_PARTY_APPS = [
-    # e.g. "crispy_forms",
     'cloudinary_storage',
     'cloudinary',
+    'axes',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -68,11 +68,11 @@ INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     'whitenoise.middleware.WhiteNoiseMiddleware',
-    
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "axes.middleware.AxesMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
@@ -193,5 +193,14 @@ LOGIN_REDIRECT_URL  = "/accounts/profile/"
 LOGOUT_REDIRECT_URL = "/accounts/login/"
 
 AUTHENTICATION_BACKENDS = [
+    "axes.backends.AxesStandaloneBackend",
     "django.contrib.auth.backends.ModelBackend",
 ]
+
+# --------------------------------------------------
+# AXES (brute-force protection)
+# --------------------------------------------------
+AXES_FAILURE_LIMIT = 5           # lock after 5 failed attempts
+AXES_COOLOFF_TIME = 1            # lock lasts 1 hour
+AXES_RESET_ON_SUCCESS = True     # clear failure count on successful login
+AXES_LOCKOUT_PARAMETERS = ["ip_address", "username"]  # lock by IP + username combo
