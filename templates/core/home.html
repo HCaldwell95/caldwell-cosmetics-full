@@ -155,7 +155,7 @@
 
     <!-- LightWidget WIDGET -->
     <script defer src="https://cdn.lightwidget.com/widgets/lightwidget.js"></script>
-    <iframe src="https://cdn.lightwidget.com/widgets/cb00fd4d70bc55e4b07345cef7824451.html" scrolling="no" allowtransparency="true" loading="lazy" class="lightwidget-widget" style="width:100%;border:0;overflow:hidden;"></iframe>
+    <iframe src="https://cdn.lightwidget.com/widgets/cb00fd4d70bc55e4b07345cef7824451.html" scrolling="no" allowtransparency="true" loading="lazy" title="Caldwell Cosmetics Instagram feed" class="lightwidget-widget" style="width:100%;border:0;overflow:hidden;"></iframe>
 </div>
 {% endblock %}
 
@@ -425,6 +425,19 @@
     /* -------------------------------------------------------
        SLIDE NAVIGATION
     ------------------------------------------------------- */
+    function syncViewportHeight() {
+        const viewport = track.parentElement;
+        if (window.innerWidth > 768) {
+            viewport.style.height = '';
+            return;
+        }
+        const slides = Array.from(track.children);
+        const current = slides[currentSlide];
+        if (current) {
+            viewport.style.height = current.offsetHeight + 'px';
+        }
+    }
+
     function goToSlide(index) {
         const count = TREATMENTS[currentTreatment].slides.length;
         currentSlide = Math.max(0, Math.min(index, count - 1));
@@ -434,6 +447,7 @@
         });
         prevBtn.disabled = currentSlide === 0;
         nextBtn.disabled = currentSlide === count - 1;
+        syncViewportHeight();
     }
 
     /* -------------------------------------------------------
@@ -512,6 +526,8 @@
             goToSlide(dx > 0 ? currentSlide + 1 : currentSlide - 1);
         }
     });
+
+    window.addEventListener('resize', syncViewportHeight);
 
     switchTreatment("consultations");
 

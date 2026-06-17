@@ -944,6 +944,18 @@ body {
     transform: rotate(180deg);
 }
 
+.dash-archive-toggle {
+    font-size: 0.75rem;
+    color: var(--color-text-light, #666);
+    padding: 0.25rem 0;
+    gap: 0.3rem;
+    width: auto;
+}
+
+.dash-archive-toggle:hover {
+    color: var(--color-secondary, #2c3e50);
+}
+
 /* Form status pills */
 
 .dash-form-pills {
@@ -993,7 +1005,13 @@ a.dash-form-pill:hover {
 }
 
 .dash-form-pill--incomplete {
-    background: #fafafa;
+    background: #fef2f2;
+    color: #991b1b;
+    border-left-color: #dc2626;
+}
+
+.dash-form-pill--archived {
+    background: #f3f4f6;
     color: #6b7280;
     border-left-color: #d1d5db;
 }

@@ -1,4 +1,4 @@
-  :root {
+  .mj-page {
     --blush: #f5e6e2;
     --blush-mid: #e8cfc9;
     --blush-deep: #c9a49c;
@@ -11,9 +11,7 @@
     --text-mid: #6b5a53;
     --text-light: #9c8880;
     --white: #ffffff;
-  }
 
-  body {
     font-family: 'Jost', sans-serif;
     background-color: var(--cream);
     color: var(--text-dark);

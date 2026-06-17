@@ -341,14 +341,20 @@ def consultation_form(request):
 
 @staff_required
 def consultation_view(request, user_id):
-    """Read-only view of the latest (or a specific) consultation form for a client."""
+    """Read-only view of a consultation form; ?form_pk=<pk> selects a specific historical entry."""
     target_user = get_object_or_404(User, pk=user_id)
     all_forms   = list(ConsultationForm.objects.filter(user=target_user).order_by("-completed_at"))
-    latest      = all_forms[0] if all_forms else None
+
+    form_pk = request.GET.get("form_pk")
+    if form_pk:
+        selected = next((f for f in all_forms if str(f.pk) == str(form_pk)), None)
+        form = selected or (all_forms[0] if all_forms else None)
+    else:
+        form = all_forms[0] if all_forms else None
 
     return render(request, "forms_system/consultation/view.html", {
         "target_user": target_user,
-        "form":        latest,
+        "form":        form,
         "all_forms":   all_forms,
     })
 
@@ -907,6 +913,13 @@ def laser_reconsent(request):
         "on_behalf": on_behalf,
         "is_minor": is_minor,
     })
+
+
+@staff_required
+def laser_reconsent_view(request, pk):
+    """Read-only view of a single historical laser re-consent record."""
+    reconsent = get_object_or_404(LaserReConsent, pk=pk)
+    return render(request, "forms_system/laser/reconsent_view.html", {"reconsent": reconsent})
 
 
 # ---------------------------------------------------------------------------

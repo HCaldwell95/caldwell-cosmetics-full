@@ -12,6 +12,7 @@ urlpatterns = [
     path("botox/",                     views.botox_client,         name="botox_client"),
     path("prp/",                       views.prp_client,           name="prp_client"),
     path("laser/reconsent/",           views.laser_reconsent,      name="laser_reconsent"),
+    path("laser/<int:pk>/view/",       views.laser_reconsent_view, name="laser_reconsent_view"),
 
     # Operator step 2
     path("botox/<int:pk>/operator/",   views.botox_operator,       name="botox_operator"),

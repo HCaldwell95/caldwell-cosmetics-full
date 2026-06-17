@@ -1131,6 +1131,10 @@
 
 /* --- Responsive --- */
 @media (max-width: 768px) {
+    .tx-slides-track {
+        align-items: flex-start;
+    }
+
     .tx-slide {
         grid-template-columns: 1fr;
         min-height: auto;
@@ -1139,6 +1143,11 @@
 
     .tx-slide--has-video {
         max-height: none;
+    }
+
+    .tx-slide__content {
+        justify-content: flex-start;
+        padding: 1.5rem 1.25rem;
     }
 
     .tx-slide__image-panel {

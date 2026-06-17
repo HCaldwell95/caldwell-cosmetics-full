@@ -1053,11 +1053,11 @@
 }
 
 @media (max-width: 767px) {
-    .ti-comparison {
+    .ti-areas-grid {
         grid-template-columns: 1fr;
     }
 
-    .ti-areas-grid {
+    .ti-comparison {
         grid-template-columns: 1fr;
     }
 
@@ -1071,16 +1071,16 @@
 }
 
 @media (max-width: 575px) {
+  .ti-areas-grid {
+      grid-template-columns: 1fr;
+  }
+
   .ti-hero__stats {
       gap: 0.5rem;
   }
 
   .ti-stat {
       padding: 0.4rem 0.75rem;
-  }
-
-  .ti-areas-grid {
-      grid-template-columns: 1fr;
   }
 
   .ti-area-card {

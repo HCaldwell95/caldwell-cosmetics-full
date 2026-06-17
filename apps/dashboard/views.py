@@ -68,51 +68,76 @@ def _get_latest_form(model, user):
 
 
 def _client_form_status(user):
-    """Returns a dict summarising form completion for a client."""
-    consultation = _get_latest_form(ConsultationForm, user)
-    photography  = _get_latest_form(PhotographyConsent, user)
-    botox        = _get_latest_form(BotoxConsentForm, user)
-    prp          = _get_latest_form(PRPConsentForm, user)
-    record_count = RecordCard.objects.filter(user=user).count()
-
-    try:
-        laser_latest = LaserReConsent.objects.filter(user=user).latest("completed_at")
-        laser_count  = LaserReConsent.objects.filter(user=user).count()
-    except Exception:
-        laser_latest = None
-        laser_count  = 0
-
+    """Returns a full archive of all consent forms for a client, ordered newest first."""
     def fmt(dt):
         return dt.strftime("%d/%m/%Y") if dt else None
 
+    consultations = list(ConsultationForm.objects.filter(user=user).order_by("-completed_at"))
+    photographys  = list(PhotographyConsent.objects.filter(user=user).order_by("-completed_at"))
+    botox_forms   = list(BotoxConsentForm.objects.filter(user=user).order_by("-completed_at"))
+    prp_forms     = list(PRPConsentForm.objects.filter(user=user).order_by("-completed_at"))
+    laser_forms   = list(LaserReConsent.objects.filter(user=user).order_by("-completed_at"))
+
     return {
         "consultation": {
-            "completed":        consultation is not None,
-            "date":             fmt(consultation.completed_at) if consultation else None,
-            "by_practitioner":  consultation.completed_by_practitioner if consultation else False,
+            "forms": [
+                {
+                    "id":               f.pk,
+                    "date":             fmt(f.completed_at),
+                    "by_practitioner":  f.completed_by_practitioner,
+                    "is_latest":        i == 0,
+                }
+                for i, f in enumerate(consultations)
+            ],
         },
         "photography": {
-            "completed":        photography is not None,
-            "date":             fmt(photography.completed_at) if photography else None,
-            "by_practitioner":  photography.completed_by_practitioner if photography else False,
+            "forms": [
+                {
+                    "id":               f.pk,
+                    "date":             fmt(f.completed_at),
+                    "by_practitioner":  f.completed_by_practitioner,
+                    "is_latest":        i == 0,
+                }
+                for i, f in enumerate(photographys)
+            ],
         },
         "botox": {
-            "client_signed":    botox.client_signed if botox else False,
-            "fully_complete":   botox.is_fully_complete if botox else False,
-            "date":             fmt(botox.completed_at) if botox else None,
-            "id":               botox.pk if botox else None,
+            "forms": [
+                {
+                    "id":               f.pk,
+                    "date":             fmt(f.completed_at),
+                    "client_signed":    f.client_signed,
+                    "fully_complete":   f.is_fully_complete,
+                    "is_latest":        i == 0,
+                }
+                for i, f in enumerate(botox_forms)
+            ],
         },
         "prp": {
-            "client_signed":    prp.client_signed if prp else False,
-            "fully_complete":   prp.is_fully_complete if prp else False,
-            "date":             fmt(prp.completed_at) if prp else None,
-            "id":               prp.pk if prp else None,
+            "forms": [
+                {
+                    "id":               f.pk,
+                    "date":             fmt(f.completed_at),
+                    "client_signed":    f.client_signed,
+                    "fully_complete":   f.is_fully_complete,
+                    "is_latest":        i == 0,
+                }
+                for i, f in enumerate(prp_forms)
+            ],
         },
         "laser_reconsent": {
-            "count":            laser_count,
-            "last_date":        fmt(laser_latest.completed_at) if laser_latest else None,
+            "forms": [
+                {
+                    "id":               f.pk,
+                    "date":             fmt(f.completed_at),
+                    "client_signed":    bool(f.client_signature),
+                    "operator_signed":  f.operator_signed,
+                    "is_latest":        i == 0,
+                }
+                for i, f in enumerate(laser_forms)
+            ],
         },
-        "record_cards": record_count,
+        "record_cards": RecordCard.objects.filter(user=user).count(),
     }
 
 

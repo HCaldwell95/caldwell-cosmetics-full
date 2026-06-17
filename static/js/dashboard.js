@@ -672,61 +672,87 @@ document.addEventListener('DOMContentLoaded', function () {
         // Store for edit
         profilePanel.dataset.userId = u.id;
 
-        // Form status pills — view-only cards with name + date/status line
-        function pill(label, complete, href, subline) {
-            const cls  = complete ? 'dash-form-pill--complete' : 'dash-form-pill--incomplete';
-            const sub  = `<span class="dash-form-pill__sub">${subline}</span>`;
+        // Form pills — three states: complete (green), incomplete (red), archived (grey)
+        function pill(label, state, href, subline) {
+            const cls = state === 'complete'  ? 'dash-form-pill--complete'
+                      : state === 'archived'  ? 'dash-form-pill--archived'
+                      :                         'dash-form-pill--incomplete';
+            const sub   = `<span class="dash-form-pill__sub">${subline}</span>`;
             const inner = `<span class="dash-form-pill__name">${label}</span>${sub}`;
-            if (href && complete) {
+            if (href) {
                 return `<a href="${href}" class="dash-form-pill ${cls}" target="_blank">${inner}</a>`;
             }
             return `<span class="dash-form-pill ${cls}">${inner}</span>`;
         }
 
-        const consultPill = pill(
-            'Consultation',
-            forms.consultation.completed,
-            DASHBOARD_URLS.formConsultationView.replace('{id}', u.id),
-            forms.consultation.date ? `Completed ${forms.consultation.date}` : 'Incomplete'
-        );
-        const photoPill = pill(
-            'Photography',
-            forms.photography.completed,
-            DASHBOARD_URLS.formPhotography.replace('{id}', u.id),
-            forms.photography.date ? `Completed ${forms.photography.date}` : 'Incomplete'
-        );
-        const botoxClientPill = pill(
-            'Botox — Client',
-            forms.botox.client_signed,
-            DASHBOARD_URLS.formBotoxClient.replace('{id}', u.id),
-            forms.botox.date ? `Signed ${forms.botox.date}` : 'Incomplete'
-        );
-        const botoxOpPill = pill(
-            'Botox — Operator',
-            forms.botox.fully_complete,
-            forms.botox.id ? DASHBOARD_URLS.botoxOperator.replace('{id}', forms.botox.id) : null,
-            forms.botox.fully_complete ? `Completed ${forms.botox.date}` : (forms.botox.client_signed ? 'Awaiting operator' : 'Incomplete')
-        );
-        const prpClientPill = pill(
-            'PRP — Client',
-            forms.prp.client_signed,
-            DASHBOARD_URLS.formPrpClient.replace('{id}', u.id),
-            forms.prp.date ? `Signed ${forms.prp.date}` : 'Incomplete'
-        );
-        const prpOpPill = pill(
-            'PRP — Operator',
-            forms.prp.fully_complete,
-            forms.prp.id ? DASHBOARD_URLS.prpOperator.replace('{id}', forms.prp.id) : null,
-            forms.prp.fully_complete ? `Completed ${forms.prp.date}` : (forms.prp.client_signed ? 'Awaiting operator' : 'Incomplete')
-        );
-        const laserPill = pill(
-            forms.laser_reconsent.count > 0
-                ? `Laser Re-Consent (${forms.laser_reconsent.count})`
-                : 'Laser Re-Consent',
-            forms.laser_reconsent.count > 0,
-            DASHBOARD_URLS.formLaserReconsent.replace('{id}', u.id),
-            forms.laser_reconsent.last_date ? `Last: ${forms.laser_reconsent.last_date}` : 'Incomplete'
-        );
+        function archiveToggle(toggleId, contentId, archiveHtml) {
+            if (!archiveHtml) return '';
+            const chevron = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>`;
+            return `
+                <button class="dash-collapsible-toggle dash-archive-toggle" id="${toggleId}" style="margin-top:0.5rem;">
+                    Previous ${chevron}
+                </button>
+                <div id="${contentId}" class="dash-form-pills" style="display:none;margin-top:0.4rem;">
+                    ${archiveHtml}
+                </div>`;
+        }
+
+        // Consultation
+        function mkConsultPill(f, archived) {
+            const href  = DASHBOARD_URLS.formConsultationView.replace('{id}', u.id) + '?form_pk=' + f.id;
+            const label = f.by_practitioner ? 'Consultation (Operator-assisted)' : 'Consultation';
+            return pill(label, archived ? 'archived' : 'complete', href, `Completed ${f.date}`);
+        }
+        const consultCurrentPills = forms.consultation.forms.length
+            ? mkConsultPill(forms.consultation.forms[0], false)
+            : pill('Consultation', 'incomplete', null, 'Not completed');
+        const consultArchivePills = forms.consultation.forms.slice(1).map(f => mkConsultPill(f, true)).join('');
+
+        // Photography
+        function mkPhotoPill(f, archived) {
+            const label = f.by_practitioner ? 'Photography (Operator-assisted)' : 'Photography';
+            return pill(label, archived ? 'archived' : 'complete', DASHBOARD_URLS.formPhotography.replace('{id}', u.id), `Completed ${f.date}`);
+        }
+        const photoCurrentPills = forms.photography.forms.length
+            ? mkPhotoPill(forms.photography.forms[0], false)
+            : pill('Photography Consent', 'incomplete', null, 'Not completed');
+        const photoArchivePills = forms.photography.forms.slice(1).map(f => mkPhotoPill(f, true)).join('');
+
+        // Botox
+        function mkBotoxPill(f, archived) {
+            const opHref = DASHBOARD_URLS.botoxOperator.replace('{id}', f.id);
+            if (f.fully_complete) return pill(`Anti-Wrinkle Consent — ${f.date}`, archived ? 'archived' : 'complete', opHref, 'Client ✓ · Operator ✓');
+            if (f.client_signed)  return pill(`Anti-Wrinkle Consent — ${f.date}`, 'incomplete', opHref, 'Client ✓ · Awaiting operator');
+            return pill(`Anti-Wrinkle Consent — ${f.date}`, 'incomplete', null, 'Incomplete');
+        }
+        const botoxCurrentPills = forms.botox.forms.length
+            ? mkBotoxPill(forms.botox.forms[0], false)
+            : pill('Anti-Wrinkle Consent', 'incomplete', null, 'Not completed');
+        const botoxArchivePills = forms.botox.forms.slice(1).map(f => mkBotoxPill(f, true)).join('');
+
+        // PRP
+        function mkPrpPill(f, archived) {
+            const opHref = DASHBOARD_URLS.prpOperator.replace('{id}', f.id);
+            if (f.fully_complete) return pill(`PRP Consent — ${f.date}`, archived ? 'archived' : 'complete', opHref, 'Client ✓ · Operator ✓');
+            if (f.client_signed)  return pill(`PRP Consent — ${f.date}`, 'incomplete', opHref, 'Client ✓ · Awaiting operator');
+            return pill(`PRP Consent — ${f.date}`, 'incomplete', null, 'Incomplete');
+        }
+        const prpCurrentPills = forms.prp.forms.length
+            ? mkPrpPill(forms.prp.forms[0], false)
+            : pill('PRP Consent', 'incomplete', null, 'Not completed');
+        const prpArchivePills = forms.prp.forms.slice(1).map(f => mkPrpPill(f, true)).join('');
+
+        // Laser Re-Consent
+        function mkLaserPill(f, archived) {
+            const href = DASHBOARD_URLS.laserReconsentView.replace('{id}', f.id);
+            if (f.operator_signed) return pill(`Laser Re-Consent — ${f.date}`, archived ? 'archived' : 'complete', href, 'Client ✓ · Operator ✓');
+            if (f.client_signed)   return pill(`Laser Re-Consent — ${f.date}`, 'incomplete', href, 'Client ✓ · Awaiting operator');
+            return pill(`Laser Re-Consent — ${f.date}`, 'incomplete', null, 'Incomplete');
+        }
+        const laserCurrentPills = forms.laser_reconsent.forms.length
+            ? mkLaserPill(forms.laser_reconsent.forms[0], false)
+            : pill('Laser Re-Consent', 'incomplete', null, 'No re-consents on file');
+        const laserArchivePills = forms.laser_reconsent.forms.slice(1).map(f => mkLaserPill(f, true)).join('');
 
         // Bundle pips
         function bundlePips(b) {
@@ -886,9 +912,10 @@ document.addEventListener('DOMContentLoaded', function () {
                     </div>
                 </div>
                 <div class="dash-form-pills">
-                    ${consultPill}
-                    ${photoPill}
+                    ${consultCurrentPills}
+                    ${photoCurrentPills}
                 </div>
+                ${archiveToggle('formArchiveGeneralToggle', 'formArchiveGeneralContent', consultArchivePills + photoArchivePills)}
             </div>
 
             <!-- Forms: Injectables -->
@@ -897,11 +924,10 @@ document.addEventListener('DOMContentLoaded', function () {
                     <h3 class="dash-panel-section__title">Injectables</h3>
                 </div>
                 <div class="dash-form-pills">
-                    ${botoxClientPill}
-                    ${botoxOpPill}
-                    ${prpClientPill}
-                    ${prpOpPill}
+                    ${botoxCurrentPills}
+                    ${prpCurrentPills}
                 </div>
+                ${archiveToggle('formArchiveInjectablesToggle', 'formArchiveInjectablesContent', botoxArchivePills + prpArchivePills)}
             </div>
 
             <!-- Forms: Laser -->
@@ -910,8 +936,9 @@ document.addEventListener('DOMContentLoaded', function () {
                     <h3 class="dash-panel-section__title">Laser</h3>
                 </div>
                 <div class="dash-form-pills">
-                    ${laserPill}
+                    ${laserCurrentPills}
                 </div>
+                ${archiveToggle('formArchiveLaserToggle', 'formArchiveLaserContent', laserArchivePills)}
             </div>
 
             <!-- Record cards -->
@@ -1022,6 +1049,18 @@ document.addEventListener('DOMContentLoaded', function () {
             .then(r => r.json())
             .then(data => {
                 if (data.ok) openProfilePanel(u.id);
+            });
+        });
+
+        // Form archive toggles (General / Injectables / Laser)
+        ['General', 'Injectables', 'Laser'].forEach(cat => {
+            const toggle = document.getElementById(`formArchive${cat}Toggle`);
+            if (!toggle) return;
+            toggle.addEventListener('click', function () {
+                const content = document.getElementById(`formArchive${cat}Content`);
+                const open    = content.style.display !== 'none';
+                content.style.display = open ? 'none' : 'block';
+                this.classList.toggle('dash-collapsible-toggle--open', !open);
             });
         });
 
