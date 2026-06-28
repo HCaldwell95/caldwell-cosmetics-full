@@ -1,9 +1,7 @@
 document.addEventListener('DOMContentLoaded', function () {
 
-    // ---------------------------------------------------------------
-    // State
-    // ---------------------------------------------------------------
-
+    // esc/safeColour also defined globally in client-panel.js; redefined here
+    // for use in the calendar rendering functions below.
     function esc(s) {
         return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
@@ -11,18 +9,9 @@ document.addEventListener('DOMContentLoaded', function () {
         return (c || '').replace(/[^a-zA-Z0-9#()%., ]/g, '');
     }
 
-    // Toast notification
-    let _toastTimer = null;
-    function showToast(message, type = 'success') {
-        const el = document.getElementById('dashToast');
-        if (!el) return;
-        el.textContent = message;
-        el.className = `dash-toast dash-toast--${type} dash-toast--visible`;
-        clearTimeout(_toastTimer);
-        _toastTimer = setTimeout(() => {
-            el.classList.remove('dash-toast--visible');
-        }, 3500);
-    }
+    // ---------------------------------------------------------------
+    // State
+    // ---------------------------------------------------------------
 
     let currentView    = 'month';
     let currentDate    = new Date();
@@ -30,7 +19,6 @@ document.addEventListener('DOMContentLoaded', function () {
     let activeBooking  = null;
     let selectedUserId = null;
     let isEditMode     = false;
-    let activePanelUserId = null;
 
     // ---------------------------------------------------------------
     // Elements — calendar
@@ -66,31 +54,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const statusGroup      = document.getElementById('statusGroup');
     const clientSearchGroup = document.getElementById('clientSearchGroup');
 
-    // Elements — profile panel
-    const profileOverlay   = document.getElementById('profileOverlay');
-    const profilePanel     = document.getElementById('profilePanel');
-    const profileClose     = document.getElementById('profileClose');
-    const profilePanelBody = document.getElementById('profilePanelBody');
-    const panelName        = document.getElementById('panelName');
-    const panelEmail       = document.getElementById('panelEmail');
-    const panelEditBtn     = document.getElementById('panelEditBtn');
-
-    // Elements — client list
-    const clientSearchBar  = document.getElementById('clientSearchBar');
-    const clientTableBody  = document.getElementById('clientTableBody');
-
-    // Elements — bundle modal
-    const bundleModalOverlay = document.getElementById('bundleModalOverlay');
-    const bundleModalClose   = document.getElementById('bundleModalClose');
-    const bundleModalCancel  = document.getElementById('bundleModalCancel');
-    const bundleModalSave    = document.getElementById('bundleModalSave');
-
-    // Elements — credit modal
-    const creditModalOverlay = document.getElementById('creditModalOverlay');
-    const creditModalClose   = document.getElementById('creditModalClose');
-    const creditModalCancel  = document.getElementById('creditModalCancel');
-    const creditModalSave    = document.getElementById('creditModalSave');
-
     // ---------------------------------------------------------------
     // Calendar — fetch & render
     // ---------------------------------------------------------------
@@ -103,6 +66,13 @@ document.addEventListener('DOMContentLoaded', function () {
             return { start: new Date(y, m, 1), end: new Date(y, m + 1, 0) };
         }
 
+        if (currentView === 'day') {
+            const d = new Date(currentDate);
+            d.setHours(0, 0, 0, 0);
+            return { start: d, end: d };
+        }
+
+        // week
         const day   = currentDate.getDay();
         const diff  = day === 0 ? -6 : 1 - day;
         const start = new Date(currentDate);
@@ -127,7 +97,9 @@ document.addEventListener('DOMContentLoaded', function () {
             .then(data => {
                 allEvents = data.events;
                 updateStats();
-                currentView === 'month' ? renderMonth() : renderWeek();
+                if (currentView === 'month')     renderMonth();
+                else if (currentView === 'week') renderWeek();
+                else                             renderDay();
             });
     }
 
@@ -211,14 +183,13 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         });
 
-        // "more" button — switch to week view on that date
         calendar.querySelectorAll('.dash-month-more').forEach(btn => {
             btn.addEventListener('click', e => {
                 e.stopPropagation();
                 currentDate = new Date(btn.dataset.date + 'T00:00:00');
-                currentView = 'week';
+                currentView = 'day';
                 viewBtns.forEach(b => b.classList.remove('dash-view-btn--active'));
-                document.querySelector('[data-view="week"]').classList.add('dash-view-btn--active');
+                document.querySelector('[data-view="day"]').classList.add('dash-view-btn--active');
                 fetchEvents();
             });
         });
@@ -298,8 +269,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     <div class="dash-week-event${e.status === 'cancelled' ? ' dash-week-event--cancelled' : ''}"
                          data-id="${e.id}" style="${colour}top:${topMins * PX_PER_MIN}px; height:${height}px;">
                         <span class="dash-week-event__time">${e.start_time}</span>
-                        <span class="dash-week-event__name">${e.client}</span>
-                        <span class="dash-week-event__treatment">${e.treatment}</span>
+                        <span class="dash-week-event__name">${esc(e.client)}</span>
+                        <span class="dash-week-event__treatment">${esc(e.treatment)}</span>
                     </div>`;
             });
             html += '</div>';
@@ -318,20 +289,94 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // ---------------------------------------------------------------
+    // Day view
+    // ---------------------------------------------------------------
+
+    function renderDay() {
+        const today   = formatISO(new Date());
+        const dateStr = formatISO(currentDate);
+        const isToday = dateStr === today;
+        const isOpen  = OPEN_DAYS.includes(currentDate.getDay());
+
+        periodLabel.textContent = currentDate.toLocaleDateString('en-GB', {
+            weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+        });
+
+        const dayEvents = allEvents
+            .filter(e => e.date === dateStr)
+            .sort((a, b) => a.start_time.localeCompare(b.start_time));
+
+        const HOUR_START = 9;
+        const HOUR_END   = 18;
+        const HOUR_COUNT = HOUR_END - HOUR_START;
+        const PX_PER_MIN = 2;
+
+        let html = '<div class="dash-day-grid">';
+
+        // Header row
+        html += '<div class="dash-day-header">';
+        html += '<div class="dash-week-time-header"></div>';
+        html += `<div class="dash-week-col-header${isToday ? ' dash-week-col-header--today' : ''}">
+            <span class="dash-week-col-header__day">${currentDate.toLocaleDateString('en-GB', { weekday: 'long' })}</span>
+            <span class="dash-week-col-header__date${isToday ? ' dash-week-col-header__date--today' : ''}">${currentDate.getDate()}</span>
+            ${!isOpen ? '<span class="dash-week-closed">Closed</span>' : ''}
+        </div>`;
+        html += '</div>';
+
+        // Body
+        html += '<div class="dash-day-body">';
+        html += '<div class="dash-week-gutter">';
+        for (let h = HOUR_START; h < HOUR_END; h++) {
+            html += `<div class="dash-week-gutter__hour" style="height:${60 * PX_PER_MIN}px">${String(h).padStart(2,'0')}:00</div>`;
+        }
+        html += '</div>';
+
+        html += `<div class="dash-day-col" data-date="${dateStr}" style="height:${HOUR_COUNT * 60 * PX_PER_MIN}px">`;
+        for (let h = 0; h < HOUR_COUNT; h++) {
+            html += `<div class="dash-week-hour-line" style="top:${h * 60 * PX_PER_MIN}px"></div>`;
+        }
+        dayEvents.forEach(e => {
+            const [eh, em] = e.start_time.split(':').map(Number);
+            const topMins  = (eh - HOUR_START) * 60 + em;
+            const height   = e.duration * PX_PER_MIN;
+            const colour   = e.status === 'cancelled' ? '' : `background:${e.category_colour || '#b8965a'};`;
+            html += `
+                <div class="dash-week-event${e.status === 'cancelled' ? ' dash-week-event--cancelled' : ''}"
+                     data-id="${e.id}" style="${colour}top:${topMins * PX_PER_MIN}px; height:${height}px;">
+                    <span class="dash-week-event__time">${esc(e.start_time)}</span>
+                    <span class="dash-week-event__name">${esc(e.client)}</span>
+                    <span class="dash-week-event__treatment">${esc(e.treatment)}</span>
+                </div>`;
+        });
+        html += '</div>';
+        html += '</div></div>';
+
+        calendar.innerHTML = html;
+
+        calendar.querySelectorAll('.dash-week-event').forEach(el => {
+            el.addEventListener('click', e => {
+                e.stopPropagation();
+                const id = parseInt(el.dataset.id);
+                openViewModal(allEvents.find(ev => ev.id === id));
+            });
+        });
+    }
+
+    // ---------------------------------------------------------------
     // Navigation
     // ---------------------------------------------------------------
 
     prevBtn.addEventListener('click', () => {
-        currentView === 'month'
-            ? currentDate.setMonth(currentDate.getMonth() - 1)
-            : currentDate.setDate(currentDate.getDate() - 7);
+        if (currentView === 'month')     currentDate.setMonth(currentDate.getMonth() - 1);
+        else if (currentView === 'week') currentDate.setDate(currentDate.getDate() - 7);
+        else                             currentDate.setDate(currentDate.getDate() - 1);
         fetchEvents();
     });
 
     nextBtn.addEventListener('click', () => {
-        currentView === 'month'
-            ? currentDate.setMonth(currentDate.getMonth() + 1)
-            : currentDate.setDate(currentDate.getDate() + 7);
+        if (currentView === 'month')     currentDate.setMonth(currentDate.getMonth() + 1);
+        else if (currentView === 'week') currentDate.setDate(currentDate.getDate() + 7);
+        else                             currentDate.setDate(currentDate.getDate() + 1);
         fetchEvents();
     });
 
@@ -445,18 +490,8 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // ---------------------------------------------------------------
-    // Modal open/close helpers
+    // Modal open/close (openModal/closeModal come from client-panel.js)
     // ---------------------------------------------------------------
-
-    function openModal(overlay) {
-        overlay.style.display = 'flex';
-        document.body.style.overflow = 'hidden';
-    }
-
-    function closeModal(overlay) {
-        overlay.style.display = 'none';
-        document.body.style.overflow = '';
-    }
 
     modalClose.addEventListener('click',  () => closeModal(modalOverlay));
     formCancelBtn.addEventListener('click', () => closeModal(modalOverlay));
@@ -585,628 +620,6 @@ document.addEventListener('DOMContentLoaded', function () {
             if (el) el.textContent = msg;
         });
     }
-
-    // ---------------------------------------------------------------
-    // Client list
-    // ---------------------------------------------------------------
-
-    let clientSearchTimeout = null;
-
-    function loadClients(q) {
-        const url = q
-            ? `${DASHBOARD_URLS.clientList}?q=${encodeURIComponent(q)}`
-            : DASHBOARD_URLS.clientList;
-
-        fetch(url)
-            .then(r => r.json())
-            .then(data => {
-                if (!data.clients.length) {
-                    clientTableBody.innerHTML = `<tr><td colspan="5" class="dash-client-table__empty">No clients found.</td></tr>`;
-                    return;
-                }
-
-                clientTableBody.innerHTML = data.clients.map(c => `
-                    <tr class="dash-client-row" data-id="${c.id}">
-                        <td class="dash-client-name">${esc(c.name)}</td>
-                        <td>${esc(c.email)}</td>
-                        <td>${esc(c.phone) || '—'}</td>
-                        <td>${esc(c.joined)}</td>
-                        <td>
-                            <button class="dash-client-view-btn" data-id="${c.id}">
-                                <span class="dash-client-view-btn__full">View Profile</span>
-                                <span class="dash-client-view-btn__short">View</span>
-                            </button>
-                        </td>
-                    </tr>`).join('');
-
-                clientTableBody.querySelectorAll('.dash-client-view-btn').forEach(btn => {
-                    btn.addEventListener('click', () => openProfilePanel(parseInt(btn.dataset.id)));
-                });
-            });
-    }
-
-    clientSearchBar.addEventListener('input', function () {
-        clearTimeout(clientSearchTimeout);
-        clientSearchTimeout = setTimeout(() => loadClients(this.value.trim()), 300);
-    });
-
-    loadClients('');
-
-    // ---------------------------------------------------------------
-    // Profile panel
-    // ---------------------------------------------------------------
-
-    function openProfilePanel(userId) {
-        activePanelUserId = userId;
-        profilePanel.classList.add('dash-profile-panel--open');
-        profileOverlay.style.display = 'block';
-        document.body.style.overflow = 'hidden';
-        profilePanelBody.innerHTML   = '<div class="dash-profile-loading">Loading…</div>';
-        panelName.textContent  = '—';
-        panelEmail.textContent = '—';
-
-        fetch(DASHBOARD_URLS.clientProfile.replace('{id}', userId))
-            .then(r => r.json())
-            .then(data => renderProfilePanel(data));
-    }
-
-    function closeProfilePanel() {
-        profilePanel.classList.remove('dash-profile-panel--open');
-        profileOverlay.style.display = 'none';
-        document.body.style.overflow = '';
-        activePanelUserId = null;
-    }
-
-    profileClose.addEventListener('click', closeProfilePanel);
-    profileOverlay.addEventListener('click', closeProfilePanel);
-
-    function renderProfilePanel(data) {
-        const u       = data.user;
-        const forms   = data.forms;
-        const bundles = data.bundles;
-        const credit  = data.credit;
-
-        panelName.textContent  = u.name;
-        panelEmail.textContent = u.email;
-
-        // Store for edit
-        profilePanel.dataset.userId = u.id;
-
-        // Form pills — three states: complete (green), incomplete (red), archived (grey)
-        function pill(label, state, href, subline) {
-            const cls = state === 'complete'  ? 'dash-form-pill--complete'
-                      : state === 'archived'  ? 'dash-form-pill--archived'
-                      :                         'dash-form-pill--incomplete';
-            const sub   = `<span class="dash-form-pill__sub">${subline}</span>`;
-            const inner = `<span class="dash-form-pill__name">${label}</span>${sub}`;
-            if (href) {
-                return `<a href="${href}" class="dash-form-pill ${cls}" target="_blank">${inner}</a>`;
-            }
-            return `<span class="dash-form-pill ${cls}">${inner}</span>`;
-        }
-
-        function archiveToggle(toggleId, contentId, archiveHtml) {
-            if (!archiveHtml) return '';
-            const chevron = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>`;
-            return `
-                <button class="dash-collapsible-toggle dash-archive-toggle" id="${toggleId}" style="margin-top:0.5rem;">
-                    Previous ${chevron}
-                </button>
-                <div id="${contentId}" class="dash-form-pills" style="display:none;margin-top:0.4rem;">
-                    ${archiveHtml}
-                </div>`;
-        }
-
-        // Consultation
-        function mkConsultPill(f, archived) {
-            const href  = DASHBOARD_URLS.formConsultationView.replace('{id}', u.id) + '?form_pk=' + f.id;
-            const label = f.by_practitioner ? 'Consultation (Operator-assisted)' : 'Consultation';
-            return pill(label, archived ? 'archived' : 'complete', href, `Completed ${f.date}`);
-        }
-        const consultCurrentPills = forms.consultation.forms.length
-            ? mkConsultPill(forms.consultation.forms[0], false)
-            : pill('Consultation', 'incomplete', null, 'Not completed');
-        const consultArchivePills = forms.consultation.forms.slice(1).map(f => mkConsultPill(f, true)).join('');
-
-        // Photography
-        function mkPhotoPill(f, archived) {
-            const label = f.by_practitioner ? 'Photography (Operator-assisted)' : 'Photography';
-            return pill(label, archived ? 'archived' : 'complete', DASHBOARD_URLS.formPhotography.replace('{id}', u.id), `Completed ${f.date}`);
-        }
-        const photoCurrentPills = forms.photography.forms.length
-            ? mkPhotoPill(forms.photography.forms[0], false)
-            : pill('Photography Consent', 'incomplete', null, 'Not completed');
-        const photoArchivePills = forms.photography.forms.slice(1).map(f => mkPhotoPill(f, true)).join('');
-
-        // Botox
-        function mkBotoxPill(f, archived) {
-            const opHref = DASHBOARD_URLS.botoxOperator.replace('{id}', f.id);
-            if (f.fully_complete) return pill(`Anti-Wrinkle Consent — ${f.date}`, archived ? 'archived' : 'complete', opHref, 'Client ✓ · Operator ✓');
-            if (f.client_signed)  return pill(`Anti-Wrinkle Consent — ${f.date}`, 'incomplete', opHref, 'Client ✓ · Awaiting operator');
-            return pill(`Anti-Wrinkle Consent — ${f.date}`, 'incomplete', null, 'Incomplete');
-        }
-        const botoxCurrentPills = forms.botox.forms.length
-            ? mkBotoxPill(forms.botox.forms[0], false)
-            : pill('Anti-Wrinkle Consent', 'incomplete', null, 'Not completed');
-        const botoxArchivePills = forms.botox.forms.slice(1).map(f => mkBotoxPill(f, true)).join('');
-
-        // PRP
-        function mkPrpPill(f, archived) {
-            const opHref = DASHBOARD_URLS.prpOperator.replace('{id}', f.id);
-            if (f.fully_complete) return pill(`PRP Consent — ${f.date}`, archived ? 'archived' : 'complete', opHref, 'Client ✓ · Operator ✓');
-            if (f.client_signed)  return pill(`PRP Consent — ${f.date}`, 'incomplete', opHref, 'Client ✓ · Awaiting operator');
-            return pill(`PRP Consent — ${f.date}`, 'incomplete', null, 'Incomplete');
-        }
-        const prpCurrentPills = forms.prp.forms.length
-            ? mkPrpPill(forms.prp.forms[0], false)
-            : pill('PRP Consent', 'incomplete', null, 'Not completed');
-        const prpArchivePills = forms.prp.forms.slice(1).map(f => mkPrpPill(f, true)).join('');
-
-        // Laser Re-Consent
-        function mkLaserPill(f, archived) {
-            const href = DASHBOARD_URLS.laserReconsentView.replace('{id}', f.id);
-            if (f.operator_signed) return pill(`Laser Re-Consent — ${f.date}`, archived ? 'archived' : 'complete', href, 'Client ✓ · Operator ✓');
-            if (f.client_signed)   return pill(`Laser Re-Consent — ${f.date}`, 'incomplete', href, 'Client ✓ · Awaiting operator');
-            return pill(`Laser Re-Consent — ${f.date}`, 'incomplete', null, 'Incomplete');
-        }
-        const laserCurrentPills = forms.laser_reconsent.forms.length
-            ? mkLaserPill(forms.laser_reconsent.forms[0], false)
-            : pill('Laser Re-Consent', 'incomplete', null, 'No re-consents on file');
-        const laserArchivePills = forms.laser_reconsent.forms.slice(1).map(f => mkLaserPill(f, true)).join('');
-
-        // Bundle pips
-        function bundlePips(b) {
-            let html = '';
-            for (let i = 0; i < b.total_sessions; i++) {
-                html += `<span class="pip${i < b.sessions_used ? ' pip--used' : ''}"></span>`;
-            }
-            return html;
-        }
-
-        const bundlesHtml = bundles.length
-            ? bundles.filter(b => b.status === 'active').map(b => `
-                <div class="dash-bundle-row">
-                    <div class="dash-bundle-row__info">
-                        <span class="dash-bundle-row__name">${esc(b.treatment_name)}</span>
-                        <div class="dash-bundle-row__pips">${bundlePips(b)}</div>
-                        <span class="dash-bundle-row__count">${b.sessions_remaining} of ${b.total_sessions} remaining</span>
-                    </div>
-                    <button class="btn btn--ghost btn--sm dash-bundle-use-btn" data-bundle-id="${b.id}" data-bundle-name="${esc(b.treatment_name)}">
-                        Use Session
-                    </button>
-                </div>`).join('') || '<p class="dash-muted">No active bundles.</p>'
-            : '<p class="dash-muted">No bundles.</p>';
-
-        // Record cards
-        const cardsHtml = data.record_cards.length
-            ? data.record_cards.map(rc => `
-                <a href="${DASHBOARD_URLS.recordCardView.replace('{id}', rc.id)}" target="_blank" class="dash-record-row">
-                    <span class="dash-record-row__num">#${rc.treatment_number}</span>
-                    <span class="dash-record-row__date">${esc(rc.date)}</span>
-                    <span class="dash-record-row__treatment">${rc.treatment_for ? esc(rc.treatment_for) : '—'}</span>
-                </a>`).join('')
-            : '<p class="dash-muted">No record cards yet.</p>';
-
-        // Notes
-        const notesHtml = data.notes && data.notes.length
-            ? data.notes.map(n => `
-                <a href="${DASHBOARD_URLS.noteView.replace('{pk}', u.id).replace('{note_pk}', n.id)}" target="_blank" class="dash-note-row">
-                    <span class="dash-note-row__num">#${n.number}</span>
-                    <span class="dash-note-row__title">${esc(n.title)}</span>
-                    <span class="dash-note-row__date">${esc(n.date)}</span>
-                </a>`).join('')
-            : '<p class="dash-muted">No notes yet.</p>';
-
-        profilePanelBody.innerHTML = `
-
-            <!-- Personal details -->
-            <div class="dash-panel-section" id="panelViewMode">
-                <div class="dash-panel-section__header">
-                    <h3 class="dash-panel-section__title">Personal Details</h3>
-                </div>
-                <dl class="dash-panel-dl">
-                    <dt>Phone</dt>        <dd>${u.phone ? esc(u.phone) : '—'}</dd>
-                    <dt>Date of birth</dt><dd>${u.dob ? esc(u.dob) : '—'}</dd>
-                    <dt>Skin type</dt>    <dd>${u.skin_type ? esc(u.skin_type) : '—'}</dd>
-                    <dt>Address</dt>      <dd>${u.address ? u.address.split('\n').map(esc).join('<br>') : '—'}</dd>
-                    <dt>GDPR consent</dt> <dd>${u.gdpr_consent ? '✓ Given' : '✗ Not given'}</dd>
-                </dl>
-                <div class="dash-panel-section__header" style="margin-top:1rem;">
-                    <h3 class="dash-panel-section__title">Medical Notes <span class="dash-operator-only">Operator only</span></h3>
-                </div>
-                <p class="dash-medical-notes">${u.medical_notes ? esc(u.medical_notes) : 'No notes on file.'}</p>
-            </div>
-
-            <!-- Edit mode (hidden by default) -->
-            <div class="dash-panel-section" id="panelEditMode" style="display:none;">
-                <h3 class="dash-panel-section__title">Edit Profile</h3>
-                <div class="cform-grid cform-grid--2" style="gap:0.75rem;">
-                    <div class="dash-form-group"><label class="dash-label">First Name</label><input class="dash-input" id="editFirstName" value="${esc(u.name.split(' ')[0] || '')}"></div>
-                    <div class="dash-form-group"><label class="dash-label">Last Name</label><input class="dash-input" id="editLastName" value="${esc(u.name.split(' ').slice(1).join(' ') || '')}"></div>
-                    <div class="dash-form-group" style="grid-column:1/-1;"><label class="dash-label">Email</label><input class="dash-input" type="email" id="editEmail" value="${esc(u.email || '')}"></div>
-                    <div class="dash-form-group"><label class="dash-label">Phone</label><input class="dash-input" id="editPhone" value="${esc(u.phone || '')}"></div>
-                    <div class="dash-form-group"><label class="dash-label">Date of Birth</label><input class="dash-input" type="date" id="editDob" value="${u.dob ? new Date(u.dob).toISOString().split('T')[0] : ''}"></div>
-                    <div class="dash-form-group"><label class="dash-label">Address Line 1</label><input class="dash-input" id="editAddr1" value="${esc(u.address.split('\n')[0] || '')}"></div>
-                    <div class="dash-form-group"><label class="dash-label">Address Line 2</label><input class="dash-input" id="editAddr2" value="${esc(u.address.split('\n')[1] || '')}"></div>
-                    <div class="dash-form-group"><label class="dash-label">Town / City</label><input class="dash-input" id="editCity" value="${esc(u.address.split('\n')[2] || '')}"></div>
-                    <div class="dash-form-group"><label class="dash-label">Postcode</label><input class="dash-input" id="editPostcode" value="${esc(u.address.split('\n')[3] || '')}"></div>
-                    <div class="dash-form-group" style="grid-column:1/-1;">
-                        <label class="dash-label">Skin Type</label>
-                        <select class="dash-input" id="editSkinType">
-                            <option value="unknown" ${u.skin_type_key === 'unknown' ? 'selected' : ''}>Unknown / Not assessed</option>
-                            <option value="type_1"  ${u.skin_type_key === 'type_1'  ? 'selected' : ''}>Type 1 – Always burns, never tans</option>
-                            <option value="type_2"  ${u.skin_type_key === 'type_2'  ? 'selected' : ''}>Type 2 – Easily burns, eventually gets a moderate tan</option>
-                            <option value="type_3"  ${u.skin_type_key === 'type_3'  ? 'selected' : ''}>Type 3 – Sometimes burns, quickly gets an average tan</option>
-                            <option value="type_4"  ${u.skin_type_key === 'type_4'  ? 'selected' : ''}>Type 4 – Rarely burns, quickly gets a deep tan</option>
-                            <option value="type_5"  ${u.skin_type_key === 'type_5'  ? 'selected' : ''}>Type 5 – Very rarely burns, consistent tan</option>
-                            <option value="type_6"  ${u.skin_type_key === 'type_6'  ? 'selected' : ''}>Type 6 – Never burns, consistent tan</option>
-                        </select>
-                    </div>
-                    <div class="dash-form-group" style="grid-column:1/-1;"><label class="dash-label">Medical Notes</label><textarea class="dash-input" id="editMedicalNotes" rows="3">${esc(u.medical_notes || '')}</textarea></div>
-                </div>
-                <div class="dash-modal__actions" style="padding:1rem 0 0;">
-                    <button class="btn btn--ghost btn--sm" id="panelEditCancel">Cancel</button>
-                    <button class="btn btn--primary btn--sm" id="panelEditSave">Save Changes</button>
-                </div>
-            </div>
-
-            <!-- Upcoming bookings -->
-            <div class="dash-panel-section">
-                <h3 class="dash-panel-section__title">Upcoming Appointments</h3>
-                ${data.upcoming_bookings.length
-                    ? data.upcoming_bookings.map(b => `
-                        <div class="dash-appt-row">
-                            <div class="dash-appt-row__info">
-                                <span class="dash-appt-row__treatment">${esc(b.treatment)}</span>
-                                <span class="dash-appt-row__date">${esc(b.date)} at ${esc(b.time)}</span>
-                            </div>
-                            <span class="dash-appt-row__duration">${b.duration} min</span>
-                        </div>`).join('')
-                    : '<p class="dash-muted">No upcoming appointments.</p>'
-                }
-            </div>
-
-            <!-- Past bookings (collapsible) -->
-            <div class="dash-panel-section">
-                <button class="dash-collapsible-toggle" id="pastBookingsToggle">
-                    Past Appointments <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
-                </button>
-                <div id="pastBookingsContent" style="display:none;">
-                    ${data.past_bookings.length
-                        ? data.past_bookings.map(b => `
-                            <div class="dash-appt-row dash-appt-row--past">
-                                <div class="dash-appt-row__info">
-                                    <span class="dash-appt-row__treatment">${esc(b.treatment)}</span>
-                                    <span class="dash-appt-row__date">${esc(b.date)} at ${esc(b.time)}</span>
-                                </div>
-                                <span class="dash-appt-badge dash-appt-badge--${esc(b.status)}">${esc(b.status)}</span>
-                            </div>`).join('')
-                        : '<p class="dash-muted">No past appointments.</p>'
-                    }
-                </div>
-            </div>
-
-            <!-- Forms: General -->
-            <div class="dash-panel-section">
-                <div class="dash-panel-section__header">
-                    <h3 class="dash-panel-section__title">General</h3>
-                    <div class="dash-form-launch">
-                        <button class="dash-form-launch-btn" id="formPickerToggle">
-                            Create a new form
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
-                        </button>
-                        <div class="dash-form-dropdown" id="formPickerDropdown" hidden>
-                            <a href="${DASHBOARD_URLS.formConsultationNew.replace('{id}', u.id)}" class="dash-form-dropdown__item" target="_blank">
-                                Consultation Form
-                            </a>
-                            <a href="${DASHBOARD_URLS.formBotoxClient.replace('{id}', u.id)}" class="dash-form-dropdown__item" target="_blank">
-                                Botox Consent
-                            </a>
-                            <a href="${DASHBOARD_URLS.formPrpClient.replace('{id}', u.id)}" class="dash-form-dropdown__item" target="_blank">
-                                PRP Consent
-                            </a>
-                            <a href="${DASHBOARD_URLS.formLaserReconsent.replace('{id}', u.id)}" class="dash-form-dropdown__item" target="_blank">
-                                Laser Re-Consent
-                            </a>
-                        </div>
-                    </div>
-                </div>
-                <div class="dash-form-pills">
-                    ${consultCurrentPills}
-                    ${photoCurrentPills}
-                </div>
-                ${archiveToggle('formArchiveGeneralToggle', 'formArchiveGeneralContent', consultArchivePills + photoArchivePills)}
-            </div>
-
-            <!-- Forms: Injectables -->
-            <div class="dash-panel-section">
-                <div class="dash-panel-section__header">
-                    <h3 class="dash-panel-section__title">Injectables</h3>
-                </div>
-                <div class="dash-form-pills">
-                    ${botoxCurrentPills}
-                    ${prpCurrentPills}
-                </div>
-                ${archiveToggle('formArchiveInjectablesToggle', 'formArchiveInjectablesContent', botoxArchivePills + prpArchivePills)}
-            </div>
-
-            <!-- Forms: Laser -->
-            <div class="dash-panel-section">
-                <div class="dash-panel-section__header">
-                    <h3 class="dash-panel-section__title">Laser</h3>
-                </div>
-                <div class="dash-form-pills">
-                    ${laserCurrentPills}
-                </div>
-                ${archiveToggle('formArchiveLaserToggle', 'formArchiveLaserContent', laserArchivePills)}
-            </div>
-
-            <!-- Record cards -->
-            <div class="dash-panel-section">
-                <div class="dash-panel-section__header">
-                    <h3 class="dash-panel-section__title">Record Cards</h3>
-                    <a href="${DASHBOARD_URLS.recordCardNew.replace('{id}', u.id)}" class="btn btn--ghost btn--sm" target="_blank">+ New Record Card</a>
-                </div>
-                <div class="dash-record-list">${cardsHtml}</div>
-            </div>
-
-            <!-- Notes -->
-            <div class="dash-panel-section">
-                <div class="dash-panel-section__header">
-                    <h3 class="dash-panel-section__title">Notes</h3>
-                    <a href="${DASHBOARD_URLS.noteNew.replace('{id}', u.id)}" class="btn btn--ghost btn--sm" target="_blank">+ New Note</a>
-                </div>
-                <div class="dash-notes-list">${notesHtml}</div>
-            </div>
-
-            <!-- Bundles -->
-            <div class="dash-panel-section">
-                <div class="dash-panel-section__header">
-                    <h3 class="dash-panel-section__title">Pre-Paid Bundles</h3>
-                    <button class="btn btn--ghost btn--sm" id="addBundleBtn">+ Add Bundle</button>
-                </div>
-                <div id="bundlesList">${bundlesHtml}</div>
-            </div>
-
-            <!-- Account credit -->
-            <div class="dash-panel-section">
-                <div class="dash-panel-section__header">
-                    <h3 class="dash-panel-section__title">Account Credit</h3>
-                    <button class="btn btn--ghost btn--sm" id="adjustCreditBtn">Adjust</button>
-                </div>
-                <p class="dash-credit-balance">£<span id="creditBalance">${credit.balance}</span></p>
-                <button class="dash-collapsible-toggle" id="creditHistoryToggle">
-                    Show history <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
-                </button>
-                <div id="creditHistoryContent" style="display:none;margin-top:0.75rem;">
-                    ${credit.transactions.length ? `<ul style="list-style:none;padding:0;margin:0;">
-                        ${credit.transactions.map(t => `
-                        <li style="display:flex;align-items:center;gap:0.75rem;padding:0.5rem 0;border-bottom:1px solid #f0ece5;font-size:0.82rem;">
-                            <span style="color:#999;white-space:nowrap;min-width:72px;">${esc(t.date)}</span>
-                            <span style="flex:1;color:var(--color-text);">${esc(t.description) || (t.type === 'credit' ? 'Credit added' : t.type === 'deduct' ? 'Credit deducted' : 'Refund')}</span>
-                            <span style="font-weight:600;white-space:nowrap;color:${t.type === 'deduct' ? '#dc2626' : t.type === 'refund' ? '#2563eb' : '#16a34a'};">
-                                ${t.type === 'deduct' ? '−' : '+'}£${parseFloat(t.amount).toFixed(2)}
-                            </span>
-                        </li>`).join('')}
-                    </ul>` : '<p class="dash-muted">No transactions yet.</p>'}
-                </div>
-            </div>
-        `;
-
-        // Wire up form picker dropdown
-        const formPickerToggle   = document.getElementById('formPickerToggle');
-        const formPickerDropdown = document.getElementById('formPickerDropdown');
-        if (formPickerToggle && formPickerDropdown) {
-            formPickerToggle.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const isHidden = formPickerDropdown.hasAttribute('hidden');
-                formPickerDropdown.toggleAttribute('hidden', !isHidden);
-                formPickerToggle.classList.toggle('dash-form-launch-btn--open', isHidden);
-            });
-            // Close when clicking anywhere outside
-            document.addEventListener('click', function closePicker(e) {
-                if (!formPickerToggle.contains(e.target) && !formPickerDropdown.contains(e.target)) {
-                    formPickerDropdown.setAttribute('hidden', '');
-                    formPickerToggle.classList.remove('dash-form-launch-btn--open');
-                    document.removeEventListener('click', closePicker);
-                }
-            });
-        }
-
-        // Wire up edit toggle
-        panelEditBtn.addEventListener('click', () => {
-            document.getElementById('panelViewMode').style.display = 'none';
-            document.getElementById('panelEditMode').style.display = 'block';
-            panelEditBtn.style.display = 'none';
-        });
-
-        document.getElementById('panelEditCancel').addEventListener('click', () => {
-            document.getElementById('panelViewMode').style.display = 'block';
-            document.getElementById('panelEditMode').style.display = 'none';
-            panelEditBtn.style.display = 'inline-flex';
-        });
-
-        document.getElementById('panelEditSave').addEventListener('click', () => {
-            const payload = {
-                first_name:    document.getElementById('editFirstName').value,
-                last_name:     document.getElementById('editLastName').value,
-                email:         document.getElementById('editEmail').value,
-                phone_number:  document.getElementById('editPhone').value,
-                date_of_birth: document.getElementById('editDob').value,
-                address_line_1: document.getElementById('editAddr1').value,
-                address_line_2: document.getElementById('editAddr2').value,
-                town_city:     document.getElementById('editCity').value,
-                postcode:      document.getElementById('editPostcode').value,
-                skin_type:     document.getElementById('editSkinType').value,
-                medical_notes: document.getElementById('editMedicalNotes').value,
-            };
-
-            fetch(DASHBOARD_URLS.clientEdit.replace('{id}', u.id), {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF_TOKEN },
-                body: JSON.stringify(payload),
-            })
-            .then(r => r.json())
-            .then(data => {
-                if (data.ok) openProfilePanel(u.id);
-            });
-        });
-
-        // Form archive toggles (General / Injectables / Laser)
-        ['General', 'Injectables', 'Laser'].forEach(cat => {
-            const toggle = document.getElementById(`formArchive${cat}Toggle`);
-            if (!toggle) return;
-            toggle.addEventListener('click', function () {
-                const content = document.getElementById(`formArchive${cat}Content`);
-                const open    = content.style.display !== 'none';
-                content.style.display = open ? 'none' : 'block';
-                this.classList.toggle('dash-collapsible-toggle--open', !open);
-            });
-        });
-
-        // Past bookings toggle
-        document.getElementById('pastBookingsToggle').addEventListener('click', function () {
-            const content = document.getElementById('pastBookingsContent');
-            const open    = content.style.display !== 'none';
-            content.style.display = open ? 'none' : 'block';
-            this.classList.toggle('dash-collapsible-toggle--open', !open);
-        });
-
-        // Credit history toggle
-        document.getElementById('creditHistoryToggle').addEventListener('click', function () {
-            const content = document.getElementById('creditHistoryContent');
-            const open    = content.style.display !== 'none';
-            content.style.display = open ? 'none' : 'block';
-            this.classList.toggle('dash-collapsible-toggle--open', !open);
-            this.innerHTML = `${open ? 'Show' : 'Hide'} history <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="transform:${open ? '' : 'rotate(180deg)'}"><polyline points="6 9 12 15 18 9"/></svg>`;
-        });
-
-        // Bundle use session
-        profilePanelBody.querySelectorAll('.dash-bundle-use-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                if (!confirm(`Mark one session as used for "${btn.dataset.bundleName}"?`)) return;
-                fetch(
-                    DASHBOARD_URLS.bundleUse
-                        .replace('{id}', u.id)
-                        .replace('{bundle_id}', btn.dataset.bundleId),
-                    { method: 'POST', headers: { 'X-CSRFToken': CSRF_TOKEN } }
-                )
-                .then(r => r.json())
-                .then(data => { if (data.ok) openProfilePanel(u.id); });
-            });
-        });
-
-        // Add bundle
-        document.getElementById('addBundleBtn').addEventListener('click', () => {
-            openModal(bundleModalOverlay);
-        });
-
-        // Adjust credit
-        document.getElementById('adjustCreditBtn').addEventListener('click', () => {
-            openModal(creditModalOverlay);
-        });
-    }
-
-    // Profile panel edit button (header)
-    panelEditBtn.addEventListener('click', () => {}); // delegated above after render
-
-    // ---------------------------------------------------------------
-    // Bundle modal
-    // ---------------------------------------------------------------
-
-    bundleModalClose.addEventListener('click',  () => closeModal(bundleModalOverlay));
-    bundleModalCancel.addEventListener('click', () => closeModal(bundleModalOverlay));
-
-    bundleModalSave.addEventListener('click', () => {
-        const name     = document.getElementById('bundleTreatmentName').value.trim();
-        const sessions = document.getElementById('bundleTotalSessions').value;
-        const expiry   = document.getElementById('bundleExpiryDate').value;
-        const notes    = document.getElementById('bundleNotes').value;
-        const errEl    = document.getElementById('bundleError');
-        errEl.textContent = '';
-
-        if (!name || !sessions) { errEl.textContent = 'Treatment name and sessions are required.'; return; }
-
-        bundleModalSave.disabled = true;
-        bundleModalSave.textContent = 'Saving…';
-
-        const targetUserId = activePanelUserId;
-
-        fetch(DASHBOARD_URLS.bundleAdd.replace('{id}', targetUserId), {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF_TOKEN },
-            body: JSON.stringify({ treatment_name: name, total_sessions: sessions, expiry_date: expiry, notes }),
-        })
-        .then(r => r.json())
-        .then(data => {
-            bundleModalSave.disabled = false;
-            bundleModalSave.textContent = 'Add Bundle';
-            if (data.ok) {
-                closeModal(bundleModalOverlay);
-                document.getElementById('bundleTreatmentName').value = '';
-                document.getElementById('bundleTotalSessions').value = '6';
-                document.getElementById('bundleExpiryDate').value    = '';
-                document.getElementById('bundleNotes').value         = '';
-                showToast(`Bundle "${name}" added successfully.`);
-                openProfilePanel(targetUserId);
-            } else {
-                errEl.textContent = data.error || 'Something went wrong.';
-            }
-        })
-        .catch(() => {
-            bundleModalSave.disabled = false;
-            bundleModalSave.textContent = 'Add Bundle';
-            errEl.textContent = 'Network error — please try again.';
-        });
-    });
-
-    // ---------------------------------------------------------------
-    // Credit modal
-    // ---------------------------------------------------------------
-
-    creditModalClose.addEventListener('click',  () => closeModal(creditModalOverlay));
-    creditModalCancel.addEventListener('click', () => closeModal(creditModalOverlay));
-
-    creditModalSave.addEventListener('click', () => {
-        const type   = document.getElementById('creditType').value;
-        const amount = document.getElementById('creditAmount').value;
-        const desc   = document.getElementById('creditDescription').value;
-        const errEl  = document.getElementById('creditError');
-        errEl.textContent = '';
-
-        if (!amount || parseFloat(amount) <= 0) { errEl.textContent = 'Please enter a valid amount.'; return; }
-
-        creditModalSave.disabled = true;
-        creditModalSave.textContent = 'Saving…';
-
-        const targetUserId = activePanelUserId;
-
-        fetch(DASHBOARD_URLS.creditAdjust.replace('{id}', targetUserId), {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF_TOKEN },
-            body: JSON.stringify({ type, amount, description: desc }),
-        })
-        .then(r => r.json())
-        .then(data => {
-            creditModalSave.disabled = false;
-            creditModalSave.textContent = 'Confirm';
-            if (data.ok) {
-                closeModal(creditModalOverlay);
-                document.getElementById('creditAmount').value      = '';
-                document.getElementById('creditDescription').value = '';
-                const typeLabel = type === 'credit' ? 'Credit added' : type === 'deduct' ? 'Credit deducted' : 'Refund applied';
-                showToast(`${typeLabel}: £${parseFloat(amount).toFixed(2)}`);
-                openProfilePanel(targetUserId);
-            } else {
-                errEl.textContent = data.error || 'Something went wrong.';
-            }
-        })
-        .catch(() => {
-            creditModalSave.disabled = false;
-            creditModalSave.textContent = 'Confirm';
-            errEl.textContent = 'Network error — please try again.';
-        });
-    });
 
     // ---------------------------------------------------------------
     // Init

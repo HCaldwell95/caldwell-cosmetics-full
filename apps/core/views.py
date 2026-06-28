@@ -7,7 +7,7 @@ def home(request):
     return render(request, 'core/home.html', {'marquee_categories': marquee_categories})
 
 def dashboard(request):
-    return render(request, "core/dashboard.html")
+    return render(request, "dashboard/dashboard.html")
 
 def privacy(request):
     return render(request, "core/privacy.html")

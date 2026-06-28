@@ -3,7 +3,7 @@
 <header class="nav-header">
     <div class="nav-container container-fluid">
         <!-- Logo -->
-        <a href="/" class="logo-link" aria-label="Home page">
+        <a href="{% if user.is_superuser %}{% url 'dashboard:dashboard' %}{% else %}/{% endif %}" class="logo-link" aria-label="{% if user.is_superuser %}Dashboard{% else %}Home page{% endif %}">
             <img src="{% static 'images/mini-logo.png' %}" alt="Caldwell Cosmetics Logo" class="logo-image">
         </a>
 

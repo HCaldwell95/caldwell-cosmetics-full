@@ -28,7 +28,7 @@ from apps.forms_system.models import (
     PRPConsentForm,
     LaserReConsent,
 )
-from .models import ClientNote
+from .models import ClientNote, Notification
 
 try:
     from apps.accounts.models import User, PrepaidBundle, AccountCredit, CreditTransaction
@@ -170,7 +170,61 @@ def dashboard(request):
         "treatments": treatments,
         "categories": categories,
     }
-    return render(request, "core/dashboard.html", context)
+    return render(request, "dashboard/dashboard.html", context)
+
+
+@admin_view
+def clients_page(request):
+    return render(request, "dashboard/clients.html")
+
+
+@admin_view
+def notifications_page(request):
+    return render(request, "dashboard/notifications.html")
+
+
+@admin_view
+def notifications_data(request):
+    notifs = (
+        Notification.objects
+        .select_related('client')
+        .order_by('is_read', '-created_at')
+    )
+    return JsonResponse({
+        'notifications': [
+            {
+                'id':           n.pk,
+                'client_id':    n.client_id,
+                'message':      n.message,
+                'form_url':     n.form_url,
+                'action_label': 'View Calendar' if n.form_type in Notification.BOOKING_TYPES else 'View Form',
+                'is_read':      n.is_read,
+                'created_at':   n.created_at.strftime('%d %b %Y at %H:%M'),
+            }
+            for n in notifs
+        ],
+    })
+
+
+@admin_view
+def notification_count(request):
+    return JsonResponse({'count': Notification.objects.filter(is_read=False).count()})
+
+
+@admin_view
+@require_POST
+def notification_mark_read(request, pk):
+    n = get_object_or_404(Notification, pk=pk)
+    n.is_read = True
+    n.save(update_fields=['is_read'])
+    return JsonResponse({'ok': True})
+
+
+@admin_view
+@require_POST
+def notification_mark_all_read(request):
+    Notification.objects.filter(is_read=False).update(is_read=True)
+    return JsonResponse({'ok': True})
 
 
 # ---------------------------------------------------------------------------
@@ -438,6 +492,53 @@ def client_list(request):
             }
             for c in clients
         ]
+    })
+
+
+# ---------------------------------------------------------------------------
+# Client create (operator adds a user manually)
+# ---------------------------------------------------------------------------
+
+@admin_view
+@require_POST
+def client_create(request):
+    data, err = _parse_json(request)
+    if err: return err
+
+    email      = data.get("email",      "").strip()
+    first_name = data.get("first_name", "").strip()
+    last_name  = data.get("last_name",  "").strip()
+    phone      = data.get("phone",      "").strip()
+    password   = data.get("password",   "")
+
+    if not email:
+        return JsonResponse({"ok": False, "error": "Email address is required."}, status=400)
+    if not password or len(password) < 8:
+        return JsonResponse({"ok": False, "error": "Password must be at least 8 characters."}, status=400)
+
+    if User.objects.filter(email=email).exists():
+        return JsonResponse({"ok": False, "error": "A client with this email already exists."}, status=400)
+
+    try:
+        user = User.objects.create_user(
+            email=email,
+            first_name=first_name,
+            last_name=last_name,
+            password=password,
+        )
+    except IntegrityError:
+        return JsonResponse({"ok": False, "error": "A client with this email already exists."}, status=400)
+
+    profile = getattr(user, "profile", None)
+    if profile and phone:
+        profile.phone_number = phone
+        profile.save()
+
+    return JsonResponse({
+        "ok":    True,
+        "id":    user.pk,
+        "name":  user.full_name or email,
+        "email": user.email,
     })
 
 

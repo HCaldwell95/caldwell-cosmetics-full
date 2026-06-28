@@ -1,0 +1,40 @@
+{% extends "dashboard/base_dashboard.html" %}
+{% load static %}
+
+{% block title %}Notifications | Caldwell Cosmetics{% endblock %}
+
+{% block nav_notifications %}dash-sidenav__link--active{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/dashboard.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="dash-page">
+
+    <div class="dash-header">
+        <div class="dash-header__left">
+            <span class="dash-header__eyebrow">Practitioner Portal</span>
+            <h1 class="dash-header__title">Notifications</h1>
+        </div>
+        <button class="btn btn--ghost" id="markAllReadBtn">Mark all as read</button>
+    </div>
+
+    <div class="notif-list" id="notifList">
+        <p class="notif-empty">Loading…</p>
+    </div>
+
+    <div id="dashToast" class="dash-toast" role="alert" aria-live="polite"></div>
+
+</div>
+
+<script>
+    const NOTIF_URLS = {
+        data:     "{% url 'dashboard:notifications_data' %}",
+        markRead: "/dashboard/notifications/{id}/mark-read/",
+        markAll:  "{% url 'dashboard:notification_mark_all' %}",
+    };
+    const CSRF_TOKEN = "{{ csrf_token }}";
+</script>
+<script src="{% static 'js/notifications.js' %}"></script>
+{% endblock %}

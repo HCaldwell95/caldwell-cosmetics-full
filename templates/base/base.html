@@ -86,9 +86,11 @@
 
     {% block hero %}{% endblock %}
 
+    {% block main_wrapper %}
     <main class="container">
         {% block content %}{% endblock %}
     </main>
+    {% endblock %}
 
     {% include 'base/_footer.html' %}
 

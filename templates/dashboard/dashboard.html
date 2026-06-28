@@ -1,7 +1,9 @@
-{% extends "base/base.html" %}
+{% extends "dashboard/base_dashboard.html" %}
 {% load static %}
 
 {% block title %}Practitioner Dashboard | Caldwell Cosmetics{% endblock %}
+
+{% block nav_dashboard %}dash-sidenav__link--active{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/pages/dashboard.css' %}">
@@ -33,15 +35,19 @@
     <!-- Calendar toolbar -->
     <div class="dash-toolbar">
         <div class="dash-toolbar__nav">
-            <button class="dash-nav-btn" id="calPrev" aria-label="Previous">…</button>
+            <button class="dash-nav-btn" id="calPrev" aria-label="Previous">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
             <span class="dash-toolbar__period" id="calPeriodLabel"></span>
-            <button class="dash-nav-btn" id="calNext" aria-label="Next">…</button>
+            <button class="dash-nav-btn" id="calNext" aria-label="Next">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
         </div>
-        <!-- ADD THIS WRAPPER -->
         <div class="dash-toolbar__bottom">
             <div class="dash-toolbar__views">
                 <button class="dash-view-btn dash-view-btn--active" data-view="month">Month</button>
                 <button class="dash-view-btn" data-view="week">Week</button>
+                <button class="dash-view-btn" data-view="day">Day</button>
             </div>
             <button class="dash-today-btn" id="calToday">Today</button>
         </div>
@@ -50,46 +56,6 @@
     <!-- Calendar -->
     <div class="dash-week-scroll">
         <div class="dash-calendar" id="dashCalendar"></div>
-    </div>
-
-    <!-- ================================================================
-         CLIENT PROFILES SECTION
-    ================================================================ -->
-    <div class="dash-section-divider">
-        <h2 class="dash-section-title">Client Profiles</h2>
-    </div>
-
-    <div class="dash-clients">
-
-        <!-- Search bar -->
-        <div class="dash-client-search-wrap">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            <input
-                type="text"
-                id="clientSearchBar"
-                class="dash-client-search"
-                placeholder="Search clients by name or email…"
-                autocomplete="off"
-            >
-        </div>
-
-        <!-- Client table -->
-        <div class="dash-client-table-wrap">
-            <table class="dash-client-table">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Phone</th>
-                        <th>Member since</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody id="clientTableBody">
-                    <tr><td colspan="5" class="dash-client-table__empty">Loading clients…</td></tr>
-                </tbody>
-            </table>
-        </div>
     </div>
 
     <!-- ================================================================
@@ -311,5 +277,6 @@
 </script>
 
 <script src="{% static 'js/booking.utils.js' %}"></script>
+<script src="{% static 'js/client-panel.js' %}"></script>
 <script src="{% static 'js/dashboard.js' %}"></script>
 {% endblock %}
