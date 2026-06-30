@@ -450,6 +450,7 @@
 .calendar-nav__btn {
     width: 34px;
     height: 34px;
+    padding: 0;
     border-radius: 50%;
     border: 1.5px solid #e5e0d8;
     background: none;

@@ -1,4 +1,42 @@
 /* ============================================
+   TREATMENTS CARD GRID (replaces Bootstrap row/col)
+   Mirrors Bootstrap col-lg-4 / col-md-6 / col-sm-12
+   ============================================ */
+
+.treatments-grid {
+    display: flex;
+    flex-wrap: wrap;
+    margin-left: -0.75rem;
+    margin-right: -0.75rem;
+}
+
+.treatments-grid > .treatments__card {
+    flex: 0 0 auto;
+    width: 33.33333333%;
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+    box-sizing: border-box;
+}
+
+@media (max-width: 991px) {
+    .treatments-grid > .treatments__card {
+        width: 50%;
+    }
+}
+
+@media (max-width: 767px) {
+    .treatments-grid {
+        margin-left: 0;
+        margin-right: 0;
+    }
+    .treatments-grid > .treatments__card {
+        width: 100%;
+        padding-left: 0;
+        padding-right: 0;
+    }
+}
+
+/* ============================================
    TREATMENTS INTRO SECTION
    ============================================ */
 
