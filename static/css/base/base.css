@@ -1,7 +1,7 @@
 
 
-/* Buttons */
-button, .btn {
+/* Buttons — only .btn class, not the bare element selector */
+.btn {
     font-family: var(--font-primary);
     background-color: var(--color-primary);
     color: var(--color-light);
@@ -12,7 +12,7 @@ button, .btn {
     transition: background-color 0.3s ease;
 }
 
-button:hover, .btn:hover {
+.btn:hover {
     background-color: var(--color-scrollbar);
 }
 
