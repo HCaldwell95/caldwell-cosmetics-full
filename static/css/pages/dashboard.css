@@ -653,6 +653,20 @@ body {
     margin-top: 1.5rem;
 }
 
+.dash-modal__actions .btn {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    white-space: nowrap;
+    font-size: 0.82rem;
+    padding: 0.65rem 0.5rem;
+    min-width: 0;
+    margin-bottom: 0;
+    letter-spacing: 0.03em;
+}
+
 /* Form */
 .dash-form-group {
     padding: 0 1.5rem;
@@ -1601,10 +1615,7 @@ a.dash-form-pill:hover {
         display: none;
     }
 
-    .btn {
-        width: 45%;
-        margin-bottom: 0;
-    }
+
 }
 
 /* -------------------------------------------------------
