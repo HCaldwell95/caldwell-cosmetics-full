@@ -58,39 +58,96 @@
          ADD CLIENT MODAL
     ================================================================ -->
     <div class="dash-modal-overlay" id="addClientOverlay" style="display:none;">
-        <div class="dash-modal">
+        <div class="dash-modal dash-modal--wide">
             <div class="dash-modal__header">
                 <h2 class="dash-modal__title">Add New Client</h2>
                 <button class="dash-modal__close" id="addClientClose" aria-label="Close">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                 </button>
             </div>
-            <div class="cform-grid cform-grid--2" style="padding:0 1.5rem;gap:0.75rem;">
+
+            <div class="dash-modal__body">
+
+                <!-- Account (required) -->
+                <p class="dash-modal__section-label">Account <span class="dash-modal__required-note">* required</span></p>
+                <div class="dash-modal__grid">
+                    <div class="dash-form-group">
+                        <label class="dash-label" for="newFirstName">First Name</label>
+                        <input type="text" class="dash-input" id="newFirstName" autocomplete="off">
+                    </div>
+                    <div class="dash-form-group">
+                        <label class="dash-label" for="newLastName">Last Name</label>
+                        <input type="text" class="dash-input" id="newLastName" autocomplete="off">
+                    </div>
+                    <div class="dash-form-group dash-form-group--full">
+                        <label class="dash-label" for="newEmail">Email <span class="dash-required">*</span></label>
+                        <input type="email" class="dash-input" id="newEmail" autocomplete="off">
+                    </div>
+                    <div class="dash-form-group dash-form-group--full">
+                        <label class="dash-label" for="newPhone">Phone</label>
+                        <input type="tel" class="dash-input" id="newPhone" autocomplete="off">
+                    </div>
+                    <div class="dash-form-group">
+                        <label class="dash-label" for="newPassword">Password <span class="dash-required">*</span></label>
+                        <input type="password" class="dash-input" id="newPassword" autocomplete="new-password">
+                    </div>
+                    <div class="dash-form-group">
+                        <label class="dash-label" for="newPasswordConfirm">Confirm Password <span class="dash-required">*</span></label>
+                        <input type="password" class="dash-input" id="newPasswordConfirm" autocomplete="new-password">
+                    </div>
+                </div>
+
+                <!-- Personal details (optional) -->
+                <p class="dash-modal__section-label">Personal Details <span class="dash-modal__optional-note">optional</span></p>
+                <div class="dash-modal__grid">
+                    <div class="dash-form-group">
+                        <label class="dash-label" for="newDob">Date of Birth</label>
+                        <input type="date" class="dash-input" id="newDob">
+                    </div>
+                    <div class="dash-form-group">
+                        <label class="dash-label" for="newSkinType">Skin Type (Fitzpatrick)</label>
+                        <select class="dash-input" id="newSkinType">
+                            <option value="">— Not assessed —</option>
+                            <option value="type_1">Type 1 – Always burns, never tans</option>
+                            <option value="type_2">Type 2 – Easily burns, eventually tans</option>
+                            <option value="type_3">Type 3 – Sometimes burns, quickly tans</option>
+                            <option value="type_4">Type 4 – Rarely burns, quickly gets a deep tan</option>
+                            <option value="type_5">Type 5 – Very rarely burns, consistent tan</option>
+                            <option value="type_6">Type 6 – Never burns, consistent tan</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Address (optional) -->
+                <p class="dash-modal__section-label">Address <span class="dash-modal__optional-note">optional</span></p>
+                <div class="dash-modal__grid">
+                    <div class="dash-form-group">
+                        <label class="dash-label" for="newAddress1">Address Line 1</label>
+                        <input type="text" class="dash-input" id="newAddress1" autocomplete="off">
+                    </div>
+                    <div class="dash-form-group">
+                        <label class="dash-label" for="newAddress2">Address Line 2</label>
+                        <input type="text" class="dash-input" id="newAddress2" autocomplete="off">
+                    </div>
+                    <div class="dash-form-group">
+                        <label class="dash-label" for="newTownCity">Town / City</label>
+                        <input type="text" class="dash-input" id="newTownCity" autocomplete="off">
+                    </div>
+                    <div class="dash-form-group">
+                        <label class="dash-label" for="newPostcode">Postcode</label>
+                        <input type="text" class="dash-input" id="newPostcode" autocomplete="off">
+                    </div>
+                </div>
+
+                <!-- Clinical notes (optional) -->
+                <p class="dash-modal__section-label">Clinical Notes <span class="dash-modal__optional-note">optional — staff only</span></p>
                 <div class="dash-form-group">
-                    <label class="dash-label" for="newFirstName">First Name</label>
-                    <input type="text" class="dash-input" id="newFirstName" autocomplete="off">
+                    <label class="dash-label" for="newMedicalNotes">Medical / Internal Notes</label>
+                    <textarea class="dash-input" id="newMedicalNotes" rows="3" placeholder="Allergies, contraindications, any relevant medical history…"></textarea>
                 </div>
-                <div class="dash-form-group">
-                    <label class="dash-label" for="newLastName">Last Name</label>
-                    <input type="text" class="dash-input" id="newLastName" autocomplete="off">
-                </div>
-                <div class="dash-form-group" style="grid-column:1/-1;">
-                    <label class="dash-label" for="newEmail">Email <span style="color:#dc2626;">*</span></label>
-                    <input type="email" class="dash-input" id="newEmail" autocomplete="off">
-                </div>
-                <div class="dash-form-group" style="grid-column:1/-1;">
-                    <label class="dash-label" for="newPhone">Phone</label>
-                    <input type="tel" class="dash-input" id="newPhone" autocomplete="off">
-                </div>
-                <div class="dash-form-group" style="grid-column:1/-1;">
-                    <label class="dash-label" for="newPassword">Password <span style="color:#dc2626;">*</span></label>
-                    <input type="password" class="dash-input" id="newPassword" autocomplete="new-password">
-                </div>
-                <div class="dash-form-group" style="grid-column:1/-1;">
-                    <label class="dash-label" for="newPasswordConfirm">Confirm Password <span style="color:#dc2626;">*</span></label>
-                    <input type="password" class="dash-input" id="newPasswordConfirm" autocomplete="new-password">
-                </div>
-            </div>
+
+            </div><!-- /.dash-modal__body -->
+
             <p class="dash-field-error" id="addClientError" style="padding:0 1.5rem;"></p>
             <div class="dash-modal__actions">
                 <button class="btn btn--ghost" id="addClientCancel">Cancel</button>

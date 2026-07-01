@@ -530,8 +530,28 @@ def client_create(request):
         return JsonResponse({"ok": False, "error": "A client with this email already exists."}, status=400)
 
     profile = getattr(user, "profile", None)
-    if profile and phone:
-        profile.phone_number = phone
+    if profile:
+        if phone:
+            profile.phone_number = phone
+
+        dob = data.get("dob", "").strip()
+        if dob:
+            from datetime import date as _date
+            try:
+                profile.date_of_birth = _date.fromisoformat(dob)
+            except ValueError:
+                pass
+
+        skin_type = data.get("skin_type", "").strip()
+        if skin_type:
+            profile.skin_type = skin_type
+
+        profile.address_line_1 = data.get("address_line_1", "").strip()
+        profile.address_line_2 = data.get("address_line_2", "").strip()
+        profile.town_city      = data.get("town_city",      "").strip()
+        profile.postcode       = data.get("postcode",       "").strip()
+        profile.medical_notes  = data.get("medical_notes",  "").strip()
+
         profile.save()
 
     return JsonResponse({

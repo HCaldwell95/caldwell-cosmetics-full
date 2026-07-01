@@ -67,12 +67,15 @@ document.addEventListener('DOMContentLoaded', function () {
     // ---------------------------------------------------------------
 
     function openAddClientModal() {
-        document.getElementById('newFirstName').value         = '';
-        document.getElementById('newLastName').value          = '';
-        document.getElementById('newEmail').value             = '';
-        document.getElementById('newPhone').value             = '';
-        document.getElementById('newPassword').value          = '';
-        document.getElementById('newPasswordConfirm').value   = '';
+        ['newFirstName','newLastName','newEmail','newPhone',
+         'newPassword','newPasswordConfirm','newDob',
+         'newAddress1','newAddress2','newTownCity','newPostcode',
+         'newMedicalNotes'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.value = '';
+        });
+        const skinEl = document.getElementById('newSkinType');
+        if (skinEl) skinEl.value = '';
         document.getElementById('addClientError').textContent = '';
         addClientOverlay.style.display = 'flex';
         document.body.style.overflow   = 'hidden';
@@ -113,11 +116,18 @@ document.addEventListener('DOMContentLoaded', function () {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF_TOKEN },
             body: JSON.stringify({
-                first_name: firstName,
-                last_name:  lastName,
-                email:      email,
-                phone:      phone,
-                password:   password,
+                first_name:    firstName,
+                last_name:     lastName,
+                email:         email,
+                phone:         phone,
+                password:      password,
+                dob:           document.getElementById('newDob').value          || '',
+                skin_type:     document.getElementById('newSkinType').value     || '',
+                address_line_1: document.getElementById('newAddress1').value.trim()  || '',
+                address_line_2: document.getElementById('newAddress2').value.trim()  || '',
+                town_city:     document.getElementById('newTownCity').value.trim()   || '',
+                postcode:      document.getElementById('newPostcode').value.trim()   || '',
+                medical_notes: document.getElementById('newMedicalNotes').value.trim() || '',
             }),
         })
         .then(r => r.json())

@@ -645,6 +645,70 @@ body {
     word-break: break-word;
 }
 
+/* Wide variant for multi-section forms */
+.dash-modal--wide {
+    max-width: 720px;
+}
+
+/* Scrollable body area keeps header/actions pinned */
+.dash-modal__body {
+    padding: 0 1.5rem;
+    overflow-y: auto;
+    max-height: calc(90vh - 140px); /* header ~80px + actions ~60px */
+}
+
+/* Section divider label */
+.dash-modal__section-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-primary, #a07850);
+    margin: 1.5rem 0 0.75rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid var(--color-border, #e8e0d5);
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+}
+
+.dash-modal__section-label:first-child {
+    margin-top: 0;
+}
+
+.dash-modal__required-note,
+.dash-modal__optional-note {
+    font-size: 0.68rem;
+    font-weight: 400;
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--color-muted, #888);
+}
+
+.dash-required {
+    color: #dc2626;
+}
+
+/* Two-column form grid inside modal */
+.dash-modal__grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+}
+
+.dash-form-group--full {
+    grid-column: 1 / -1;
+}
+
+@media (max-width: 560px) {
+    .dash-modal__grid {
+        grid-template-columns: 1fr;
+    }
+    .dash-form-group--full {
+        grid-column: 1;
+    }
+}
+
 .dash-modal__actions {
     display: flex;
     gap: 0.75rem;
