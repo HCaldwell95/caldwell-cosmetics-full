@@ -535,4 +535,32 @@
 
 })();
 </script>
+
+<script>
+(function () {
+    /* Lightwidget injects its lightbox popup dynamically into the body.
+       Watch for it and force it above the navbar (z-index: 1000). */
+    const NAVBAR_Z = 1000;
+
+    function boostLightwidgetPopup(node) {
+        if (node.nodeType !== 1) return;
+        const isPopup =
+            (node.id   && node.id.toLowerCase().includes('lightwidget')) ||
+            (typeof node.className === 'string' && node.className.toLowerCase().includes('lightwidget'));
+        if (isPopup) {
+            node.style.setProperty('z-index', NAVBAR_Z + 1000, 'important');
+        }
+        /* Also check any matching descendants added in one batch */
+        node.querySelectorAll('[id*="lightwidget"],[class*="lightwidget"]').forEach(el => {
+            el.style.setProperty('z-index', NAVBAR_Z + 1000, 'important');
+        });
+    }
+
+    const observer = new MutationObserver(mutations => {
+        mutations.forEach(m => m.addedNodes.forEach(boostLightwidgetPopup));
+    });
+
+    observer.observe(document.body, { childList: true, subtree: true });
+})();
+</script>
 {% endblock %}
