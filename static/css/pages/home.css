@@ -845,8 +845,17 @@
    MISC
    ============================================ */
 
+.instagram-feed {
+    position: relative;
+    left: 50%;
+    margin-left: -50vw;
+    width: 100vw;
+    padding: 0 clamp(1rem, 3vw, 2.5rem);
+    box-sizing: border-box;
+}
+
 .lightwidget-widget {
-    padding: 2em 0;
+    display: block;
 }
 
 /* ============================================

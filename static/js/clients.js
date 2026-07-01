@@ -13,10 +13,116 @@ document.addEventListener('DOMContentLoaded', function () {
     const addClientSave    = document.getElementById('addClientSave');
 
     // ---------------------------------------------------------------
-    // Client list
+    // Client list — with sort + filter
     // ---------------------------------------------------------------
 
+    const clientFilterPhone = document.getElementById('clientFilterPhone');
+    const clientCount       = document.getElementById('clientCount');
+
+    let allClients         = [];
     let clientSearchTimeout = null;
+    let sortCol            = 'last_name';
+    let sortDir            = 'asc';
+
+    function esc(s) {
+        return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function applyFilterAndSort() {
+        const phoneFilter = clientFilterPhone ? clientFilterPhone.value : '';
+
+        let rows = allClients.slice();
+
+        // Filter
+        if (phoneFilter === 'has_phone') {
+            rows = rows.filter(c => c.phone);
+        } else if (phoneFilter === 'no_phone') {
+            rows = rows.filter(c => !c.phone);
+        }
+
+        // Sort
+        rows.sort((a, b) => {
+            let av = (a[sortCol] ?? '').toLowerCase();
+            let bv = (b[sortCol] ?? '').toLowerCase();
+            if (sortCol === 'last_name') {
+                // Secondary sort by first name
+                const cmp = av.localeCompare(bv);
+                if (cmp !== 0) return sortDir === 'asc' ? cmp : -cmp;
+                const af = (a.first_name ?? '').toLowerCase();
+                const bf = (b.first_name ?? '').toLowerCase();
+                return sortDir === 'asc' ? af.localeCompare(bf) : bf.localeCompare(af);
+            }
+            const cmp = av.localeCompare(bv);
+            return sortDir === 'asc' ? cmp : -cmp;
+        });
+
+        renderRows(rows);
+        updateSortIcons();
+    }
+
+    function renderRows(rows) {
+        if (clientCount) {
+            clientCount.textContent = rows.length === 1 ? '1 client' : `${rows.length} clients`;
+        }
+
+        if (!rows.length) {
+            clientTableBody.innerHTML = '<tr><td colspan="5" class="dash-client-table__empty">No clients found.</td></tr>';
+            return;
+        }
+
+        clientTableBody.innerHTML = rows.map(c => `
+            <tr class="dash-client-row" data-id="${c.id}">
+                <td class="dash-client-name">${esc(c.name)}</td>
+                <td>${esc(c.email)}</td>
+                <td>${esc(c.phone) || '—'}</td>
+                <td>${esc(c.joined)}</td>
+                <td>
+                    <button class="dash-client-view-btn" data-id="${c.id}">
+                        <span class="dash-client-view-btn__full">View Profile</span>
+                        <span class="dash-client-view-btn__short">View</span>
+                    </button>
+                </td>
+            </tr>`).join('');
+
+        clientTableBody.querySelectorAll('.dash-client-view-btn').forEach(btn => {
+            btn.addEventListener('click', () => openProfilePanel(parseInt(btn.dataset.id)));
+        });
+    }
+
+    function updateSortIcons() {
+        document.querySelectorAll('.dash-sort-icon').forEach(icon => {
+            const col = icon.dataset.col;
+            if (col === sortCol) {
+                icon.textContent = sortDir === 'asc' ? ' ▲' : ' ▼';
+                icon.classList.add('dash-sort-icon--active');
+            } else {
+                icon.textContent = '';
+                icon.classList.remove('dash-sort-icon--active');
+            }
+        });
+        document.querySelectorAll('.dash-th-sortable').forEach(th => {
+            th.classList.toggle('dash-th-sortable--active', th.dataset.col === sortCol);
+        });
+    }
+
+    // Sortable column headers
+    document.querySelectorAll('.dash-th-sortable').forEach(th => {
+        th.addEventListener('click', () => {
+            const col = th.dataset.col;
+            if (col === sortCol) {
+                sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+            } else {
+                sortCol = col;
+                sortDir = col === 'joined_iso' ? 'desc' : 'asc';
+            }
+            applyFilterAndSort();
+        });
+    });
+
+    // Filter change
+    if (clientFilterPhone) {
+        clientFilterPhone.addEventListener('change', applyFilterAndSort);
+    }
 
     function loadClients(q) {
         const url = q
@@ -26,32 +132,8 @@ document.addEventListener('DOMContentLoaded', function () {
         fetch(url)
             .then(r => r.json())
             .then(data => {
-                if (!data.clients.length) {
-                    clientTableBody.innerHTML = '<tr><td colspan="5" class="dash-client-table__empty">No clients found.</td></tr>';
-                    return;
-                }
-
-                function esc(s) {
-                    return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-                }
-
-                clientTableBody.innerHTML = data.clients.map(c => `
-                    <tr class="dash-client-row" data-id="${c.id}">
-                        <td class="dash-client-name">${esc(c.name)}</td>
-                        <td>${esc(c.email)}</td>
-                        <td>${esc(c.phone) || '—'}</td>
-                        <td>${esc(c.joined)}</td>
-                        <td>
-                            <button class="dash-client-view-btn" data-id="${c.id}">
-                                <span class="dash-client-view-btn__full">View Profile</span>
-                                <span class="dash-client-view-btn__short">View</span>
-                            </button>
-                        </td>
-                    </tr>`).join('');
-
-                clientTableBody.querySelectorAll('.dash-client-view-btn').forEach(btn => {
-                    btn.addEventListener('click', () => openProfilePanel(parseInt(btn.dataset.id)));
-                });
+                allClients = data.clients || [];
+                applyFilterAndSort();
             });
     }
 

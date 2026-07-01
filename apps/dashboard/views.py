@@ -484,11 +484,14 @@ def client_list(request):
     return JsonResponse({
         "clients": [
             {
-                "id":    c.pk,
-                "name":  c.full_name,
-                "email": c.email,
-                "phone": getattr(c, "profile", None) and c.profile.phone_number or "",
-                "joined": c.date_joined.strftime("%d %b %Y"),
+                "id":         c.pk,
+                "name":       c.full_name,
+                "first_name": c.first_name,
+                "last_name":  c.last_name,
+                "email":      c.email,
+                "phone":      getattr(c, "profile", None) and c.profile.phone_number or "",
+                "joined":     c.date_joined.strftime("%d %b %Y"),
+                "joined_iso": c.date_joined.strftime("%Y-%m-%d"),
             }
             for c in clients
         ]

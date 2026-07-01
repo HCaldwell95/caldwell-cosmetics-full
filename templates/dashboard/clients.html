@@ -26,24 +26,43 @@
 
     <!-- Client table -->
     <div class="dash-clients">
-        <div class="dash-client-search-wrap">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            <input
-                type="text"
-                id="clientSearchBar"
-                class="dash-client-search"
-                placeholder="Search clients by name or email…"
-                autocomplete="off"
-            >
+
+        <!-- Search + filter toolbar -->
+        <div class="dash-client-toolbar">
+            <div class="dash-client-search-wrap">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input
+                    type="text"
+                    id="clientSearchBar"
+                    class="dash-client-search"
+                    placeholder="Search clients by name or email…"
+                    autocomplete="off"
+                >
+            </div>
+            <div class="dash-client-filters">
+                <select class="dash-filter-select" id="clientFilterPhone" title="Filter by phone">
+                    <option value="">All clients</option>
+                    <option value="has_phone">Has phone number</option>
+                    <option value="no_phone">No phone number</option>
+                </select>
+                <span class="dash-client-count" id="clientCount"></span>
+            </div>
         </div>
+
         <div class="dash-client-table-wrap">
             <table class="dash-client-table">
                 <thead>
                     <tr>
-                        <th>Name</th>
-                        <th>Email</th>
+                        <th class="dash-th-sortable" data-col="last_name">
+                            Name <span class="dash-sort-icon" data-col="last_name"></span>
+                        </th>
+                        <th class="dash-th-sortable" data-col="email">
+                            Email <span class="dash-sort-icon" data-col="email"></span>
+                        </th>
                         <th>Phone</th>
-                        <th>Member since</th>
+                        <th class="dash-th-sortable" data-col="joined_iso">
+                            Member since <span class="dash-sort-icon" data-col="joined_iso"></span>
+                        </th>
                         <th></th>
                     </tr>
                 </thead>
