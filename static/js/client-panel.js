@@ -287,8 +287,11 @@ function renderProfilePanel(data) {
         + (data.upcoming_bookings.length
             ? data.upcoming_bookings.map(function (b) {
                 return '<div class="dash-appt-row">'
+                    + '<span class="dash-appt-row__dot" style="background:' + (safeColour(b.category_colour) || 'var(--color-primary)') + '"></span>'
                     + '<div class="dash-appt-row__info">'
-                    + '<span class="dash-appt-row__treatment">' + esc(b.treatment) + '</span>'
+                    + '<span class="dash-appt-row__treatment">' + esc(b.treatment)
+                    + '<span class="dash-appt-row__category" style="color:' + (safeColour(b.category_colour) || 'var(--color-primary)') + '">' + esc(b.category) + '</span>'
+                    + '</span>'
                     + '<span class="dash-appt-row__date">' + esc(b.date) + ' at ' + esc(b.time) + '</span>'
                     + '</div>'
                     + '<span class="dash-appt-row__duration">' + b.duration + ' min</span>'
@@ -305,8 +308,11 @@ function renderProfilePanel(data) {
         + (data.past_bookings.length
             ? data.past_bookings.map(function (b) {
                 return '<div class="dash-appt-row dash-appt-row--past">'
+                    + '<span class="dash-appt-row__dot" style="background:' + (safeColour(b.category_colour) || 'var(--color-primary)') + '"></span>'
                     + '<div class="dash-appt-row__info">'
-                    + '<span class="dash-appt-row__treatment">' + esc(b.treatment) + '</span>'
+                    + '<span class="dash-appt-row__treatment">' + esc(b.treatment)
+                    + '<span class="dash-appt-row__category" style="color:' + (safeColour(b.category_colour) || 'var(--color-primary)') + '">' + esc(b.category) + '</span>'
+                    + '</span>'
                     + '<span class="dash-appt-row__date">' + esc(b.date) + ' at ' + esc(b.time) + '</span>'
                     + '</div>'
                     + '<span class="dash-appt-badge dash-appt-badge--' + esc(b.status) + '">' + esc(b.status) + '</span>'

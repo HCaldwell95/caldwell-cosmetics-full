@@ -852,6 +852,7 @@
     width: 100vw;
     padding: 0 clamp(1rem, 3vw, 2.5rem);
     box-sizing: border-box;
+    padding-bottom: 3em;
 }
 
 .lightwidget-widget {

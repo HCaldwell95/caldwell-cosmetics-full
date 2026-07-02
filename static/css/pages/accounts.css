@@ -1345,6 +1345,15 @@
     text-overflow: ellipsis;
 }
 
+.profile-booking-row__category {
+    font-family: var(--font-montserrat);
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    margin-left: 0.5rem;
+}
+
 .profile-booking-row__meta {
     font-family: var(--font-montserrat);
     font-size: 0.78rem;

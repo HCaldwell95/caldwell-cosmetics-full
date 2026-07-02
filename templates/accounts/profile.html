@@ -365,7 +365,9 @@ function safeColour(c) {
                     <div class="profile-booking-row">
                         <span class="profile-booking-dot" style="background:${safeColour(b.category_colour) || 'var(--color-primary)'}"></span>
                         <div class="profile-booking-row__info">
-                            <span class="profile-booking-row__treatment">${esc(b.treatment)}</span>
+                            <span class="profile-booking-row__treatment">${esc(b.treatment)}
+                                <span class="profile-booking-row__category" style="color:${safeColour(b.category_colour) || 'var(--color-primary)'}">${esc(b.category)}</span>
+                            </span>
                             <span class="profile-booking-row__meta">${esc(b.date)} &middot; ${esc(b.start_time)} &middot; ${b.duration} min</span>
                         </div>
                         <span class="badge badge--success">Confirmed</span>
@@ -379,7 +381,9 @@ function safeColour(c) {
                     <div class="profile-booking-row profile-booking-row--past">
                         <span class="profile-booking-dot" style="background:${safeColour(b.category_colour) || 'var(--color-primary)'}"></span>
                         <div class="profile-booking-row__info">
-                            <span class="profile-booking-row__treatment">${esc(b.treatment)}</span>
+                            <span class="profile-booking-row__treatment">${esc(b.treatment)}
+                                <span class="profile-booking-row__category" style="color:${safeColour(b.category_colour) || 'var(--color-primary)'}">${esc(b.category)}</span>
+                            </span>
                             <span class="profile-booking-row__meta">${esc(b.date)} &middot; ${esc(b.start_time)}</span>
                         </div>
                         <span class="badge ${b.status === 'cancelled' ? 'badge--pending' : ''}"

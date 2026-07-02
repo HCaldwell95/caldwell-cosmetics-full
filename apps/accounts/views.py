@@ -117,6 +117,7 @@ def profile_bookings(request):
         entry = {
             'id':               b.pk,
             'treatment':        b.treatment.name,
+            'category':         b.treatment.category.name,
             'category_colour':  b.treatment.category.colour,
             'date':             b.date.strftime('%A %d %B %Y'),
             'start_time':       b.start_time.strftime('%H:%M'),

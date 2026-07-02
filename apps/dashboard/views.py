@@ -579,14 +579,14 @@ def client_profile(request, pk):
     upcoming = (
         Booking.objects
         .filter(user=user, status=Booking.STATUS_CONFIRMED, date__gte=today)
-        .select_related("treatment")
+        .select_related("treatment__category")
         .order_by("date", "start_time")
     )
 
     past = (
         Booking.objects
         .filter(user=user, date__lt=today)
-        .select_related("treatment")
+        .select_related("treatment__category")
         .order_by("-date", "-start_time")[:10]
     )
 
@@ -630,22 +630,26 @@ def client_profile(request, pk):
         },
         "upcoming_bookings": [
             {
-                "id":        b.pk,
-                "treatment": b.treatment.name,
-                "date":      b.date.strftime("%A %d %B %Y"),
-                "time":      b.start_time.strftime("%H:%M"),
-                "duration":  b.treatment.duration_minutes,
-                "status":    b.status,
+                "id":              b.pk,
+                "treatment":       b.treatment.name,
+                "category":        b.treatment.category.name,
+                "category_colour": b.treatment.category.colour,
+                "date":            b.date.strftime("%A %d %B %Y"),
+                "time":            b.start_time.strftime("%H:%M"),
+                "duration":        b.treatment.duration_minutes,
+                "status":          b.status,
             }
             for b in upcoming
         ],
         "past_bookings": [
             {
-                "id":        b.pk,
-                "treatment": b.treatment.name,
-                "date":      b.date.strftime("%A %d %B %Y"),
-                "time":      b.start_time.strftime("%H:%M"),
-                "status":    b.status,
+                "id":              b.pk,
+                "treatment":       b.treatment.name,
+                "category":        b.treatment.category.name,
+                "category_colour": b.treatment.category.colour,
+                "date":            b.date.strftime("%A %d %B %Y"),
+                "time":            b.start_time.strftime("%H:%M"),
+                "status":          b.status,
             }
             for b in past
         ],
