@@ -4,7 +4,7 @@ from decimal import Decimal, InvalidOperation
 
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.mail import send_mail
-from django.db import IntegrityError, models
+from django.db import IntegrityError, models, transaction
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
@@ -13,11 +13,8 @@ from django.views.decorators.http import require_POST
 
 from apps.bookings.models import Booking
 from apps.bookings.views import (
-    OPEN_DAYS,
-    OPEN_TIME,
-    CLOSE_TIME,
     BOOKING_HORIZON_DAYS,
-    _generate_slot_times,
+    SLOT_INTERVAL_MINUTES,
 )
 from apps.treatments.models import Treatment, TreatmentCategory
 from apps.forms_system.models import (
@@ -35,6 +32,20 @@ try:
 except ImportError:
     from django.contrib.auth import get_user_model
     User = get_user_model()
+
+
+def _generate_admin_slot_times(duration_minutes, interval_minutes=SLOT_INTERVAL_MINUTES):
+    """
+    Full-day slot times for operator bookings — unlike the public booking flow,
+    operators aren't restricted to the clinic's advertised opening hours.
+    """
+    slots   = []
+    current = 0
+    while current + duration_minutes <= 24 * 60:
+        h, m = divmod(current, 60)
+        slots.append(f"{h:02d}:{m:02d}")
+        current += interval_minutes
+    return slots
 
 
 def _parse_json(request):
@@ -308,13 +319,7 @@ def booking_create(request):
     except (User.DoesNotExist, Treatment.DoesNotExist, ValueError) as e:
         return JsonResponse({"ok": False, "errors": {"__all__": str(e)}}, status=400)
 
-    if booking_date.weekday() not in OPEN_DAYS:
-        return JsonResponse(
-            {"ok": False, "errors": {"date": "The clinic is closed on this day."}},
-            status=400,
-        )
-
-    valid_times = _generate_slot_times(treatment.duration_minutes, treatment.duration_minutes)
+    valid_times = _generate_admin_slot_times(treatment.duration_minutes, treatment.duration_minutes)
     if time_str not in valid_times:
         return JsonResponse(
             {"ok": False, "errors": {"start_time": "Invalid time slot for this treatment."}},
@@ -325,28 +330,30 @@ def booking_create(request):
     new_start = h * 60 + m
     new_end   = new_start + treatment.duration_minutes
 
-    overlapping = (
-        Booking.objects
-        .filter(date=booking_date, status=Booking.STATUS_CONFIRMED)
-        .select_related("treatment")
-    )
-    for b in overlapping:
-        ex_start = b.start_time.hour * 60 + b.start_time.minute
-        ex_end   = ex_start + b.treatment.duration_minutes
-        if new_start < ex_end and new_end > ex_start:
-            return JsonResponse(
-                {"ok": False, "errors": {"start_time": "This time overlaps with an existing booking."}},
-                status=400,
-            )
+    with transaction.atomic():
+        overlapping = (
+            Booking.objects
+            .select_for_update()
+            .filter(date=booking_date, status=Booking.STATUS_CONFIRMED)
+            .select_related("treatment")
+        )
+        for b in overlapping:
+            ex_start = b.start_time.hour * 60 + b.start_time.minute
+            ex_end   = ex_start + b.treatment.duration_minutes
+            if new_start < ex_end and new_end > ex_start:
+                return JsonResponse(
+                    {"ok": False, "errors": {"start_time": "This time overlaps with an existing booking."}},
+                    status=400,
+                )
 
-    booking = Booking.objects.create(
-        user=user,
-        treatment=treatment,
-        date=booking_date,
-        start_time=time_str,
-        notes=notes,
-        status=Booking.STATUS_CONFIRMED,
-    )
+        booking = Booking.objects.create(
+            user=user,
+            treatment=treatment,
+            date=booking_date,
+            start_time=time_str,
+            notes=notes,
+            status=Booking.STATUS_CONFIRMED,
+        )
 
     return JsonResponse({"ok": True, "id": booking.pk})
 
@@ -370,10 +377,7 @@ def booking_edit(request, pk):
     except (Treatment.DoesNotExist, ValueError) as e:
         return JsonResponse({"ok": False, "errors": {"__all__": str(e)}}, status=400)
 
-    if booking_date.weekday() not in OPEN_DAYS:
-        errors["date"] = "The clinic is closed on this day."
-
-    valid_times = _generate_slot_times(treatment.duration_minutes, treatment.duration_minutes)
+    valid_times = _generate_admin_slot_times(treatment.duration_minutes, treatment.duration_minutes)
     if time_str not in valid_times:
         errors["start_time"] = "Invalid time slot for this treatment."
 
@@ -384,21 +388,29 @@ def booking_edit(request, pk):
     new_start = h * 60 + m
     new_end   = new_start + treatment.duration_minutes
 
-    for b in Booking.objects.filter(date=booking_date, status=Booking.STATUS_CONFIRMED).exclude(pk=pk).select_related("treatment"):
-        ex_start = b.start_time.hour * 60 + b.start_time.minute
-        ex_end   = ex_start + b.treatment.duration_minutes
-        if new_start < ex_end and new_end > ex_start:
-            return JsonResponse(
-                {"ok": False, "errors": {"start_time": "This time overlaps with an existing booking."}},
-                status=400,
-            )
+    with transaction.atomic():
+        overlapping = (
+            Booking.objects
+            .select_for_update()
+            .filter(date=booking_date, status=Booking.STATUS_CONFIRMED)
+            .exclude(pk=pk)
+            .select_related("treatment")
+        )
+        for b in overlapping:
+            ex_start = b.start_time.hour * 60 + b.start_time.minute
+            ex_end   = ex_start + b.treatment.duration_minutes
+            if new_start < ex_end and new_end > ex_start:
+                return JsonResponse(
+                    {"ok": False, "errors": {"start_time": "This time overlaps with an existing booking."}},
+                    status=400,
+                )
 
-    booking.treatment  = treatment
-    booking.date       = booking_date
-    booking.start_time = time_str
-    booking.notes      = notes
-    booking.status     = status
-    booking.save()
+        booking.treatment  = treatment
+        booking.date       = booking_date
+        booking.start_time = time_str
+        booking.notes      = notes
+        booking.status     = status
+        booking.save()
 
     return JsonResponse({"ok": True})
 

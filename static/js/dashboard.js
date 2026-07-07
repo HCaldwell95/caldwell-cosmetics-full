@@ -556,7 +556,9 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!opt || !opt.value) return;
 
         const duration = parseInt(opt.dataset.duration);
-        generateTimes(duration).forEach(t => {
+        // Operators aren't restricted to the clinic's public opening hours —
+        // offer slots across the full day; the server still blocks overlaps.
+        generateTimes(duration, '00:00', '23:59').forEach(t => {
             const o = document.createElement('option');
             o.value = t; o.textContent = t;
             formTime.appendChild(o);
