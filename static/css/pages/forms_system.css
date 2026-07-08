@@ -545,6 +545,11 @@ textarea.cform-input {
     border: 1px solid var(--color-border, #e8e0d5);
     border-radius: 10px;
     padding: 1.75rem;
+    /* Grid items default to min-width:auto, which refuses to shrink below
+       the treatment table's intrinsic width and blows out the whole page.
+       min-width:0 lets this column shrink so the table scrolls internally
+       instead. */
+    min-width: 0;
 }
 
 @media (min-width: 1440px) {
@@ -559,12 +564,26 @@ textarea.cform-input {
 
 .record-card-new {
     /* flows naturally */
+    min-width: 0;
 }
 
 /* =====================================================
    Record card treatment table
    ===================================================== */
 
+/*
+ * Real <table> markup, not a CSS Grid stand-in. A pile of sibling grid divs
+ * inside a horizontally-scrolling wrapper is a rare-enough combination that
+ * some browsers fail to paint cell borders once they're scrolled away from
+ * the origin — that's what earlier attempts at this were hitting. Native
+ * table border rendering doesn't have that problem, and standard table
+ * layout gives us "columns grow with content, but never below a minimum"
+ * for free.
+ *
+ * Two wrapper layers: the outer owns the border/radius and just clips
+ * corners (overflow:hidden, never scrolls); the inner is the actual
+ * horizontal scroll container.
+ */
 .record-card-table {
     border: 1px solid var(--color-border, #e8e0d5);
     border-radius: 8px;
@@ -572,87 +591,101 @@ textarea.cform-input {
     margin-top: 0.75rem;
 }
 
-.record-card-table__head,
-.record-card-table__row {
-    display: grid;
-    gap: 0;
+.record-card-table__scroll {
+    overflow-x: auto;
+    max-width: 100%;
 }
 
-/* Previous (read-only) table: 8 cols */
-.record-card-table--prev .record-card-table__head,
-.record-card-table--prev .record-card-table__row {
-    grid-template-columns: 1.4fr 0.8fr 0.6fr 0.8fr 0.7fr 0.6fr 0.6fr 0.7fr;
+.record-card-table table {
+    border-collapse: collapse;
+    width: 100%;
+    /* With table-layout:auto (the default), width:100% is a target, not a
+       hard cap: columns still won't shrink below their min-width/width
+       hints below, so on a narrow container the table overflows and
+       __scroll kicks in — but on a spacious screen it stretches to fill
+       the extra space instead of leaving it blank. */
 }
 
-/* New card table: 9 cols (with row number) */
-.record-card-table--new .record-card-table__head,
-.record-card-table--new .record-card-table__row {
-    grid-template-columns: 28px 1.2fr 0.8fr 0.6fr 0.8fr 0.7fr 0.6fr 0.6fr 0.8fr;
-}
-
-.record-card-table__head {
+.record-card-table thead {
     background-color: #f5f1eb;
-    border-bottom: 1px solid var(--color-border, #e8e0d5);
 }
 
-.record-card-table__head span {
+.record-card-table th,
+.record-card-table td {
+    border-bottom: 1px solid var(--color-border, #e8e0d5);
+    border-right: 1px solid var(--color-border, #e8e0d5);
+    padding: 0.45rem 0.5rem;
+    text-align: left;
+}
+
+.record-card-table th:last-child,
+.record-card-table td:last-child {
+    border-right: none;
+}
+
+.record-card-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.record-card-table th {
     font-family: var(--font-montserrat, 'Montserrat', sans-serif);
     font-size: 0.65rem;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.09em;
     color: var(--color-text-light, #888);
-    padding: 0.55rem 0.5rem;
-    border-right: 1px solid var(--color-border, #e8e0d5);
     white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.record-card-table__head span:last-child {
-    border-right: none;
-}
-
-.record-card-table__row {
     border-bottom: 1px solid var(--color-border, #e8e0d5);
-    align-items: center;
 }
 
-.record-card-table__row:last-child {
-    border-bottom: none;
-}
-
-.record-card-table__row span,
-.record-card-table__num {
+.record-card-table td {
     font-family: var(--font-montserrat, 'Montserrat', sans-serif);
     font-size: 0.8rem;
     color: var(--color-text-light, #888);
-    padding: 0.45rem 0.5rem;
-    border-right: 1px solid var(--color-border, #e8e0d5);
-    align-self: stretch;
-    display: flex;
-    align-items: center;
+    overflow-wrap: anywhere;
 }
 
-.record-card-table__num {
-    justify-content: center;
+.record-card-table td.record-card-table__num {
+    text-align: center;
     font-weight: 600;
     color: var(--color-primary, #d4a373);
     font-size: 0.75rem;
 }
 
+/* Previous (read-only) table: 8 cols. Standard table layout already grows
+   a column to fit its content and never below this minimum. */
+.record-card-table--prev th:nth-child(1), .record-card-table--prev td:nth-child(1) { min-width: 160px; }
+.record-card-table--prev th:nth-child(2), .record-card-table--prev td:nth-child(2) { min-width: 100px; }
+.record-card-table--prev th:nth-child(3), .record-card-table--prev td:nth-child(3) { min-width: 80px; }
+.record-card-table--prev th:nth-child(4), .record-card-table--prev td:nth-child(4) { min-width: 100px; }
+.record-card-table--prev th:nth-child(5), .record-card-table--prev td:nth-child(5) { min-width: 90px; }
+.record-card-table--prev th:nth-child(6), .record-card-table--prev td:nth-child(6) { min-width: 80px; }
+.record-card-table--prev th:nth-child(7), .record-card-table--prev td:nth-child(7) { min-width: 80px; }
+.record-card-table--prev th:nth-child(8), .record-card-table--prev td:nth-child(8) { min-width: 90px; }
+
+/* New card table: 9 cols (with row number). Inputs don't grow with typed
+   content, so these get fixed comfortable-typing widths; the table scrolls
+   horizontally instead of cramming them narrower. */
+.record-card-table--new th:nth-child(1), .record-card-table--new td:nth-child(1) { width: 36px; }
+.record-card-table--new th:nth-child(2), .record-card-table--new td:nth-child(2) { width: 170px; }
+.record-card-table--new th:nth-child(3), .record-card-table--new td:nth-child(3) { width: 110px; }
+.record-card-table--new th:nth-child(4), .record-card-table--new td:nth-child(4) { width: 100px; }
+.record-card-table--new th:nth-child(5), .record-card-table--new td:nth-child(5) { width: 100px; }
+.record-card-table--new th:nth-child(6), .record-card-table--new td:nth-child(6) { width: 90px; }
+.record-card-table--new th:nth-child(7), .record-card-table--new td:nth-child(7) { width: 90px; }
+.record-card-table--new th:nth-child(8), .record-card-table--new td:nth-child(8) { width: 90px; }
+.record-card-table--new th:nth-child(9), .record-card-table--new td:nth-child(9) { width: 110px; }
+.record-card-table--new td { padding: 0; }
+
 .record-card-table__row .cform-input {
+    width: 100%;
     border: none;
-    border-right: 1px solid var(--color-border, #e8e0d5);
     border-radius: 0;
     padding: 0.45rem 0.5rem;
     font-size: 0.8rem;
     background: transparent;
-    height: 100%;
-}
-
-.record-card-table__row .cform-input:last-child {
-    border-right: none;
+    display: block;
+    box-sizing: border-box;
 }
 
 .record-card-table__row .cform-input:focus {
@@ -773,17 +806,6 @@ textarea.cform-input {
     .record-card-layout {
         grid-template-columns: 1fr;
     }
-
-    .record-card-table--prev .record-card-table__head,
-    .record-card-table--prev .record-card-table__row {
-        /* Collapse less important cols */
-        grid-template-columns: 1.4fr 0.8fr 0.8fr 0.8fr 0.8fr;
-    }
-
-    .record-card-table--prev .record-card-table__head span:nth-child(n+6),
-    .record-card-table--prev .record-card-table__row > *:nth-child(n+6) {
-        display: none;
-    }
 }
 
 @media (max-width: 700px) {
@@ -813,16 +835,6 @@ textarea.cform-input {
 
     .cform-check-grid {
         grid-template-columns: 1fr 1fr;
-    }
-
-    .record-card-table--new .record-card-table__head,
-    .record-card-table--new .record-card-table__row {
-        grid-template-columns: 28px 1fr 0.8fr 0.8fr 0.8fr;
-    }
-
-    .record-card-table--new .record-card-table__head span:nth-child(n+6),
-    .record-card-table--new .record-card-table__row > *:nth-child(n+6) {
-        display: none;
     }
 }
 

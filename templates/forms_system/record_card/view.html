@@ -103,87 +103,90 @@
         <h2 class="cform-section__title">Treatment Areas</h2>
 
         <div class="record-card-table record-card-table--prev">
+          <div class="record-card-table__scroll">
+            <table>
+            <thead>
+                <tr>
+                <th>Area</th>
+                <th>Skin Type</th>
+                <th>Spot</th>
+                <th>Fluence</th>
+                <th>Pulses</th>
+                <th>Delay</th>
+                <th>Shots</th>
+                <th>Cost</th>
+                </tr>
+            </thead>
+            <tbody>
 
-            <div class="record-card-table__head">
-                <span>Area</span>
-                <span>Skin Type</span>
-                <span>Spot</span>
-                <span>Fluence</span>
-                <span>Pulses</span>
-                <span>Delay</span>
-                <span>Shots</span>
-                <span>Cost</span>
-            </div>
-
-            {% for i in "12345" %}
-
-                {% if i == "1" and card.area_1 %}
-                <div class="record-card-table__row">
-                    <span>{{ card.area_1 }}</span>
-                    <span>{{ card.skin_type_1 }}</span>
-                    <span>{{ card.spot_size_1 }}</span>
-                    <span>{{ card.fluence_1 }}</span>
-                    <span>{{ card.pulses_1 }}</span>
-                    <span>{{ card.delay_1 }}</span>
-                    <span>{{ card.shots_1 }}</span>
-                    <span>{% if card.cost_1 %}£{{ card.cost_1 }}{% else %}—{% endif %}</span>
-                </div>
+                {% if card.area_1 %}
+                <tr>
+                    <td>{{ card.area_1 }}</td>
+                    <td>{{ card.skin_type_1 }}</td>
+                    <td>{{ card.spot_size_1 }}</td>
+                    <td>{{ card.fluence_1 }}</td>
+                    <td>{{ card.pulses_1 }}</td>
+                    <td>{{ card.delay_1 }}</td>
+                    <td>{{ card.shots_1 }}</td>
+                    <td>{% if card.cost_1 %}£{{ card.cost_1 }}{% else %}—{% endif %}</td>
+                </tr>
                 {% endif %}
 
-                {% if i == "2" and card.area_2 %}
-                <div class="record-card-table__row">
-                    <span>{{ card.area_2 }}</span>
-                    <span>{{ card.skin_type_2 }}</span>
-                    <span>{{ card.spot_size_2 }}</span>
-                    <span>{{ card.fluence_2 }}</span>
-                    <span>{{ card.pulses_2 }}</span>
-                    <span>{{ card.delay_2 }}</span>
-                    <span>{{ card.shots_2 }}</span>
-                    <span>{% if card.cost_2 %}£{{ card.cost_2 }}{% else %}—{% endif %}</span>
-                </div>
+                {% if card.area_2 %}
+                <tr>
+                    <td>{{ card.area_2 }}</td>
+                    <td>{{ card.skin_type_2 }}</td>
+                    <td>{{ card.spot_size_2 }}</td>
+                    <td>{{ card.fluence_2 }}</td>
+                    <td>{{ card.pulses_2 }}</td>
+                    <td>{{ card.delay_2 }}</td>
+                    <td>{{ card.shots_2 }}</td>
+                    <td>{% if card.cost_2 %}£{{ card.cost_2 }}{% else %}—{% endif %}</td>
+                </tr>
                 {% endif %}
 
-                {% if i == "3" and card.area_3 %}
-                <div class="record-card-table__row">
-                    <span>{{ card.area_3 }}</span>
-                    <span>{{ card.skin_type_3 }}</span>
-                    <span>{{ card.spot_size_3 }}</span>
-                    <span>{{ card.fluence_3 }}</span>
-                    <span>{{ card.pulses_3 }}</span>
-                    <span>{{ card.delay_3 }}</span>
-                    <span>{{ card.shots_3 }}</span>
-                    <span>{% if card.cost_3 %}£{{ card.cost_3 }}{% else %}—{% endif %}</span>
-                </div>
+                {% if card.area_3 %}
+                <tr>
+                    <td>{{ card.area_3 }}</td>
+                    <td>{{ card.skin_type_3 }}</td>
+                    <td>{{ card.spot_size_3 }}</td>
+                    <td>{{ card.fluence_3 }}</td>
+                    <td>{{ card.pulses_3 }}</td>
+                    <td>{{ card.delay_3 }}</td>
+                    <td>{{ card.shots_3 }}</td>
+                    <td>{% if card.cost_3 %}£{{ card.cost_3 }}{% else %}—{% endif %}</td>
+                </tr>
                 {% endif %}
 
-                {% if i == "4" and card.area_4 %}
-                <div class="record-card-table__row">
-                    <span>{{ card.area_4 }}</span>
-                    <span>{{ card.skin_type_4 }}</span>
-                    <span>{{ card.spot_size_4 }}</span>
-                    <span>{{ card.fluence_4 }}</span>
-                    <span>{{ card.pulses_4 }}</span>
-                    <span>{{ card.delay_4 }}</span>
-                    <span>{{ card.shots_4 }}</span>
-                    <span>{% if card.cost_4 %}£{{ card.cost_4 }}{% else %}—{% endif %}</span>
-                </div>
+                {% if card.area_4 %}
+                <tr>
+                    <td>{{ card.area_4 }}</td>
+                    <td>{{ card.skin_type_4 }}</td>
+                    <td>{{ card.spot_size_4 }}</td>
+                    <td>{{ card.fluence_4 }}</td>
+                    <td>{{ card.pulses_4 }}</td>
+                    <td>{{ card.delay_4 }}</td>
+                    <td>{{ card.shots_4 }}</td>
+                    <td>{% if card.cost_4 %}£{{ card.cost_4 }}{% else %}—{% endif %}</td>
+                </tr>
                 {% endif %}
 
-                {% if i == "5" and card.area_5 %}
-                <div class="record-card-table__row">
-                    <span>{{ card.area_5 }}</span>
-                    <span>{{ card.skin_type_5 }}</span>
-                    <span>{{ card.spot_size_5 }}</span>
-                    <span>{{ card.fluence_5 }}</span>
-                    <span>{{ card.pulses_5 }}</span>
-                    <span>{{ card.delay_5 }}</span>
-                    <span>{{ card.shots_5 }}</span>
-                    <span>{% if card.cost_5 %}£{{ card.cost_5 }}{% else %}—{% endif %}</span>
-                </div>
+                {% if card.area_5 %}
+                <tr>
+                    <td>{{ card.area_5 }}</td>
+                    <td>{{ card.skin_type_5 }}</td>
+                    <td>{{ card.spot_size_5 }}</td>
+                    <td>{{ card.fluence_5 }}</td>
+                    <td>{{ card.pulses_5 }}</td>
+                    <td>{{ card.delay_5 }}</td>
+                    <td>{{ card.shots_5 }}</td>
+                    <td>{% if card.cost_5 %}£{{ card.cost_5 }}{% else %}—{% endif %}</td>
+                </tr>
                 {% endif %}
 
-            {% endfor %}
-
+            </tbody>
+            </table>
+          </div>
         </div>
     </div>
 

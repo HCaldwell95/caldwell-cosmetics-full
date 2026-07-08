@@ -116,8 +116,9 @@
 
 <div class="cform-header" style="padding-top:0;">
     <span class="cform-header__eyebrow">Operator Only</span>
-    <h1 class="cform-header__title">New Consultation Form</h1>
+    <h1 class="cform-header__title">{% if previous %}Update Consultation Form{% else %}New Consultation Form{% endif %}</h1>
     <p class="cform-header__sub">{{ target_user.full_name }}</p>
+    {% if previous %}<p class="cform-hint">Pre-filled from the {{ previous.completed_at|date:"j F Y" }} entry — edit any field and save to record a new, dated entry.</p>{% endif %}
 </div>
 
 <form id="consultationForm" class="cform" method="post" action="{% url 'forms_system:consultation_new' target_user.pk %}">
@@ -129,39 +130,39 @@
         <div class="cform-grid cform-grid--2">
             <div class="cform-field">
                 <label class="cform-label">Full Name <span class="cform-req">*</span></label>
-                <input class="cform-input" type="text" name="full_name" value="{{ target_user.full_name }}" required>
+                <input class="cform-input" type="text" name="full_name" value="{{ previous.full_name|default:target_user.full_name }}" required>
             </div>
             <div class="cform-field">
                 <label class="cform-label">Date of Birth <span class="cform-req">*</span></label>
-                <input class="cform-input" type="date" name="date_of_birth" id="dobField" required>
+                <input class="cform-input" type="date" name="date_of_birth" id="dobField" value="{{ previous.date_of_birth|date:'Y-m-d' }}" required>
             </div>
             <div class="cform-field">
                 <label class="cform-label">Phone Number</label>
-                <input class="cform-input" type="tel" name="phone_number">
+                <input class="cform-input" type="tel" name="phone_number" value="{{ previous.phone_number }}">
             </div>
             <div class="cform-field">
                 <label class="cform-label">Email Address</label>
-                <input class="cform-input" type="email" name="email" value="{{ target_user.email }}">
+                <input class="cform-input" type="email" name="email" value="{{ previous.email|default:target_user.email }}">
             </div>
             <div class="cform-field cform-field--full">
                 <label class="cform-label">Address</label>
-                <textarea class="cform-input" name="address" rows="2"></textarea>
+                <textarea class="cform-input" name="address" rows="2">{{ previous.address }}</textarea>
             </div>
             <div class="cform-field">
                 <label class="cform-label">Emergency Contact Name</label>
-                <input class="cform-input" type="text" name="emergency_contact_name">
+                <input class="cform-input" type="text" name="emergency_contact_name" value="{{ previous.emergency_contact_name }}">
             </div>
             <div class="cform-field">
                 <label class="cform-label">Emergency Contact Phone</label>
-                <input class="cform-input" type="tel" name="emergency_contact_phone">
+                <input class="cform-input" type="tel" name="emergency_contact_phone" value="{{ previous.emergency_contact_phone }}">
             </div>
             <div class="cform-field">
                 <label class="cform-label">Ethnic Origin</label>
-                <input class="cform-input" type="text" name="ethnic_origin">
+                <input class="cform-input" type="text" name="ethnic_origin" value="{{ previous.ethnic_origin }}">
             </div>
             <div class="cform-field">
                 <label class="cform-label">Occupation</label>
-                <input class="cform-input" type="text" name="occupation">
+                <input class="cform-input" type="text" name="occupation" value="{{ previous.occupation }}">
             </div>
         </div>
     </div>
@@ -172,7 +173,7 @@
         <div class="cform-check-grid">
             {% for val, label in form_treatment_choices %}
             <label class="cform-check">
-                <input type="radio" name="treatment_requested" value="{{ val }}">
+                <input type="radio" name="treatment_requested" value="{{ val }}" {% if previous.treatment_requested == val %}checked{% endif %}>
                 <span>{{ label }}</span>
             </label>
             {% endfor %}
@@ -180,11 +181,11 @@
         <div class="cform-grid cform-grid--2" style="margin-top:1rem;">
             <div class="cform-field">
                 <label class="cform-label">Other (specify)</label>
-                <input class="cform-input" type="text" name="treatment_other">
+                <input class="cform-input" type="text" name="treatment_other" value="{{ previous.treatment_other }}">
             </div>
             <div class="cform-field">
                 <label class="cform-label">Body Area(s)</label>
-                <input class="cform-input" type="text" name="body_areas">
+                <input class="cform-input" type="text" name="body_areas" value="{{ previous.body_areas }}">
             </div>
         </div>
     </div>
@@ -194,33 +195,33 @@
         <h2 class="cform-section__title">Lifestyle &amp; Medical History</h2>
         <p class="cform-hint">Please tick all that apply.</p>
         <div class="cform-check-grid cform-check-grid--2col">
-            <label class="cform-check"><input type="checkbox" name="pregnant"><span>Pregnant (or planning pregnancy)</span></label>
-            <label class="cform-check"><input type="checkbox" name="pcos_hormonal"><span>PCOS / Hormonal Imbalance</span></label>
-            <label class="cform-check"><input type="checkbox" name="sun_tanned"><span>Sun Tanned / Using Sun Beds or Fake Tan</span></label>
-            <label class="cform-check"><input type="checkbox" name="thyroid_condition"><span>Thyroid Condition</span></label>
-            <label class="cform-check"><input type="checkbox" name="skin_pigmentation"><span>Skin Pigmentation Disorders</span></label>
-            <label class="cform-check"><input type="checkbox" name="regular_smoker"><span>Regular Smoker</span></label>
-            <label class="cform-check"><input type="checkbox" name="history_of_cancer"><span>History of Cancer</span></label>
-            <label class="cform-check"><input type="checkbox" name="psoriasis_eczema"><span>Psoriasis / Eczema</span></label>
-            <label class="cform-check"><input type="checkbox" name="diabetes"><span>Diabetes</span></label>
-            <label class="cform-check"><input type="checkbox" name="depression_anxiety"><span>Depression / Anxiety</span></label>
-            <label class="cform-check"><input type="checkbox" name="epilepsy"><span>Epilepsy</span></label>
-            <label class="cform-check"><input type="checkbox" name="herpes"><span>Herpes (shingles / cold sores)</span></label>
-            <label class="cform-check"><input type="checkbox" name="lymphatic_immune"><span>Lymphatic / Immune System Disorders</span></label>
-            <label class="cform-check"><input type="checkbox" name="high_blood_pressure"><span>High Blood Pressure</span></label>
-            <label class="cform-check"><input type="checkbox" name="keloid_scarring"><span>History of Keloid Formation / Scarring</span></label>
-            <label class="cform-check"><input type="checkbox" name="photosensitive"><span>Photosensitive Conditions</span></label>
-            <label class="cform-check"><input type="checkbox" name="lupus"><span>Lupus</span></label>
-            <label class="cform-check"><input type="checkbox" name="allergies"><span>Allergies</span></label>
-            <label class="cform-check"><input type="checkbox" name="communicable_diseases"><span>Communicable Diseases (hepatitis / HIV)</span></label>
+            <label class="cform-check"><input type="checkbox" name="pregnant" {% if previous.pregnant %}checked{% endif %}><span>Pregnant (or planning pregnancy)</span></label>
+            <label class="cform-check"><input type="checkbox" name="pcos_hormonal" {% if previous.pcos_hormonal %}checked{% endif %}><span>PCOS / Hormonal Imbalance</span></label>
+            <label class="cform-check"><input type="checkbox" name="sun_tanned" {% if previous.sun_tanned %}checked{% endif %}><span>Sun Tanned / Using Sun Beds or Fake Tan</span></label>
+            <label class="cform-check"><input type="checkbox" name="thyroid_condition" {% if previous.thyroid_condition %}checked{% endif %}><span>Thyroid Condition</span></label>
+            <label class="cform-check"><input type="checkbox" name="skin_pigmentation" {% if previous.skin_pigmentation %}checked{% endif %}><span>Skin Pigmentation Disorders</span></label>
+            <label class="cform-check"><input type="checkbox" name="regular_smoker" {% if previous.regular_smoker %}checked{% endif %}><span>Regular Smoker</span></label>
+            <label class="cform-check"><input type="checkbox" name="history_of_cancer" {% if previous.history_of_cancer %}checked{% endif %}><span>History of Cancer</span></label>
+            <label class="cform-check"><input type="checkbox" name="psoriasis_eczema" {% if previous.psoriasis_eczema %}checked{% endif %}><span>Psoriasis / Eczema</span></label>
+            <label class="cform-check"><input type="checkbox" name="diabetes" {% if previous.diabetes %}checked{% endif %}><span>Diabetes</span></label>
+            <label class="cform-check"><input type="checkbox" name="depression_anxiety" {% if previous.depression_anxiety %}checked{% endif %}><span>Depression / Anxiety</span></label>
+            <label class="cform-check"><input type="checkbox" name="epilepsy" {% if previous.epilepsy %}checked{% endif %}><span>Epilepsy</span></label>
+            <label class="cform-check"><input type="checkbox" name="herpes" {% if previous.herpes %}checked{% endif %}><span>Herpes (shingles / cold sores)</span></label>
+            <label class="cform-check"><input type="checkbox" name="lymphatic_immune" {% if previous.lymphatic_immune %}checked{% endif %}><span>Lymphatic / Immune System Disorders</span></label>
+            <label class="cform-check"><input type="checkbox" name="high_blood_pressure" {% if previous.high_blood_pressure %}checked{% endif %}><span>High Blood Pressure</span></label>
+            <label class="cform-check"><input type="checkbox" name="keloid_scarring" {% if previous.keloid_scarring %}checked{% endif %}><span>History of Keloid Formation / Scarring</span></label>
+            <label class="cform-check"><input type="checkbox" name="photosensitive" {% if previous.photosensitive %}checked{% endif %}><span>Photosensitive Conditions</span></label>
+            <label class="cform-check"><input type="checkbox" name="lupus" {% if previous.lupus %}checked{% endif %}><span>Lupus</span></label>
+            <label class="cform-check"><input type="checkbox" name="allergies" {% if previous.allergies %}checked{% endif %}><span>Allergies</span></label>
+            <label class="cform-check"><input type="checkbox" name="communicable_diseases" {% if previous.communicable_diseases %}checked{% endif %}><span>Communicable Diseases (hepatitis / HIV)</span></label>
         </div>
         <div class="cform-field" style="margin-top:1rem;">
             <label class="cform-label">Units of Alcohol per Week</label>
-            <input class="cform-input cform-input--short" type="text" name="alcohol_units_per_week">
+            <input class="cform-input cform-input--short" type="text" name="alcohol_units_per_week" value="{{ previous.alcohol_units_per_week }}">
         </div>
         <div class="cform-field">
             <label class="cform-label">Comments</label>
-            <textarea class="cform-input" name="medical_comments" rows="3"></textarea>
+            <textarea class="cform-input" name="medical_comments" rows="3">{{ previous.medical_comments }}</textarea>
         </div>
     </div>
 
@@ -229,25 +230,25 @@
         <h2 class="cform-section__title">Medications &amp; Supplements</h2>
         <div class="cform-field">
             <label class="cform-label">Current medications or supplements</label>
-            <textarea class="cform-input" name="current_medications" rows="3"></textarea>
+            <textarea class="cform-input" name="current_medications" rows="3">{{ previous.current_medications }}</textarea>
         </div>
         <p class="cform-hint">Used in the last 6 months?</p>
         <div class="cform-check-grid">
-            <label class="cform-check"><input type="checkbox" name="st_johns_wart"><span>St John's Wort</span></label>
-            <label class="cform-check"><input type="checkbox" name="amiodarone"><span>Amiodarone</span></label>
-            <label class="cform-check"><input type="checkbox" name="minocycline"><span>Minocycline</span></label>
-            <label class="cform-check"><input type="checkbox" name="anticoagulants"><span>Anticoagulants</span></label>
-            <label class="cform-check"><input type="checkbox" name="gold_medications"><span>Gold Medications</span></label>
-            <label class="cform-check"><input type="checkbox" name="retinoids"><span>Oral or Topical Retinoids (e.g. Roaccutane, Retin-A)</span></label>
-            <label class="cform-check"><input type="checkbox" name="steroids"><span>Oral or Topical Steroids</span></label>
+            <label class="cform-check"><input type="checkbox" name="st_johns_wart" {% if previous.st_johns_wart %}checked{% endif %}><span>St John's Wort</span></label>
+            <label class="cform-check"><input type="checkbox" name="amiodarone" {% if previous.amiodarone %}checked{% endif %}><span>Amiodarone</span></label>
+            <label class="cform-check"><input type="checkbox" name="minocycline" {% if previous.minocycline %}checked{% endif %}><span>Minocycline</span></label>
+            <label class="cform-check"><input type="checkbox" name="anticoagulants" {% if previous.anticoagulants %}checked{% endif %}><span>Anticoagulants</span></label>
+            <label class="cform-check"><input type="checkbox" name="gold_medications" {% if previous.gold_medications %}checked{% endif %}><span>Gold Medications</span></label>
+            <label class="cform-check"><input type="checkbox" name="retinoids" {% if previous.retinoids %}checked{% endif %}><span>Oral or Topical Retinoids (e.g. Roaccutane, Retin-A)</span></label>
+            <label class="cform-check"><input type="checkbox" name="steroids" {% if previous.steroids %}checked{% endif %}><span>Oral or Topical Steroids</span></label>
         </div>
         <div class="cform-field" style="margin-top:1rem;">
             <label class="cform-label">Comments</label>
-            <textarea class="cform-input" name="medication_comments" rows="2"></textarea>
+            <textarea class="cform-input" name="medication_comments" rows="2">{{ previous.medication_comments }}</textarea>
         </div>
         <div class="cform-field">
             <label class="cform-label">Recovering from major medical treatment or PDT within the last 6 months?</label>
-            <textarea class="cform-input" name="recent_major_treatment" rows="2" placeholder="No / Yes (please specify)"></textarea>
+            <textarea class="cform-input" name="recent_major_treatment" rows="2" placeholder="No / Yes (please specify)">{{ previous.recent_major_treatment }}</textarea>
         </div>
     </div>
 
@@ -256,22 +257,22 @@
         <h2 class="cform-section__title">Treatment Area</h2>
         <p class="cform-hint">Does the area for treatment have any of the following?</p>
         <div class="cform-check-grid">
-            <label class="cform-check"><input type="checkbox" name="area_has_moles"><span>Moles</span></label>
-            <label class="cform-check"><input type="checkbox" name="area_has_birthmarks"><span>Birthmarks</span></label>
-            <label class="cform-check"><input type="checkbox" name="area_has_tattoos"><span>Tattoos</span></label>
-            <label class="cform-check"><input type="checkbox" name="area_has_permanent_makeup"><span>Permanent Makeup</span></label>
-            <label class="cform-check"><input type="checkbox" name="area_has_chemical_peel"><span>Chemical Peel</span></label>
-            <label class="cform-check"><input type="checkbox" name="area_has_botox"><span>Botox</span></label>
-            <label class="cform-check"><input type="checkbox" name="area_has_fillers"><span>Injectable Fillers</span></label>
-            <label class="cform-check"><input type="checkbox" name="area_has_tanning"><span>Tanning Injections or Enhancers</span></label>
+            <label class="cform-check"><input type="checkbox" name="area_has_moles" {% if previous.area_has_moles %}checked{% endif %}><span>Moles</span></label>
+            <label class="cform-check"><input type="checkbox" name="area_has_birthmarks" {% if previous.area_has_birthmarks %}checked{% endif %}><span>Birthmarks</span></label>
+            <label class="cform-check"><input type="checkbox" name="area_has_tattoos" {% if previous.area_has_tattoos %}checked{% endif %}><span>Tattoos</span></label>
+            <label class="cform-check"><input type="checkbox" name="area_has_permanent_makeup" {% if previous.area_has_permanent_makeup %}checked{% endif %}><span>Permanent Makeup</span></label>
+            <label class="cform-check"><input type="checkbox" name="area_has_chemical_peel" {% if previous.area_has_chemical_peel %}checked{% endif %}><span>Chemical Peel</span></label>
+            <label class="cform-check"><input type="checkbox" name="area_has_botox" {% if previous.area_has_botox %}checked{% endif %}><span>Botox</span></label>
+            <label class="cform-check"><input type="checkbox" name="area_has_fillers" {% if previous.area_has_fillers %}checked{% endif %}><span>Injectable Fillers</span></label>
+            <label class="cform-check"><input type="checkbox" name="area_has_tanning" {% if previous.area_has_tanning %}checked{% endif %}><span>Tanning Injections or Enhancers</span></label>
         </div>
         <div class="cform-field" style="margin-top:1rem;">
             <label class="cform-label">Skin Disorder / Disease?</label>
-            <textarea class="cform-input" name="skin_disorder" rows="2"></textarea>
+            <textarea class="cform-input" name="skin_disorder" rows="2">{{ previous.skin_disorder }}</textarea>
         </div>
         <div class="cform-field">
             <label class="cform-label">Previous Laser or IPL Treatment?</label>
-            <textarea class="cform-input" name="previous_laser_ipl" rows="2"></textarea>
+            <textarea class="cform-input" name="previous_laser_ipl" rows="2">{{ previous.previous_laser_ipl }}</textarea>
         </div>
     </div>
 
@@ -280,44 +281,44 @@
         <h2 class="cform-section__title">Your Skin</h2>
         <div class="cform-field">
             <label class="cform-label">Products used on skin</label>
-            <textarea class="cform-input" name="skin_products" rows="2"></textarea>
+            <textarea class="cform-input" name="skin_products" rows="2">{{ previous.skin_products }}</textarea>
         </div>
         <p class="cform-hint">Fitzpatrick skin type:</p>
         <div class="cform-check-grid cform-check-grid--1col">
-            <label class="cform-check"><input type="radio" name="skin_type" value="1"><span>Skin Type 1 – Always burns, never tans</span></label>
-            <label class="cform-check"><input type="radio" name="skin_type" value="2"><span>Skin Type 2 – Easily burnt, eventually gets a moderate tan</span></label>
-            <label class="cform-check"><input type="radio" name="skin_type" value="3"><span>Skin Type 3 – Sometimes burns, quickly gets an average tan</span></label>
-            <label class="cform-check"><input type="radio" name="skin_type" value="4"><span>Skin Type 4 – Rarely burns, quickly gets a deep tan</span></label>
-            <label class="cform-check"><input type="radio" name="skin_type" value="5"><span>Skin Type 5 – Very rarely burns, consistent tan</span></label>
-            <label class="cform-check"><input type="radio" name="skin_type" value="6"><span>Skin Type 6 – Never burns, consistent tan</span></label>
+            <label class="cform-check"><input type="radio" name="skin_type" value="1" {% if previous.skin_type == "1" %}checked{% endif %}><span>Skin Type 1 – Always burns, never tans</span></label>
+            <label class="cform-check"><input type="radio" name="skin_type" value="2" {% if previous.skin_type == "2" %}checked{% endif %}><span>Skin Type 2 – Easily burnt, eventually gets a moderate tan</span></label>
+            <label class="cform-check"><input type="radio" name="skin_type" value="3" {% if previous.skin_type == "3" %}checked{% endif %}><span>Skin Type 3 – Sometimes burns, quickly gets an average tan</span></label>
+            <label class="cform-check"><input type="radio" name="skin_type" value="4" {% if previous.skin_type == "4" %}checked{% endif %}><span>Skin Type 4 – Rarely burns, quickly gets a deep tan</span></label>
+            <label class="cform-check"><input type="radio" name="skin_type" value="5" {% if previous.skin_type == "5" %}checked{% endif %}><span>Skin Type 5 – Very rarely burns, consistent tan</span></label>
+            <label class="cform-check"><input type="radio" name="skin_type" value="6" {% if previous.skin_type == "6" %}checked{% endif %}><span>Skin Type 6 – Never burns, consistent tan</span></label>
         </div>
         <div class="cform-grid cform-grid--2" style="margin-top:1rem;">
             <div class="cform-field">
                 <label class="cform-label">Current real or fake tan?</label>
                 <div class="cform-radio-row">
-                    <label class="cform-check"><input type="radio" name="current_tan" value="yes"><span>Yes</span></label>
-                    <label class="cform-check"><input type="radio" name="current_tan" value="no"><span>No</span></label>
+                    <label class="cform-check"><input type="radio" name="current_tan" value="yes" {% if previous.current_tan %}checked{% endif %}><span>Yes</span></label>
+                    <label class="cform-check"><input type="radio" name="current_tan" value="no" {% if previous and not previous.current_tan %}checked{% endif %}><span>No</span></label>
                 </div>
             </div>
             <div class="cform-field">
                 <label class="cform-label">Last UV exposure</label>
-                <input class="cform-input" type="text" name="last_uv_exposure">
+                <input class="cform-input" type="text" name="last_uv_exposure" value="{{ previous.last_uv_exposure }}">
             </div>
             <div class="cform-field">
                 <label class="cform-label">Tanning injections / Melanotan?</label>
                 <div class="cform-radio-row">
-                    <label class="cform-check"><input type="radio" name="tanning_injections" value="yes"><span>Yes</span></label>
-                    <label class="cform-check"><input type="radio" name="tanning_injections" value="no"><span>No</span></label>
+                    <label class="cform-check"><input type="radio" name="tanning_injections" value="yes" {% if previous.tanning_injections %}checked{% endif %}><span>Yes</span></label>
+                    <label class="cform-check"><input type="radio" name="tanning_injections" value="no" {% if previous and not previous.tanning_injections %}checked{% endif %}><span>No</span></label>
                 </div>
             </div>
             <div class="cform-field">
                 <label class="cform-label">Referral source</label>
-                <input class="cform-input" type="text" name="referral_source">
+                <input class="cform-input" type="text" name="referral_source" value="{{ previous.referral_source }}">
             </div>
         </div>
         <div class="cform-field">
             <label class="cform-label">Goals / expectations for treatment</label>
-            <textarea class="cform-input" name="treatment_goals" rows="3"></textarea>
+            <textarea class="cform-input" name="treatment_goals" rows="3">{{ previous.treatment_goals }}</textarea>
         </div>
     </div>
 
@@ -343,24 +344,24 @@
         <h2 class="cform-section__title">Pre-Treatment Checklist <span class="cform-operator-badge">Operator</span></h2>
         <p class="cform-hint">Tick to confirm each point has been discussed with the client.</p>
         <div class="cform-check-grid cform-check-grid--2col">
-            <label class="cform-check"><input type="checkbox" name="pretx_how_works"><span>How treatment works</span></label>
-            <label class="cform-check"><input type="checkbox" name="pretx_pre_post_care"><span>Pre / Post treatment care</span></label>
-            <label class="cform-check"><input type="checkbox" name="pretx_light_products"><span>Light Soothe / Light Protect recommended</span></label>
-            <label class="cform-check"><input type="checkbox" name="pretx_num_treatments"><span>Typical number of treatments / interval</span></label>
-            <label class="cform-check"><input type="checkbox" name="pretx_clinical_outcome"><span>Likely clinical outcome</span></label>
-            <label class="cform-check"><input type="checkbox" name="pretx_sensation"><span>Sensation during treatment</span></label>
-            <label class="cform-check"><input type="checkbox" name="pretx_side_effects"><span>Possible side effects</span></label>
-            <label class="cform-check"><input type="checkbox" name="pretx_photo_taken"><span>Photograph taken</span></label>
+            <label class="cform-check"><input type="checkbox" name="pretx_how_works" {% if previous.pretx_how_works %}checked{% endif %}><span>How treatment works</span></label>
+            <label class="cform-check"><input type="checkbox" name="pretx_pre_post_care" {% if previous.pretx_pre_post_care %}checked{% endif %}><span>Pre / Post treatment care</span></label>
+            <label class="cform-check"><input type="checkbox" name="pretx_light_products" {% if previous.pretx_light_products %}checked{% endif %}><span>Light Soothe / Light Protect recommended</span></label>
+            <label class="cform-check"><input type="checkbox" name="pretx_num_treatments" {% if previous.pretx_num_treatments %}checked{% endif %}><span>Typical number of treatments / interval</span></label>
+            <label class="cform-check"><input type="checkbox" name="pretx_clinical_outcome" {% if previous.pretx_clinical_outcome %}checked{% endif %}><span>Likely clinical outcome</span></label>
+            <label class="cform-check"><input type="checkbox" name="pretx_sensation" {% if previous.pretx_sensation %}checked{% endif %}><span>Sensation during treatment</span></label>
+            <label class="cform-check"><input type="checkbox" name="pretx_side_effects" {% if previous.pretx_side_effects %}checked{% endif %}><span>Possible side effects</span></label>
+            <label class="cform-check"><input type="checkbox" name="pretx_photo_taken" {% if previous.pretx_photo_taken %}checked{% endif %}><span>Photograph taken</span></label>
         </div>
         <div class="cform-grid cform-grid--2" style="margin-top:1rem;">
             <div class="cform-field">
                 <label class="cform-label">Cost per Treatment</label>
-                <input class="cform-input" type="text" name="pretx_cost">
+                <input class="cform-input" type="text" name="pretx_cost" value="{{ previous.pretx_cost }}">
             </div>
         </div>
         <div class="cform-field">
             <label class="cform-label">Further questions / comments</label>
-            <textarea class="cform-input" name="pretx_comments" rows="3"></textarea>
+            <textarea class="cform-input" name="pretx_comments" rows="3">{{ previous.pretx_comments }}</textarea>
         </div>
     </div>
 
@@ -374,31 +375,31 @@
                 <label class="cform-label">Hair Colour</label>
                 <select class="cform-input" name="hair_colour">
                     <option value="">—</option>
-                    <option value="black">Black</option>
-                    <option value="dark_brown">Dark Brown</option>
-                    <option value="light_brown">Light Brown</option>
-                    <option value="red">Red</option>
-                    <option value="blonde">Blonde</option>
-                    <option value="grey_white">Grey / White</option>
+                    <option value="black" {% if previous.hair_colour == "black" %}selected{% endif %}>Black</option>
+                    <option value="dark_brown" {% if previous.hair_colour == "dark_brown" %}selected{% endif %}>Dark Brown</option>
+                    <option value="light_brown" {% if previous.hair_colour == "light_brown" %}selected{% endif %}>Light Brown</option>
+                    <option value="red" {% if previous.hair_colour == "red" %}selected{% endif %}>Red</option>
+                    <option value="blonde" {% if previous.hair_colour == "blonde" %}selected{% endif %}>Blonde</option>
+                    <option value="grey_white" {% if previous.hair_colour == "grey_white" %}selected{% endif %}>Grey / White</option>
                 </select>
             </div>
             <div class="cform-field">
                 <label class="cform-label">Hair Texture</label>
                 <select class="cform-input" name="hair_texture">
                     <option value="">—</option>
-                    <option value="coarse">Coarse</option>
-                    <option value="medium">Medium</option>
-                    <option value="fine">Fine</option>
+                    <option value="coarse" {% if previous.hair_texture == "coarse" %}selected{% endif %}>Coarse</option>
+                    <option value="medium" {% if previous.hair_texture == "medium" %}selected{% endif %}>Medium</option>
+                    <option value="fine" {% if previous.hair_texture == "fine" %}selected{% endif %}>Fine</option>
                 </select>
             </div>
             <div class="cform-field">
                 <label class="cform-label">Handpiece</label>
-                <input class="cform-input" type="text" name="hair_handpiece" placeholder="ReMove 650 / ReMove LP1064">
+                <input class="cform-input" type="text" name="hair_handpiece" placeholder="ReMove 650 / ReMove LP1064" value="{{ previous.hair_handpiece }}">
             </div>
         </div>
         <div class="cform-field">
             <label class="cform-label">Previous / Current Treatments</label>
-            <textarea class="cform-input" name="hair_previous_treatments" rows="2"></textarea>
+            <textarea class="cform-input" name="hair_previous_treatments" rows="2">{{ previous.hair_previous_treatments }}</textarea>
         </div>
 
         <h3 class="cform-subsection">Vascular</h3>
@@ -406,17 +407,17 @@
             <label class="cform-label">Type</label>
             <select class="cform-input" name="vascular_type">
                 <option value="">—</option>
-                <option value="rosacea">Rosacea</option>
-                <option value="thread_veins">Thread Veins</option>
-                <option value="spider_nevi">Spider Nevi</option>
-                <option value="pws">PWS</option>
-                <option value="leg_veins">Leg Veins</option>
-                <option value="other">Other</option>
+                <option value="rosacea" {% if previous.vascular_type == "rosacea" %}selected{% endif %}>Rosacea</option>
+                <option value="thread_veins" {% if previous.vascular_type == "thread_veins" %}selected{% endif %}>Thread Veins</option>
+                <option value="spider_nevi" {% if previous.vascular_type == "spider_nevi" %}selected{% endif %}>Spider Nevi</option>
+                <option value="pws" {% if previous.vascular_type == "pws" %}selected{% endif %}>PWS</option>
+                <option value="leg_veins" {% if previous.vascular_type == "leg_veins" %}selected{% endif %}>Leg Veins</option>
+                <option value="other" {% if previous.vascular_type == "other" %}selected{% endif %}>Other</option>
             </select>
         </div>
         <div class="cform-field">
             <label class="cform-label">Previous / Current Treatments</label>
-            <textarea class="cform-input" name="vascular_previous_treatments" rows="2"></textarea>
+            <textarea class="cform-input" name="vascular_previous_treatments" rows="2">{{ previous.vascular_previous_treatments }}</textarea>
         </div>
 
         <h3 class="cform-subsection">Pigmentation</h3>
@@ -424,14 +425,14 @@
             <label class="cform-label">Type</label>
             <select class="cform-input" name="pigmentation_type">
                 <option value="">—</option>
-                <option value="lentigines">Lentigines (liver spots)</option>
-                <option value="freckles">Freckles</option>
-                <option value="birthmark">Birthmark</option>
+                <option value="lentigines" {% if previous.pigmentation_type == "lentigines" %}selected{% endif %}>Lentigines (liver spots)</option>
+                <option value="freckles" {% if previous.pigmentation_type == "freckles" %}selected{% endif %}>Freckles</option>
+                <option value="birthmark" {% if previous.pigmentation_type == "birthmark" %}selected{% endif %}>Birthmark</option>
             </select>
         </div>
         <div class="cform-field">
             <label class="cform-label">Previous / Current Treatments</label>
-            <textarea class="cform-input" name="pigmentation_previous_treatments" rows="2"></textarea>
+            <textarea class="cform-input" name="pigmentation_previous_treatments" rows="2">{{ previous.pigmentation_previous_treatments }}</textarea>
         </div>
 
         <h3 class="cform-subsection">Acne</h3>
@@ -439,51 +440,51 @@
             <label class="cform-label">Type</label>
             <select class="cform-input" name="acne_type">
                 <option value="">—</option>
-                <option value="mild">Mild</option>
-                <option value="moderate">Moderate</option>
-                <option value="severe">Severe</option>
+                <option value="mild" {% if previous.acne_type == "mild" %}selected{% endif %}>Mild</option>
+                <option value="moderate" {% if previous.acne_type == "moderate" %}selected{% endif %}>Moderate</option>
+                <option value="severe" {% if previous.acne_type == "severe" %}selected{% endif %}>Severe</option>
             </select>
         </div>
         <div class="cform-field">
             <label class="cform-label">Previous / Current Treatments</label>
-            <textarea class="cform-input" name="acne_previous_treatments" rows="2"></textarea>
+            <textarea class="cform-input" name="acne_previous_treatments" rows="2">{{ previous.acne_previous_treatments }}</textarea>
         </div>
 
         <h3 class="cform-subsection">Skin</h3>
         <div class="cform-grid cform-grid--2">
             <div class="cform-field">
                 <label class="cform-label">Assessment Type</label>
-                <input class="cform-input" type="text" name="skin_assessment_type" placeholder="Laxity / Fine Lines / Sun Damage…">
+                <input class="cform-input" type="text" name="skin_assessment_type" placeholder="Laxity / Fine Lines / Sun Damage…" value="{{ previous.skin_assessment_type }}">
             </div>
             <div class="cform-field">
                 <label class="cform-label">Handpiece</label>
-                <input class="cform-input" type="text" name="skin_handpiece">
+                <input class="cform-input" type="text" name="skin_handpiece" value="{{ previous.skin_handpiece }}">
             </div>
         </div>
         <div class="cform-field">
             <label class="cform-label">Previous / Current Treatments</label>
-            <textarea class="cform-input" name="skin_previous_treatments" rows="2"></textarea>
+            <textarea class="cform-input" name="skin_previous_treatments" rows="2">{{ previous.skin_previous_treatments }}</textarea>
         </div>
 
         <h3 class="cform-subsection">Tattoo Removal</h3>
         <div class="cform-field">
             <label class="cform-label">Colours</label>
-            <input class="cform-input" type="text" name="tattoo_colour" placeholder="Black / Red / Green…">
+            <input class="cform-input" type="text" name="tattoo_colour" placeholder="Black / Red / Green…" value="{{ previous.tattoo_colour }}">
         </div>
         <div class="cform-field">
             <label class="cform-label">Previous / Current Treatments</label>
-            <textarea class="cform-input" name="tattoo_previous_treatments" rows="2"></textarea>
+            <textarea class="cform-input" name="tattoo_previous_treatments" rows="2">{{ previous.tattoo_previous_treatments }}</textarea>
         </div>
 
         <h3 class="cform-subsection">Fractional Laser</h3>
         <div class="cform-grid cform-grid--2">
             <div class="cform-field">
                 <label class="cform-label">Indication</label>
-                <input class="cform-input" type="text" name="fractional_indication" placeholder="General Aging / Acne Scarring…">
+                <input class="cform-input" type="text" name="fractional_indication" placeholder="General Aging / Acne Scarring…" value="{{ previous.fractional_indication }}">
             </div>
             <div class="cform-field">
                 <label class="cform-label">Comments</label>
-                <textarea class="cform-input" name="fractional_comments" rows="2"></textarea>
+                <textarea class="cform-input" name="fractional_comments" rows="2">{{ previous.fractional_comments }}</textarea>
             </div>
         </div>
     </div>

@@ -486,7 +486,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (opt.text.startsWith(booking.treatment)) formTreatment.value = opt.value;
         });
 
-        populateTimeSlots(() => { formTime.value = booking.start_time; });
+        formTime.value = booking.start_time;
     }
 
     // ---------------------------------------------------------------
@@ -545,28 +545,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // ---------------------------------------------------------------
-    // Time slots
-    // ---------------------------------------------------------------
-
-    formTreatment.addEventListener('change', () => populateTimeSlots());
-
-    function populateTimeSlots(callback) {
-        const opt = formTreatment.options[formTreatment.selectedIndex];
-        formTime.innerHTML = '<option value="">— Select —</option>';
-        if (!opt || !opt.value) return;
-
-        const duration = parseInt(opt.dataset.duration);
-        // Operators aren't restricted to the clinic's public opening hours —
-        // offer slots across the full day; the server still blocks overlaps.
-        generateTimes(duration, '00:00', '23:59').forEach(t => {
-            const o = document.createElement('option');
-            o.value = t; o.textContent = t;
-            formTime.appendChild(o);
-        });
-        if (callback) callback();
-    }
-
-    // ---------------------------------------------------------------
     // Save booking
     // ---------------------------------------------------------------
 
@@ -605,7 +583,7 @@ document.addEventListener('DOMContentLoaded', function () {
         clientResults.style.display     = 'none';
         formTreatment.value             = '';
         formDate.value                  = '';
-        formTime.innerHTML              = '<option value="">— Select treatment first —</option>';
+        formTime.value                  = '';
         formNotes.value                 = '';
         formStatus.value                = 'confirmed';
         clearErrors();

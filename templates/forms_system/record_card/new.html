@@ -22,25 +22,31 @@
             <dt>Client feedback</dt><dd>{{ previous.client_feedback|default:"—" }}</dd>
         </dl>
         <div class="record-card-table record-card-table--prev">
-            <div class="record-card-table__head">
-                <span>Area</span><span>Skin Type</span><span>Spot</span><span>Fluence</span><span>Pulses</span><span>Delay</span><span>Shots</span><span>Cost</span>
-            </div>
+          <div class="record-card-table__scroll">
+            <table>
+            <thead>
+                <tr><th>Area</th><th>Skin Type</th><th>Spot</th><th>Fluence</th><th>Pulses</th><th>Delay</th><th>Shots</th><th>Cost</th></tr>
+            </thead>
+            <tbody>
             {% for n in "12345" %}
             {% with area="previous.area_"|add:n st="previous.skin_type_"|add:n %}
             {% if previous|attr_row:n %}
-            <div class="record-card-table__row">
-                <span>{{ previous|rc_area:n }}</span>
-                <span>{{ previous|rc_skin_type:n }}</span>
-                <span>{{ previous|rc_spot:n }}</span>
-                <span>{{ previous|rc_fluence:n }}</span>
-                <span>{{ previous|rc_pulses:n }}</span>
-                <span>{{ previous|rc_delay:n }}</span>
-                <span>{{ previous|rc_shots:n }}</span>
-                <span>{% if previous|rc_cost:n %}£{{ previous|rc_cost:n }}{% else %}—{% endif %}</span>
-            </div>
+            <tr>
+                <td>{{ previous|rc_area:n }}</td>
+                <td>{{ previous|rc_skin_type:n }}</td>
+                <td>{{ previous|rc_spot:n }}</td>
+                <td>{{ previous|rc_fluence:n }}</td>
+                <td>{{ previous|rc_pulses:n }}</td>
+                <td>{{ previous|rc_delay:n }}</td>
+                <td>{{ previous|rc_shots:n }}</td>
+                <td>{% if previous|rc_cost:n %}£{{ previous|rc_cost:n }}{% else %}—{% endif %}</td>
+            </tr>
             {% endif %}
             {% endwith %}
             {% endfor %}
+            </tbody>
+            </table>
+          </div>
         </div>
         <div class="cform-field" style="margin-top:1rem;"><label class="cform-label">Operator comments</label><p class="cform-readonly-value">{{ previous.operator_comments|default:"None" }}</p></div>
         <div class="cform-field"><label class="cform-label">Re-consent signature</label><img src="{{ previous.reconsent_signature }}" alt="Signature" class="cform-sig-preview"></div>
@@ -86,22 +92,28 @@
             <div class="cform-section cform-section--operator">
                 <h2 class="cform-section__title">Treatment Areas</h2>
                 <div class="record-card-table record-card-table--new">
-                    <div class="record-card-table__head">
-                        <span>#</span><span>Area</span><span>Skin Type</span><span>Spot/Tip</span><span>Fluence</span><span>Pulse(s)</span><span>Delay</span><span>Shots</span><span>Cost (£)</span>
-                    </div>
+                  <div class="record-card-table__scroll">
+                    <table>
+                    <thead>
+                        <tr><th>#</th><th>Area</th><th>Skin Type</th><th>Spot/Tip</th><th>Fluence</th><th>Pulse(s)</th><th>Delay</th><th>Shots</th><th>Cost (£)</th></tr>
+                    </thead>
+                    <tbody>
                     {% for i in "12345" %}
-                    <div class="record-card-table__row">
-                        <span class="record-card-table__num">{{ i }}</span>
-                        <input class="cform-input" type="text" name="area_{{ i }}">
-                        <input class="cform-input" type="text" name="skin_type_{{ i }}">
-                        <input class="cform-input" type="text" name="spot_size_{{ i }}">
-                        <input class="cform-input" type="text" name="fluence_{{ i }}">
-                        <input class="cform-input" type="text" name="pulses_{{ i }}">
-                        <input class="cform-input" type="text" name="delay_{{ i }}">
-                        <input class="cform-input" type="text" name="shots_{{ i }}">
-                        <input class="cform-input" type="number" step="0.01" name="cost_{{ i }}">
-                    </div>
+                    <tr class="record-card-table__row">
+                        <td class="record-card-table__num">{{ i }}</td>
+                        <td><input class="cform-input" type="text" name="area_{{ i }}"></td>
+                        <td><input class="cform-input" type="text" name="skin_type_{{ i }}"></td>
+                        <td><input class="cform-input" type="text" name="spot_size_{{ i }}"></td>
+                        <td><input class="cform-input" type="text" name="fluence_{{ i }}"></td>
+                        <td><input class="cform-input" type="text" name="pulses_{{ i }}"></td>
+                        <td><input class="cform-input" type="text" name="delay_{{ i }}"></td>
+                        <td><input class="cform-input" type="text" name="shots_{{ i }}"></td>
+                        <td><input class="cform-input" type="number" step="0.01" name="cost_{{ i }}"></td>
+                    </tr>
                     {% endfor %}
+                    </tbody>
+                    </table>
+                  </div>
                 </div>
                 <div class="cform-field" style="margin-top:1rem;"><label class="cform-label">Operator Comments</label><textarea class="cform-input" name="operator_comments" rows="3"></textarea></div>
             </div>

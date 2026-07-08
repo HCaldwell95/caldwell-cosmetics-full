@@ -12,10 +12,7 @@ from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_POST
 
 from apps.bookings.models import Booking
-from apps.bookings.views import (
-    BOOKING_HORIZON_DAYS,
-    SLOT_INTERVAL_MINUTES,
-)
+from apps.bookings.views import BOOKING_HORIZON_DAYS
 from apps.treatments.models import Treatment, TreatmentCategory
 from apps.forms_system.models import (
     ConsultationForm,
@@ -34,18 +31,25 @@ except ImportError:
     User = get_user_model()
 
 
-def _generate_admin_slot_times(duration_minutes, interval_minutes=SLOT_INTERVAL_MINUTES):
+def _parse_start_time(time_str, duration_minutes):
     """
-    Full-day slot times for operator bookings — unlike the public booking flow,
-    operators aren't restricted to the clinic's advertised opening hours.
+    Parse an operator-entered 'HH:MM' start time. Unlike the public booking
+    flow, operators aren't restricted to a fixed slot grid or the clinic's
+    advertised opening hours — any time is valid as long as the appointment
+    fits within the day and doesn't overlap an existing booking.
     """
-    slots   = []
-    current = 0
-    while current + duration_minutes <= 24 * 60:
-        h, m = divmod(current, 60)
-        slots.append(f"{h:02d}:{m:02d}")
-        current += interval_minutes
-    return slots
+    try:
+        h, m = time_str.split(":")
+        h, m = int(h), int(m)
+        if not (0 <= h <= 23 and 0 <= m <= 59):
+            return None
+    except (ValueError, AttributeError):
+        return None
+
+    start = h * 60 + m
+    if start + duration_minutes > 24 * 60:
+        return None
+    return start
 
 
 def _parse_json(request):
@@ -319,16 +323,13 @@ def booking_create(request):
     except (User.DoesNotExist, Treatment.DoesNotExist, ValueError) as e:
         return JsonResponse({"ok": False, "errors": {"__all__": str(e)}}, status=400)
 
-    valid_times = _generate_admin_slot_times(treatment.duration_minutes, treatment.duration_minutes)
-    if time_str not in valid_times:
+    new_start = _parse_start_time(time_str, treatment.duration_minutes)
+    if new_start is None:
         return JsonResponse(
-            {"ok": False, "errors": {"start_time": "Invalid time slot for this treatment."}},
+            {"ok": False, "errors": {"start_time": "Please enter a valid time for this treatment."}},
             status=400,
         )
-
-    h, m      = map(int, time_str.split(":"))
-    new_start = h * 60 + m
-    new_end   = new_start + treatment.duration_minutes
+    new_end = new_start + treatment.duration_minutes
 
     with transaction.atomic():
         overlapping = (
@@ -377,16 +378,14 @@ def booking_edit(request, pk):
     except (Treatment.DoesNotExist, ValueError) as e:
         return JsonResponse({"ok": False, "errors": {"__all__": str(e)}}, status=400)
 
-    valid_times = _generate_admin_slot_times(treatment.duration_minutes, treatment.duration_minutes)
-    if time_str not in valid_times:
-        errors["start_time"] = "Invalid time slot for this treatment."
+    new_start = _parse_start_time(time_str, treatment.duration_minutes)
+    if new_start is None:
+        errors["start_time"] = "Please enter a valid time for this treatment."
 
     if errors:
         return JsonResponse({"ok": False, "errors": errors}, status=400)
 
-    h, m      = map(int, time_str.split(":"))
-    new_start = h * 60 + m
-    new_end   = new_start + treatment.duration_minutes
+    new_end = new_start + treatment.duration_minutes
 
     with transaction.atomic():
         overlapping = (
