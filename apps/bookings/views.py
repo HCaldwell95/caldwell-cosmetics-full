@@ -8,7 +8,7 @@ from django.urls import reverse
 from django.utils import timezone
 
 from apps.treatments.models import Treatment, TreatmentCategory
-from .models import Booking
+from .models import Booking, ClosedDate
 
 
 # ---------------------------------------------------------------------------
@@ -56,6 +56,18 @@ def _build_booked_set():
     return blocked
 
 
+def _closed_dates_within_horizon():
+    """Returns a set of 'YYYY-MM-DD' strings for every closed date within the booking horizon."""
+    today   = timezone.now().date()
+    horizon = today + timedelta(days=BOOKING_HORIZON_DAYS)
+
+    return set(
+        ClosedDate.objects
+        .filter(date__gte=today, date__lte=horizon)
+        .values_list('date', flat=True)
+    )
+
+
 def _generate_slot_times(duration_minutes, interval_minutes=SLOT_INTERVAL_MINUTES):
     """
     Return a list of 'HH:MM' strings representing every possible slot
@@ -82,11 +94,12 @@ def _generate_slot_times(duration_minutes, interval_minutes=SLOT_INTERVAL_MINUTE
     return slots
 
 
-def _build_slots_json(treatments, booked_set):
+def _build_slots_json(treatments, booked_set, closed_dates):
     """
     For each treatment, generate all possible slot start times and mark
     any that overlap with an existing booking as booked — regardless of
-    which treatment that booking was made for.
+    which treatment that booking was made for. Dates on the closed_dates
+    set (holidays etc.) are skipped entirely, so no slots are offered.
     """
     today   = timezone.now().date()
     horizon = today + timedelta(days=BOOKING_HORIZON_DAYS)
@@ -99,7 +112,7 @@ def _build_slots_json(treatments, booked_set):
 
         current = today
         while current <= horizon:
-            if current.weekday() in OPEN_DAYS:
+            if current.weekday() in OPEN_DAYS and current not in closed_dates:
                 date_str     = current.strftime('%Y-%m-%d')
                 booked_times = []
 
@@ -142,22 +155,26 @@ def overview(request):
         .prefetch_related('treatments')
     )
 
-    booked_set = _build_booked_set()
-    slots_json = _build_slots_json(treatments, booked_set)
+    closed_dates = _closed_dates_within_horizon()
+    booked_set   = _build_booked_set()
+    slots_json   = _build_slots_json(treatments, booked_set, closed_dates)
+    closed_dates_json = [d.strftime('%Y-%m-%d') for d in closed_dates]
 
     error_map = {
         'taken':   'Sorry, that slot was just taken. Please choose another time.',
         'invalid': 'Something went wrong with your booking. Please try again.',
         # ⚠️  CHANGE 4: added a distinct error message for same-day double-booking
         'already_booked': 'You already have an appointment today. Please contact us to book a second.',
+        'closed': 'Sorry, we\'re closed on that date. Please choose another day.',
     }
 
     context = {
-        'categories':        categories,
-        'treatments':        treatments,
-        'booked_slots_json': slots_json,
-        'show_success':      request.GET.get('success') == 'true',
-        'error_message':     error_map.get(request.GET.get('error', ''), ''),
+        'categories':         categories,
+        'treatments':         treatments,
+        'booked_slots_json':  slots_json,
+        'closed_dates_json':  closed_dates_json,
+        'show_success':       request.GET.get('success') == 'true',
+        'error_message':      error_map.get(request.GET.get('error', ''), ''),
     }
 
     return render(request, 'bookings/overview.html', context)
@@ -199,6 +216,10 @@ def create_booking(request):
     # ── 5. Date falls on an open clinic day ───────────────────────────────────
     if booking_date.weekday() not in OPEN_DAYS:
         return redirect(reverse('bookings:overview') + '?error=invalid')
+
+    # ── 5b. Date isn't a closed date (holiday etc.) ───────────────────────────
+    if ClosedDate.objects.filter(date=booking_date).exists():
+        return redirect(reverse('bookings:overview') + '?error=closed')
 
     # ── 6. Requested time is a valid generated slot for this treatment ────────
     valid_times = _generate_slot_times(treatment.duration_minutes, treatment.duration_minutes)

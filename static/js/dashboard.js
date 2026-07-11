@@ -13,12 +13,16 @@ document.addEventListener('DOMContentLoaded', function () {
     // State
     // ---------------------------------------------------------------
 
-    let currentView    = 'month';
-    let currentDate    = new Date();
-    let allEvents      = [];
-    let activeBooking  = null;
-    let selectedUserId = null;
-    let isEditMode     = false;
+    let currentView       = 'month';
+    let currentDate       = new Date();
+    let allEvents         = [];
+    let closedDates       = new Set();
+    // Every upcoming closed date (unbounded by the currently visible calendar range),
+    // keyed by "YYYY-MM-DD" -> reason. Used to warn operators in the booking modal.
+    let allClosedDatesMap = new Map();
+    let activeBooking     = null;
+    let selectedUserId    = null;
+    let isEditMode        = false;
 
     // ---------------------------------------------------------------
     // Elements — calendar
@@ -48,6 +52,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const selectedClientLabel = document.getElementById('selectedClientLabel');
     const formTreatment    = document.getElementById('formTreatment');
     const formDate         = document.getElementById('formDate');
+    const warningClosedDate = document.getElementById('warningClosedDate');
     const formTime         = document.getElementById('formTime');
     const formNotes        = document.getElementById('formNotes');
     const formStatus       = document.getElementById('formStatus');
@@ -89,13 +94,46 @@ document.addEventListener('DOMContentLoaded', function () {
             String(d.getDate()).padStart(2, '0');
     }
 
+    // Assigns side-by-side columns to events that overlap in time, so a
+    // cancelled slot and the booking that replaced it (or any two
+    // simultaneous events) render next to each other instead of one
+    // fully occluding the other.
+    function layoutEvents(events) {
+        const items = events.map(e => {
+            const [h, m] = e.start_time.split(':').map(Number);
+            const start  = h * 60 + m;
+            return { e, start, end: start + e.duration, col: 0, cols: 1 };
+        }).sort((a, b) => a.start - b.start);
+
+        const columnEnds = [];
+        items.forEach(item => {
+            let col = columnEnds.findIndex(end => end <= item.start);
+            if (col === -1) { col = columnEnds.length; columnEnds.push(item.end); }
+            else            { columnEnds[col] = item.end; }
+            item.col = col;
+        });
+
+        items.forEach(item => {
+            let maxCols = item.col + 1;
+            items.forEach(other => {
+                if (other.start < item.end && other.end > item.start) {
+                    maxCols = Math.max(maxCols, other.col + 1);
+                }
+            });
+            item.cols = maxCols;
+        });
+
+        return items;
+    }
+
     function fetchEvents() {
         const { start, end } = getDateRange();
         const url = `${DASHBOARD_URLS.bookingsData}?start=${formatISO(start)}&end=${formatISO(end)}`;
         fetch(url)
             .then(r => r.json())
             .then(data => {
-                allEvents = data.events;
+                allEvents   = data.events;
+                closedDates = new Set(data.closed_dates || []);
                 updateStats();
                 if (currentView === 'month')     renderMonth();
                 else if (currentView === 'week') renderWeek();
@@ -160,11 +198,13 @@ document.addEventListener('DOMContentLoaded', function () {
             const dateStr = formatISO(new Date(y, m, day));
             const isToday = dateStr === today;
             const events  = byDate[dateStr] || [];
-            const isOpen  = OPEN_DAYS.includes(new Date(y, m, day).getDay());
+            const isOpen   = OPEN_DAYS.includes(new Date(y, m, day).getDay());
+            const isHoliday = closedDates.has(dateStr);
 
             html += `
-                <div class="dash-month-cell${isToday ? ' dash-month-cell--today' : ''}${!isOpen ? ' dash-month-cell--closed' : ''}" data-date="${dateStr}">
+                <div class="dash-month-cell${isToday ? ' dash-month-cell--today' : ''}${(!isOpen || isHoliday) ? ' dash-month-cell--closed' : ''}" data-date="${dateStr}">
                     <span class="dash-month-cell__day">${day}</span>
+                    ${isHoliday ? '<span class="dash-week-closed">Holiday</span>' : ''}
                     <div class="dash-month-cell__events">
                         ${events.slice(0, 3).map(e => eventPill(e)).join('')}
                         ${events.length > 3 ? `<button class="dash-month-more" data-date="${dateStr}">+${events.length - 3} more</button>` : ''}
@@ -238,11 +278,12 @@ document.addEventListener('DOMContentLoaded', function () {
             const dateStr = formatISO(d);
             const isToday = dateStr === today;
             const isOpen  = OPEN_DAYS.includes(d.getDay());
+            const isHoliday = closedDates.has(dateStr);
             html += `
                 <div class="dash-week-col-header${isToday ? ' dash-week-col-header--today' : ''}">
                     <span class="dash-week-col-header__day">${d.toLocaleDateString('en-GB', { weekday: 'short' })}</span>
                     <span class="dash-week-col-header__date${isToday ? ' dash-week-col-header__date--today' : ''}">${d.getDate()}</span>
-                    ${!isOpen ? '<span class="dash-week-closed">Closed</span>' : ''}
+                    ${isHoliday ? '<span class="dash-week-closed">Holiday</span>' : (!isOpen ? '<span class="dash-week-closed">Closed</span>' : '')}
                 </div>`;
         });
 
@@ -260,14 +301,15 @@ document.addEventListener('DOMContentLoaded', function () {
             for (let h = 0; h < HOUR_COUNT; h++) {
                 html += `<div class="dash-week-hour-line" style="top:${h * 60 * PX_PER_MIN}px"></div>`;
             }
-            events.forEach(e => {
-                const [eh, em] = e.start_time.split(':').map(Number);
-                const topMins  = (eh - HOUR_START) * 60 + em;
-                const height   = e.duration * PX_PER_MIN;
-                const colour = e.status === 'cancelled' ? '' : `background:${e.category_colour || '#b8965a'};`;
+            layoutEvents(events).forEach(({ e, start, cols, col }) => {
+                const topMins = start - HOUR_START * 60;
+                const height  = e.duration * PX_PER_MIN;
+                const colour  = e.status === 'cancelled' ? '' : `background:${e.category_colour || '#b8965a'};`;
+                const widthPct = 100 / cols;
+                const leftPct  = widthPct * col;
                 html += `
                     <div class="dash-week-event${e.status === 'cancelled' ? ' dash-week-event--cancelled' : ''}"
-                         data-id="${e.id}" style="${colour}top:${topMins * PX_PER_MIN}px; height:${height}px;">
+                         data-id="${e.id}" style="${colour}top:${topMins * PX_PER_MIN}px; height:${height}px; left:calc(${leftPct}% + 3px); width:calc(${widthPct}% - 6px); right:auto;">
                         <span class="dash-week-event__time">${e.start_time}</span>
                         <span class="dash-week-event__name">${esc(e.client)}</span>
                         <span class="dash-week-event__treatment">${esc(e.treatment)}</span>
@@ -297,6 +339,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const dateStr = formatISO(currentDate);
         const isToday = dateStr === today;
         const isOpen  = OPEN_DAYS.includes(currentDate.getDay());
+        const isHoliday = closedDates.has(dateStr);
 
         periodLabel.textContent = currentDate.toLocaleDateString('en-GB', {
             weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
@@ -319,7 +362,7 @@ document.addEventListener('DOMContentLoaded', function () {
         html += `<div class="dash-week-col-header${isToday ? ' dash-week-col-header--today' : ''}">
             <span class="dash-week-col-header__day">${currentDate.toLocaleDateString('en-GB', { weekday: 'long' })}</span>
             <span class="dash-week-col-header__date${isToday ? ' dash-week-col-header__date--today' : ''}">${currentDate.getDate()}</span>
-            ${!isOpen ? '<span class="dash-week-closed">Closed</span>' : ''}
+            ${isHoliday ? '<span class="dash-week-closed">Holiday</span>' : (!isOpen ? '<span class="dash-week-closed">Closed</span>' : '')}
         </div>`;
         html += '</div>';
 
@@ -335,14 +378,15 @@ document.addEventListener('DOMContentLoaded', function () {
         for (let h = 0; h < HOUR_COUNT; h++) {
             html += `<div class="dash-week-hour-line" style="top:${h * 60 * PX_PER_MIN}px"></div>`;
         }
-        dayEvents.forEach(e => {
-            const [eh, em] = e.start_time.split(':').map(Number);
-            const topMins  = (eh - HOUR_START) * 60 + em;
-            const height   = e.duration * PX_PER_MIN;
-            const colour   = e.status === 'cancelled' ? '' : `background:${e.category_colour || '#b8965a'};`;
+        layoutEvents(dayEvents).forEach(({ e, start, cols, col }) => {
+            const topMins = start - HOUR_START * 60;
+            const height  = e.duration * PX_PER_MIN;
+            const colour  = e.status === 'cancelled' ? '' : `background:${e.category_colour || '#b8965a'};`;
+            const widthPct = 100 / cols;
+            const leftPct  = widthPct * col;
             html += `
                 <div class="dash-week-event${e.status === 'cancelled' ? ' dash-week-event--cancelled' : ''}"
-                     data-id="${e.id}" style="${colour}top:${topMins * PX_PER_MIN}px; height:${height}px;">
+                     data-id="${e.id}" style="${colour}top:${topMins * PX_PER_MIN}px; height:${height}px; left:calc(${leftPct}% + 3px); width:calc(${widthPct}% - 6px); right:auto;">
                     <span class="dash-week-event__time">${esc(e.start_time)}</span>
                     <span class="dash-week-event__name">${esc(e.client)}</span>
                     <span class="dash-week-event__treatment">${esc(e.treatment)}</span>
@@ -460,6 +504,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         resetForm();
         if (prefilledDate) formDate.value = prefilledDate;
+        updateClosedDateWarning();
         openModal(modalOverlay);
     }
 
@@ -487,6 +532,34 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         formTime.value = booking.start_time;
+        updateClosedDateWarning();
+    }
+
+    // ---------------------------------------------------------------
+    // Closed-date warning in the booking modal
+    // ---------------------------------------------------------------
+
+    function updateClosedDateWarning() {
+        const reason = allClosedDatesMap.get(formDate.value);
+        if (reason === undefined) {
+            warningClosedDate.style.display = 'none';
+        } else {
+            warningClosedDate.textContent = reason
+                ? `⚠ This date is closed (${reason}). Booking will override it.`
+                : '⚠ This date is marked as closed. Booking will override it.';
+            warningClosedDate.style.display = 'block';
+        }
+    }
+
+    formDate.addEventListener('input', updateClosedDateWarning);
+
+    function loadAllClosedDates() {
+        fetch(DASHBOARD_URLS.closedDatesData)
+            .then(r => r.json())
+            .then(data => {
+                allClosedDatesMap = new Map(data.closed_dates.map(c => [c.date, c.reason]));
+                updateClosedDateWarning();
+            });
     }
 
     // ---------------------------------------------------------------
@@ -586,6 +659,7 @@ document.addEventListener('DOMContentLoaded', function () {
         formTime.value                  = '';
         formNotes.value                 = '';
         formStatus.value                = 'confirmed';
+        warningClosedDate.style.display  = 'none';
         clearErrors();
     }
 
@@ -602,8 +676,114 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // ---------------------------------------------------------------
+    // Closed dates (holidays) modal
+    // ---------------------------------------------------------------
+
+    const manageClosedDatesBtn = document.getElementById('manageClosedDatesBtn');
+    const closedDatesModalOverlay = document.getElementById('closedDatesModalOverlay');
+    const closedDatesModalClose   = document.getElementById('closedDatesModalClose');
+    const closedDateInput  = document.getElementById('closedDateInput');
+    const closedDateReason = document.getElementById('closedDateReason');
+    const closedDateAddBtn = document.getElementById('closedDateAddBtn');
+    const closedDateError  = document.getElementById('closedDateError');
+    const closedDatesList  = document.getElementById('closedDatesList');
+
+    function formatClosedDateDisplay(isoDate) {
+        return new Date(isoDate + 'T00:00:00').toLocaleDateString('en-GB', {
+            weekday: 'short', day: 'numeric', month: 'long', year: 'numeric',
+        });
+    }
+
+    function loadClosedDatesList() {
+        closedDatesList.innerHTML = '<li>Loading…</li>';
+        fetch(DASHBOARD_URLS.closedDatesData)
+            .then(r => r.json())
+            .then(data => {
+                allClosedDatesMap = new Map(data.closed_dates.map(c => [c.date, c.reason]));
+                updateClosedDateWarning();
+
+                if (!data.closed_dates.length) {
+                    closedDatesList.innerHTML = '<li style="color:var(--color-muted,#888);">No closed dates added yet.</li>';
+                    return;
+                }
+                closedDatesList.innerHTML = data.closed_dates.map(c => `
+                    <li data-id="${c.id}" style="display:flex; justify-content:space-between; align-items:center; padding:0.5rem 0; border-bottom:1px solid var(--color-border,#e8e0d5);">
+                        <span>
+                            <strong>${esc(formatClosedDateDisplay(c.date))}</strong>
+                            ${c.reason ? ` — ${esc(c.reason)}` : ''}
+                        </span>
+                        <button class="btn btn--ghost btn--sm closed-date-remove" data-id="${c.id}">Remove</button>
+                    </li>`).join('');
+
+                closedDatesList.querySelectorAll('.closed-date-remove').forEach(btn => {
+                    btn.addEventListener('click', () => removeClosedDate(parseInt(btn.dataset.id)));
+                });
+            });
+    }
+
+    function removeClosedDate(id) {
+        if (!confirm('Remove this closed date? Clients will be able to book on this day again.')) return;
+
+        fetch(DASHBOARD_URLS.closedDateDelete.replace('{id}', id), {
+            method: 'POST',
+            headers: { 'X-CSRFToken': CSRF_TOKEN },
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.ok) {
+                loadClosedDatesList();
+                fetchEvents();
+            }
+        });
+    }
+
+    if (manageClosedDatesBtn) {
+        manageClosedDatesBtn.addEventListener('click', () => {
+            closedDateInput.value  = '';
+            closedDateReason.value = '';
+            closedDateError.textContent = '';
+            loadClosedDatesList();
+            openModal(closedDatesModalOverlay);
+        });
+
+        closedDatesModalClose.addEventListener('click', () => closeModal(closedDatesModalOverlay));
+        closedDatesModalOverlay.addEventListener('click', e => {
+            if (e.target === closedDatesModalOverlay) closeModal(closedDatesModalOverlay);
+        });
+
+        closedDateAddBtn.addEventListener('click', () => {
+            closedDateError.textContent = '';
+            const dateVal   = closedDateInput.value;
+            const reasonVal = closedDateReason.value.trim();
+
+            if (!dateVal) {
+                closedDateError.textContent = 'Please select a date.';
+                return;
+            }
+
+            fetch(DASHBOARD_URLS.closedDateCreate, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF_TOKEN },
+                body: JSON.stringify({ date: dateVal, reason: reasonVal }),
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.ok) {
+                    closedDateInput.value  = '';
+                    closedDateReason.value = '';
+                    loadClosedDatesList();
+                    fetchEvents();
+                } else {
+                    closedDateError.textContent = Object.values(data.errors || {})[0] || 'Something went wrong.';
+                }
+            });
+        });
+    }
+
+    // ---------------------------------------------------------------
     // Init
     // ---------------------------------------------------------------
 
     fetchEvents();
+    loadAllClosedDates();
 });

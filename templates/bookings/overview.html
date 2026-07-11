@@ -302,6 +302,7 @@
 </div>
 
 {{ booked_slots_json|json_script:"booked-slots-data" }}
+{{ closed_dates_json|json_script:"closed-dates-data" }}
 
 <script>
     const BOOKING_SUCCESS = {{ show_success|yesno:"true,false" }};

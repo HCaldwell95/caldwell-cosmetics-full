@@ -12,6 +12,12 @@ urlpatterns = [
     path("bookings/<int:pk>/cancel/",       views.booking_cancel,   name="booking_cancel"),
     path("users/search/",                   views.user_search,      name="user_search"),
 
+    # Closed dates (holidays)
+    path("closed-dates/",                   views.closed_dates_page,  name="closed_dates_page"),
+    path("closed-dates/data/",              views.closed_dates_data,  name="closed_dates_data"),
+    path("closed-dates/create/",            views.closed_date_create, name="closed_date_create"),
+    path("closed-dates/<int:pk>/delete/",   views.closed_date_delete, name="closed_date_delete"),
+
     # Profile section
     path("clients/",                        views.client_list,      name="client_list"),
     path("clients/create/",                 views.client_create,    name="client_create"),

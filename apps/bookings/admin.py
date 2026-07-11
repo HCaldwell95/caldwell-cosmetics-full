@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Booking
+from .models import Booking, ClosedDate
 
 @admin.register(Booking)
 class BookingAdmin(admin.ModelAdmin):
@@ -7,4 +7,12 @@ class BookingAdmin(admin.ModelAdmin):
     list_filter   = ['status', 'date', 'treatment__category']
     search_fields = ['user__email', 'user__first_name', 'treatment__name']
     ordering      = ['date', 'start_time']
+    date_hierarchy = 'date'
+
+
+@admin.register(ClosedDate)
+class ClosedDateAdmin(admin.ModelAdmin):
+    list_display  = ['date', 'reason', 'created_at']
+    search_fields = ['reason']
+    ordering      = ['date']
     date_hierarchy = 'date'

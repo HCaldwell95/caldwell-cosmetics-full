@@ -5,6 +5,10 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('booked-slots-data').textContent
     );
 
+    // Dates the clinic is closed (holidays etc.) — array of "YYYY-MM-DD" strings.
+    const closedDatesEl = document.getElementById('closed-dates-data');
+    const closedDates   = new Set(closedDatesEl ? JSON.parse(closedDatesEl.textContent) : []);
+
     let selectedTreatment = null;
     let selectedDate      = null;
     let selectedTime      = null;
@@ -186,9 +190,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
             const isPast      = dateObj < today;
             const isClosedDay = !OPEN_DAYS.includes(dateObj.getDay());
+            const isHoliday   = closedDates.has(dateStr);
 
-            if (isPast || isClosedDay) {
+            if (isPast || isClosedDay || isHoliday) {
                 dayEl.classList.add('calendar-day--unavailable');
+                if (isHoliday) dayEl.title = 'Closed';
             } else {
                 dayEl.classList.add('calendar-day--available');
                 dayEl.addEventListener('click', () => selectDate(dateStr, dateObj, dayEl));

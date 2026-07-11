@@ -57,3 +57,22 @@ class Booking(models.Model):
 
     def __str__(self):
         return f"{self.user} — {self.treatment.name} on {self.date} at {self.start_time}"
+
+
+class ClosedDate(models.Model):
+    """
+    A single calendar date the clinic is closed (holiday, staff leave, etc.).
+    Clients cannot book on these dates; operators may still override via
+    the practitioner dashboard.
+    """
+
+    date   = models.DateField(unique=True)
+    reason = models.CharField(max_length=255, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["date"]
+
+    def __str__(self):
+        return f"{self.date} — {self.reason}" if self.reason else str(self.date)

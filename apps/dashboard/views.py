@@ -11,7 +11,7 @@ from django.utils import timezone
 from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_POST
 
-from apps.bookings.models import Booking
+from apps.bookings.models import Booking, ClosedDate
 from apps.bookings.views import BOOKING_HORIZON_DAYS
 from apps.treatments.models import Treatment, TreatmentCategory
 from apps.forms_system.models import (
@@ -198,6 +198,66 @@ def notifications_page(request):
     return render(request, "dashboard/notifications.html")
 
 
+# ---------------------------------------------------------------------------
+# Closed dates (holidays etc.)
+# ---------------------------------------------------------------------------
+
+@admin_view
+def closed_dates_page(request):
+    return render(request, "dashboard/closed_dates.html")
+
+
+@admin_view
+def closed_dates_data(request):
+    today = timezone.now().date()
+    closed_dates = ClosedDate.objects.filter(date__gte=today).order_by("date")
+    return JsonResponse({
+        "closed_dates": [
+            {
+                "id":     c.pk,
+                "date":   c.date.strftime("%Y-%m-%d"),
+                "reason": c.reason,
+            }
+            for c in closed_dates
+        ],
+    })
+
+
+@admin_view
+@require_POST
+def closed_date_create(request):
+    data, err = _parse_json(request)
+    if err: return err
+
+    date_str = data.get("date")
+    reason   = data.get("reason", "").strip()
+
+    if not date_str:
+        return JsonResponse({"ok": False, "errors": {"date": "Please select a date."}}, status=400)
+
+    try:
+        closed_date = date.fromisoformat(date_str)
+    except ValueError:
+        return JsonResponse({"ok": False, "errors": {"date": "Please enter a valid date."}}, status=400)
+
+    if ClosedDate.objects.filter(date=closed_date).exists():
+        return JsonResponse({"ok": False, "errors": {"date": "This date is already marked as closed."}}, status=400)
+
+    c = ClosedDate.objects.create(date=closed_date, reason=reason)
+    return JsonResponse({
+        "ok": True,
+        "closed_date": {"id": c.pk, "date": c.date.strftime("%Y-%m-%d"), "reason": c.reason},
+    })
+
+
+@admin_view
+@require_POST
+def closed_date_delete(request, pk):
+    closed_date = get_object_or_404(ClosedDate, pk=pk)
+    closed_date.delete()
+    return JsonResponse({"ok": True})
+
+
 @admin_view
 def notifications_data(request):
     notifs = (
@@ -289,7 +349,12 @@ def bookings_data(request):
             "category_colour": b.treatment.category.colour,
         })
 
-    return JsonResponse({"events": events})
+    closed_dates = [
+        d.strftime("%Y-%m-%d")
+        for d in ClosedDate.objects.filter(date__gte=start_date, date__lte=end_date).values_list("date", flat=True)
+    ]
+
+    return JsonResponse({"events": events, "closed_dates": closed_dates})
 
 
 # ---------------------------------------------------------------------------

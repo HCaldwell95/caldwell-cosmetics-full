@@ -18,10 +18,16 @@
             <span class="dash-header__eyebrow">Practitioner Portal</span>
             <h1 class="dash-header__title">Dashboard</h1>
         </div>
-        <button class="btn btn--primary" id="newBookingBtn">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            New Booking
-        </button>
+        <div class="dash-header__actions" style="display:flex; gap:0.75rem;">
+            <button class="btn btn--ghost" id="manageClosedDatesBtn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="7" y1="14" x2="10" y2="17"/><line x1="10" y1="14" x2="7" y2="17"/></svg>
+                Closed Dates
+            </button>
+            <button class="btn btn--primary" id="newBookingBtn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                New Booking
+            </button>
+        </div>
     </div>
 
     <!-- Stats -->
@@ -120,6 +126,9 @@
                     <label class="dash-label" for="formDate">Date</label>
                     <input type="date" class="dash-input" id="formDate">
                     <p class="dash-field-error" id="errorDate"></p>
+                    <p class="dash-field-warning" id="warningClosedDate" style="display:none; color:#b8860b;">
+                        ⚠ This date is marked as closed. Booking will override it.
+                    </p>
                 </div>
 
                 <div class="dash-form-group">
@@ -242,6 +251,35 @@
         </div>
     </div>
 
+    <!-- Closed dates (holidays) modal -->
+    <div class="dash-modal-overlay" id="closedDatesModalOverlay" style="display:none;">
+        <div class="dash-modal">
+            <div class="dash-modal__header">
+                <h2 class="dash-modal__title">Closed Dates</h2>
+                <button class="dash-modal__close" id="closedDatesModalClose">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+            <p class="dash-modal__section-label" style="font-weight:normal;">
+                Dates added here are blocked from client bookings (holidays, staff leave, etc.). You can still book a client in on these dates yourself from the main calendar.
+            </p>
+            <div class="dash-form-group">
+                <label class="dash-label" for="closedDateInput">Date</label>
+                <input type="date" class="dash-input" id="closedDateInput">
+            </div>
+            <div class="dash-form-group">
+                <label class="dash-label" for="closedDateReason">Reason (optional)</label>
+                <input type="text" class="dash-input" id="closedDateReason" placeholder="e.g. Christmas Day">
+            </div>
+            <p class="dash-field-error" id="closedDateError"></p>
+            <div class="dash-modal__actions">
+                <button class="btn btn--primary" id="closedDateAddBtn">Add Closed Date</button>
+            </div>
+
+            <ul class="dash-closed-dates-list" id="closedDatesList" style="list-style:none; padding:0; margin-top:1rem; max-height:220px; overflow-y:auto;"></ul>
+        </div>
+    </div>
+
 </div>
 
 <script>
@@ -254,6 +292,9 @@
         clientList:      "{% url 'dashboard:client_list' %}",
         clientProfile:   "/dashboard/clients/{id}/",
         clientEdit:      "/dashboard/clients/{id}/edit/",
+        closedDatesData:  "{% url 'dashboard:closed_dates_data' %}",
+        closedDateCreate: "{% url 'dashboard:closed_date_create' %}",
+        closedDateDelete: "/dashboard/closed-dates/{id}/delete/",
         bundleAdd:       "/dashboard/clients/{id}/bundles/add/",
         bundleUse:       "/dashboard/clients/{id}/bundles/{bundle_id}/use/",
         creditAdjust:    "/dashboard/clients/{id}/credit/adjust/",
