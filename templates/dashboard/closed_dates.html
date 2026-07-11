@@ -6,7 +6,7 @@
 {% block nav_closed_dates %}dash-sidenav__link--active{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/pages/dashboard.css' %}">
+<link rel="stylesheet" href="{% static 'css/pages/dashboard.css' %}?v=2">
 {% endblock %}
 
 {% block content %}
@@ -20,18 +20,18 @@
         </div>
     </div>
 
-    <p class="dash-header__subtitle">
+    <p class="dash-modal__description" style="padding:0;">
         Dates added here are blocked from client bookings (holidays, staff leave, etc.).
         You can still create a booking for a client on a closed date yourself from the main dashboard calendar.
     </p>
 
     <!-- Add closed date form -->
     <div class="dash-form-group-row" style="display:flex; gap:1rem; align-items:flex-end; flex-wrap:wrap; margin:1.5rem 0;">
-        <div class="dash-form-group">
+        <div class="dash-form-group" style="padding:0;">
             <label class="dash-label" for="newClosedDate">Date</label>
             <input type="date" class="dash-input" id="newClosedDate">
         </div>
-        <div class="dash-form-group" style="flex:1; min-width:200px;">
+        <div class="dash-form-group" style="flex:1; min-width:200px; padding:0;">
             <label class="dash-label" for="newClosedReason">Reason (optional)</label>
             <input type="text" class="dash-input" id="newClosedReason" placeholder="e.g. Christmas Day">
         </div>
@@ -39,21 +39,14 @@
     </div>
     <p class="dash-field-error" id="closedDateError"></p>
 
-    <!-- Closed dates table -->
-    <div class="dash-client-table-wrap">
-        <table class="dash-client-table">
-            <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>Reason</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody id="closedDatesTableBody">
-                <tr><td colspan="3" class="dash-client-table__empty">Loading…</td></tr>
-            </tbody>
-        </table>
-    </div>
+    <!-- Closed dates list -->
+    <ul class="dash-closed-dates-list" id="closedDatesTableBody" style="padding:0; max-height:none;"></ul>
+
+    <!-- Past closed dates (archive) -->
+    <button class="btn btn--ghost btn--sm" id="toggleArchiveBtn" style="margin-top:1.5rem;">
+        View Past Closed Dates
+    </button>
+    <ul class="dash-closed-dates-list" id="closedDatesArchiveList" style="display:none; padding:0; max-height:none; margin-top:1rem;"></ul>
 
     <!-- Toast notification -->
     <div id="dashToast" class="dash-toast" role="alert" aria-live="polite"></div>
@@ -62,9 +55,10 @@
 
 <script>
     const DASHBOARD_URLS = {
-        closedDatesData:   "{% url 'dashboard:closed_dates_data' %}",
-        closedDateCreate:  "{% url 'dashboard:closed_date_create' %}",
-        closedDateDelete:  "/dashboard/closed-dates/{id}/delete/",
+        closedDatesData:        "{% url 'dashboard:closed_dates_data' %}",
+        closedDatesArchiveData: "{% url 'dashboard:closed_dates_archive_data' %}",
+        closedDateCreate:       "{% url 'dashboard:closed_date_create' %}",
+        closedDateDelete:       "/dashboard/closed-dates/{id}/delete/",
     };
     const CSRF_TOKEN = "{{ csrf_token }}";
 </script>

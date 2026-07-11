@@ -703,14 +703,14 @@ document.addEventListener('DOMContentLoaded', function () {
                 updateClosedDateWarning();
 
                 if (!data.closed_dates.length) {
-                    closedDatesList.innerHTML = '<li style="color:var(--color-muted,#888);">No closed dates added yet.</li>';
+                    closedDatesList.innerHTML = '<li class="dash-closed-date-row__empty">No closed dates added yet.</li>';
                     return;
                 }
                 closedDatesList.innerHTML = data.closed_dates.map(c => `
-                    <li data-id="${c.id}" style="display:flex; justify-content:space-between; align-items:center; padding:0.5rem 0; border-bottom:1px solid var(--color-border,#e8e0d5);">
-                        <span>
-                            <strong>${esc(formatClosedDateDisplay(c.date))}</strong>
-                            ${c.reason ? ` — ${esc(c.reason)}` : ''}
+                    <li class="dash-closed-date-row" data-id="${c.id}">
+                        <span class="dash-closed-date-row__info">
+                            <span class="dash-closed-date-row__date">${esc(formatClosedDateDisplay(c.date))}</span>
+                            ${c.reason ? `<span class="dash-closed-date-row__reason"> — ${esc(c.reason)}</span>` : ''}
                         </span>
                         <button class="btn btn--ghost btn--sm closed-date-remove" data-id="${c.id}">Remove</button>
                     </li>`).join('');

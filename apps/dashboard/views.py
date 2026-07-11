@@ -224,6 +224,23 @@ def closed_dates_data(request):
 
 
 @admin_view
+def closed_dates_archive_data(request):
+    """Past closed dates — kept for record purposes, never shown in the main list."""
+    today = timezone.now().date()
+    closed_dates = ClosedDate.objects.filter(date__lt=today).order_by("-date")[:500]
+    return JsonResponse({
+        "closed_dates": [
+            {
+                "id":     c.pk,
+                "date":   c.date.strftime("%Y-%m-%d"),
+                "reason": c.reason,
+            }
+            for c in closed_dates
+        ],
+    })
+
+
+@admin_view
 @require_POST
 def closed_date_create(request):
     data, err = _parse_json(request)

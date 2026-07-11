@@ -15,6 +15,7 @@ urlpatterns = [
     # Closed dates (holidays)
     path("closed-dates/",                   views.closed_dates_page,  name="closed_dates_page"),
     path("closed-dates/data/",              views.closed_dates_data,  name="closed_dates_data"),
+    path("closed-dates/archive/",           views.closed_dates_archive_data, name="closed_dates_archive_data"),
     path("closed-dates/create/",            views.closed_date_create, name="closed_date_create"),
     path("closed-dates/<int:pk>/delete/",   views.closed_date_delete, name="closed_date_delete"),
 

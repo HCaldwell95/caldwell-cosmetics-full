@@ -1030,6 +1030,64 @@ body {
 }
 
 /* =====================================================
+   Closed dates list (dashboard modal + standalone page)
+   ===================================================== */
+
+.dash-modal__description {
+    padding: 0 1.5rem;
+    margin: 0 0 1.25rem;
+    color: var(--color-muted, #888);
+    font-size: 0.88rem;
+    line-height: 1.5;
+}
+
+.dash-closed-dates-list {
+    list-style: none;
+    padding: 0 1.5rem 1.5rem;
+    margin: 0;
+    max-height: 260px;
+    overflow-y: auto;
+}
+
+.dash-closed-date-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+    padding: 0.65rem 0;
+    border-bottom: 1px solid var(--color-border, #e8e0d5);
+}
+
+.dash-closed-date-row:last-child {
+    border-bottom: none;
+}
+
+.dash-closed-date-row__info {
+    min-width: 0;
+    word-break: break-word;
+}
+
+.dash-closed-date-row__date {
+    font-weight: 600;
+    color: var(--color-heading, #1a1a2e);
+}
+
+.dash-closed-date-row__reason {
+    color: var(--color-muted, #888);
+}
+
+.dash-closed-date-row__empty {
+    color: var(--color-muted, #888);
+    padding: 0.65rem 0;
+}
+
+.dash-closed-date-row .btn {
+    flex-shrink: 0;
+    margin-bottom: 0;
+}
+
+/* =====================================================
    Profile panel (slides in from right)
    ===================================================== */
 

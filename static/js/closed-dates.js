@@ -1,10 +1,14 @@
 document.addEventListener('DOMContentLoaded', function () {
 
     const tableBody      = document.getElementById('closedDatesTableBody');
+    const archiveList    = document.getElementById('closedDatesArchiveList');
+    const toggleArchiveBtn = document.getElementById('toggleArchiveBtn');
     const newDateInput   = document.getElementById('newClosedDate');
     const newReasonInput = document.getElementById('newClosedReason');
     const addBtn         = document.getElementById('addClosedDateBtn');
     const errorEl        = document.getElementById('closedDateError');
+
+    let archiveLoaded = false;
 
     function formatDisplayDate(isoDate) {
         return new Date(isoDate + 'T00:00:00').toLocaleDateString('en-GB', {
@@ -12,22 +16,22 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    function renderRows(closedDates) {
+    function renderRows(target, closedDates, emptyMessage) {
         if (!closedDates.length) {
-            tableBody.innerHTML = '<tr><td colspan="3" class="dash-client-table__empty">No closed dates added yet.</td></tr>';
+            target.innerHTML = `<li class="dash-closed-date-row__empty">${esc(emptyMessage)}</li>`;
             return;
         }
 
-        tableBody.innerHTML = closedDates.map(c => `
-            <tr data-id="${c.id}">
-                <td>${esc(formatDisplayDate(c.date))}</td>
-                <td>${esc(c.reason) || '—'}</td>
-                <td>
-                    <button class="dash-client-view-btn dash-closed-date-delete" data-id="${c.id}">Remove</button>
-                </td>
-            </tr>`).join('');
+        target.innerHTML = closedDates.map(c => `
+            <li class="dash-closed-date-row" data-id="${c.id}">
+                <span class="dash-closed-date-row__info">
+                    <span class="dash-closed-date-row__date">${esc(formatDisplayDate(c.date))}</span>
+                    ${c.reason ? `<span class="dash-closed-date-row__reason"> — ${esc(c.reason)}</span>` : ''}
+                </span>
+                <button class="btn btn--ghost btn--sm dash-closed-date-delete" data-id="${c.id}">Remove</button>
+            </li>`).join('');
 
-        tableBody.querySelectorAll('.dash-closed-date-delete').forEach(btn => {
+        target.querySelectorAll('.dash-closed-date-delete').forEach(btn => {
             btn.addEventListener('click', () => deleteClosedDate(parseInt(btn.dataset.id)));
         });
     }
@@ -35,7 +39,14 @@ document.addEventListener('DOMContentLoaded', function () {
     function loadClosedDates() {
         fetch(DASHBOARD_URLS.closedDatesData)
             .then(r => r.json())
-            .then(data => renderRows(data.closed_dates));
+            .then(data => renderRows(tableBody, data.closed_dates, 'No closed dates added yet.'));
+    }
+
+    function loadArchive() {
+        archiveList.innerHTML = '<li class="dash-closed-date-row__empty">Loading…</li>';
+        fetch(DASHBOARD_URLS.closedDatesArchiveData)
+            .then(r => r.json())
+            .then(data => renderRows(archiveList, data.closed_dates, 'No past closed dates on record.'));
     }
 
     function deleteClosedDate(id) {
@@ -50,9 +61,21 @@ document.addEventListener('DOMContentLoaded', function () {
             if (data.ok) {
                 showToast('Closed date removed.');
                 loadClosedDates();
+                if (archiveLoaded) loadArchive();
             }
         });
     }
+
+    toggleArchiveBtn.addEventListener('click', () => {
+        const isHidden = archiveList.style.display === 'none';
+        archiveList.style.display = isHidden ? 'block' : 'none';
+        toggleArchiveBtn.textContent = isHidden ? 'Hide Past Closed Dates' : 'View Past Closed Dates';
+
+        if (isHidden && !archiveLoaded) {
+            archiveLoaded = true;
+            loadArchive();
+        }
+    });
 
     addBtn.addEventListener('click', () => {
         errorEl.textContent = '';
