@@ -275,6 +275,22 @@ class PrescriberAccountTests(TestCase):
         self.assertEqual(self.prescriber.profile.phone_number, "07700 900000")
         self.assertEqual(self.prescriber.prescriber_details.registration_number, "1234567")
 
+    def test_profile_card_with_panels_closed(self):
+        page = self.client.get(reverse("dashboard:prescriber_home"))
+        self.assertContains(page, "Dr Jane Smith")
+        self.assertContains(page, "GMC 1234567")
+        self.assertContains(page, ">JS</div>")  # initials when there's no photo
+        self.assertContains(page, 'id="pcardDetails" hidden')
+        self.assertContains(page, 'id="pcardPassword" hidden')
+
+    def test_panel_with_errors_stays_open(self):
+        page = self.client.post(reverse("dashboard:prescriber_home"), {
+            "action": "password", "old_password": "wrong",
+            "new_password1": "a-much-better-passphrase-42", "new_password2": "a-much-better-passphrase-42",
+        })
+        self.assertContains(page, 'id="pcardPassword" >')
+        self.assertContains(page, 'id="pcardDetails" hidden')
+
     def test_email_must_be_unique(self):
         r = self.client.post(reverse("dashboard:prescriber_home"), {
             "action": "details", "first_name": "Jane", "last_name": "Smith", "email": "owner@example.com",

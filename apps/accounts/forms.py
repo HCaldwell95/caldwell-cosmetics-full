@@ -236,6 +236,14 @@ class PrescriberAccountForm(forms.ModelForm):
         return user
 
 
+class PrescriberPhotoForm(forms.ModelForm):
+    """Profile picture upload — same Cloudinary field clients use."""
+
+    class Meta:
+        model  = Profile
+        fields = ("profile_picture",)
+
+
 # --------------------------------------------------
 # STAFF PROFILE EDIT FORM
 # Extends client form to expose medical_notes

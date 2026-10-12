@@ -6,7 +6,7 @@
 {% block nav_prescriber_home %}dash-sidenav__link--active{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/pages/dashboard.css' %}?v=4">
+<link rel="stylesheet" href="{% static 'css/pages/dashboard.css' %}?v=5">
 {% endblock %}
 
 {% block content %}
@@ -27,6 +27,96 @@
         Please ask the clinic to add them.
     </div>
     {% endif %}
+
+    <!-- ================= Profile card ================= -->
+    {% with profile=user.profile %}
+    <section class="dash-account-section pcard">
+        <div class="pcard__head">
+            {% if profile.profile_picture %}
+            <img src="{{ profile.profile_picture.url }}" alt="{{ user.full_name }}" class="pcard__avatar">
+            {% else %}
+            <div class="pcard__avatar pcard__avatar--initials" aria-hidden="true">{{ user.first_name|first|upper }}{{ user.last_name|first|upper }}</div>
+            {% endif %}
+
+            <div class="pcard__info">
+                <h2 class="pcard__name">{% if details %}{{ details.display_name }}{% else %}{{ user.full_name }}{% endif %}</h2>
+                {% if details.qualifications %}<p class="pcard__quals">{{ details.qualifications }}</p>{% endif %}
+                <ul class="pcard__chips">
+                    {% if details %}
+                    <li class="pcard__chip pcard__chip--reg" title="{{ details.get_professional_body_display }}">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 2L3 7l.01 5.15C3.06 17.1 7 21.7 12 23c4.99-1.3 8.93-5.9 8.99-10.85L21 7 12 2z"/></svg>
+                        {{ details.registration_display }}
+                    </li>
+                    {% endif %}
+                    <li class="pcard__chip">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 6-10 7L2 6"/></svg>
+                        {{ user.email }}
+                    </li>
+                    {% if profile.phone_number %}
+                    <li class="pcard__chip">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                        {{ profile.phone_number }}
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+
+            <div class="pcard__actions">
+                <button type="button" class="btn btn--ghost btn--sm" data-panel="pcardDetails" aria-expanded="{% if open_panel == 'details' %}true{% else %}false{% endif %}" aria-controls="pcardDetails">Edit details</button>
+                <button type="button" class="btn btn--ghost btn--sm" data-panel="pcardPassword" aria-expanded="{% if open_panel == 'password' %}true{% else %}false{% endif %}" aria-controls="pcardPassword">Change password</button>
+            </div>
+        </div>
+
+        <!-- Edit details -->
+        <div class="pcard__panel" id="pcardDetails" {% if open_panel != 'details' %}hidden{% endif %}>
+            <form method="post" enctype="multipart/form-data" novalidate>
+                {% csrf_token %}
+                <input type="hidden" name="action" value="details">
+                <div class="pcard__grid">
+                    <div class="dash-form-group"><label class="dash-label" for="id_first_name">First name</label><input class="dash-input" id="id_first_name" name="first_name" value="{{ account_form.first_name.value|default:'' }}" required>{% for e in account_form.first_name.errors %}<p class="dash-field-error">{{ e }}</p>{% endfor %}</div>
+                    <div class="dash-form-group"><label class="dash-label" for="id_last_name">Last name</label><input class="dash-input" id="id_last_name" name="last_name" value="{{ account_form.last_name.value|default:'' }}" required>{% for e in account_form.last_name.errors %}<p class="dash-field-error">{{ e }}</p>{% endfor %}</div>
+                    <div class="dash-form-group"><label class="dash-label" for="id_email">Email <span class="dash-muted">(used to log in)</span></label><input class="dash-input" type="email" id="id_email" name="email" value="{{ account_form.email.value|default:'' }}" required>{% for e in account_form.email.errors %}<p class="dash-field-error">{{ e }}</p>{% endfor %}</div>
+                    <div class="dash-form-group"><label class="dash-label" for="id_phone_number">Phone</label><input class="dash-input" type="tel" id="id_phone_number" name="phone_number" value="{{ account_form.phone_number.value|default:'' }}"></div>
+                    <div class="dash-form-group pcard__grid-full">
+                        <label class="dash-label" for="id_profile_picture">Profile photo</label>
+                        <input class="dash-input" type="file" id="id_profile_picture" name="profile_picture" accept="image/*">
+                        {% for e in photo_form.profile_picture.errors %}<p class="dash-field-error">{{ e }}</p>{% endfor %}
+                    </div>
+                </div>
+                <p class="pcard__note">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    Your title, registration number and qualifications appear on every prescription, so they're managed by the clinic. Contact us to change them.
+                </p>
+                <div class="pcard__buttons">
+                    <button type="button" class="btn btn--ghost btn--sm" data-close-panel>Cancel</button>
+                    <button type="submit" class="btn btn--primary btn--sm">Save Details</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Change password -->
+        <div class="pcard__panel" id="pcardPassword" {% if open_panel != 'password' %}hidden{% endif %}>
+            <form method="post" novalidate>
+                {% csrf_token %}
+                <input type="hidden" name="action" value="password">
+                <div class="pcard__grid pcard__grid--3">
+                    {% for field in password_form %}
+                    <div class="dash-form-group">
+                        <label class="dash-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        <input class="dash-input" type="password" id="{{ field.id_for_label }}" name="{{ field.html_name }}" autocomplete="{% if forloop.first %}current-password{% else %}new-password{% endif %}" required>
+                        {% for e in field.errors %}<p class="dash-field-error">{{ e }}</p>{% endfor %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% for e in password_form.non_field_errors %}<p class="dash-field-error">{{ e }}</p>{% endfor %}
+                <div class="pcard__buttons">
+                    <button type="button" class="btn btn--ghost btn--sm" data-close-panel>Cancel</button>
+                    <button type="submit" class="btn btn--primary btn--sm">Change Password</button>
+                </div>
+            </form>
+        </div>
+    </section>
+    {% endwith %}
 
     <!-- ================= Awaiting signature ================= -->
     <section class="dash-account-section">
@@ -50,54 +140,6 @@
         </details>
         {% endif %}
     </section>
-
-    <!-- ================= Details ================= -->
-    <div class="dash-account-grid">
-        <section class="dash-account-section">
-            <h2 class="dash-account-section__title">My Details</h2>
-            <form method="post" novalidate>
-                {% csrf_token %}
-                <input type="hidden" name="action" value="details">
-                <div class="dash-form-group"><label class="dash-label" for="id_first_name">First name</label><input class="dash-input" id="id_first_name" name="first_name" value="{{ account_form.first_name.value|default:'' }}" required>{% for e in account_form.first_name.errors %}<p class="dash-field-error">{{ e }}</p>{% endfor %}</div>
-                <div class="dash-form-group"><label class="dash-label" for="id_last_name">Last name</label><input class="dash-input" id="id_last_name" name="last_name" value="{{ account_form.last_name.value|default:'' }}" required>{% for e in account_form.last_name.errors %}<p class="dash-field-error">{{ e }}</p>{% endfor %}</div>
-                <div class="dash-form-group"><label class="dash-label" for="id_email">Email (used to log in)</label><input class="dash-input" type="email" id="id_email" name="email" value="{{ account_form.email.value|default:'' }}" required>{% for e in account_form.email.errors %}<p class="dash-field-error">{{ e }}</p>{% endfor %}</div>
-                <div class="dash-form-group"><label class="dash-label" for="id_phone_number">Phone</label><input class="dash-input" type="tel" id="id_phone_number" name="phone_number" value="{{ account_form.phone_number.value|default:'' }}"></div>
-                <button type="submit" class="btn btn--primary btn--sm">Save Details</button>
-            </form>
-        </section>
-
-        <section class="dash-account-section">
-            <h2 class="dash-account-section__title">Registration</h2>
-            {% if details %}
-            <dl class="dash-panel-dl">
-                <dt>Name on prescriptions</dt><dd>{{ details.display_name }}</dd>
-                <dt>Professional body</dt><dd>{{ details.get_professional_body_display }}</dd>
-                <dt>Registration number</dt><dd>{{ details.registration_number }}</dd>
-                <dt>Qualifications</dt><dd>{{ details.qualifications|default:"—" }}</dd>
-            </dl>
-            {% else %}
-            <p class="dash-muted">Not set up yet.</p>
-            {% endif %}
-            <p class="dash-muted" style="margin-top:0.75rem;">These appear on every prescription you sign. To change them, please contact the clinic.</p>
-        </section>
-
-        <section class="dash-account-section">
-            <h2 class="dash-account-section__title">Change Password</h2>
-            <form method="post" novalidate>
-                {% csrf_token %}
-                <input type="hidden" name="action" value="password">
-                {% for field in password_form %}
-                <div class="dash-form-group">
-                    <label class="dash-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
-                    <input class="dash-input" type="password" id="{{ field.id_for_label }}" name="{{ field.html_name }}" autocomplete="{% if forloop.first %}current-password{% else %}new-password{% endif %}" required>
-                    {% for e in field.errors %}<p class="dash-field-error">{{ e }}</p>{% endfor %}
-                </div>
-                {% endfor %}
-                {% for e in password_form.non_field_errors %}<p class="dash-field-error">{{ e }}</p>{% endfor %}
-                <button type="submit" class="btn btn--primary btn--sm">Change Password</button>
-            </form>
-        </section>
-    </div>
 
     <!-- ================= Signed history ================= -->
     <section class="dash-account-section">
@@ -128,4 +170,33 @@
     </section>
 
 </div>
+
+<script>
+(function () {
+    // Edit details / Change password: one panel open at a time.
+    var buttons = document.querySelectorAll('.pcard [data-panel]');
+
+    function show(id) {
+        buttons.forEach(function (btn) {
+            var panel = document.getElementById(btn.dataset.panel);
+            var open  = btn.dataset.panel === id && panel.hidden;
+            panel.hidden = !open;
+            btn.setAttribute('aria-expanded', open);
+            btn.classList.toggle('pcard__toggle--active', open);
+            if (open) {
+                var first = panel.querySelector('input:not([type=hidden])');
+                if (first) first.focus();
+            }
+        });
+    }
+
+    buttons.forEach(function (btn) {
+        if (btn.getAttribute('aria-expanded') === 'true') btn.classList.add('pcard__toggle--active');
+        btn.addEventListener('click', function () { show(btn.dataset.panel); });
+    });
+    document.querySelectorAll('.pcard [data-close-panel]').forEach(function (btn) {
+        btn.addEventListener('click', function () { show(null); });
+    });
+})();
+</script>
 {% endblock %}

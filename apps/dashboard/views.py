@@ -13,7 +13,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
-from apps.accounts.forms import PrescriberAccountForm
+from apps.accounts.forms import PrescriberAccountForm, PrescriberPhotoForm
 from apps.accounts.permissions import clinical_staff_required, practitioner_required, prescriber_required
 from apps.bookings.models import Booking, ClosedDate
 from apps.bookings.views import BOOKING_HORIZON_DAYS
@@ -1054,7 +1054,9 @@ def _prescriber_worklist():
 def prescriber_home(request):
     user = request.user
     account_form  = PrescriberAccountForm(instance=user)
+    photo_form    = PrescriberPhotoForm(instance=user.profile)
     password_form = PasswordChangeForm(user)
+    open_panel    = None  # re-open the panel that has errors
 
     if request.method == "POST":
         if request.POST.get("action") == "password":
@@ -1064,12 +1066,16 @@ def prescriber_home(request):
                 update_session_auth_hash(request, password_form.user)  # stay logged in
                 messages.success(request, "Your password has been changed.")
                 return redirect("dashboard:prescriber_home")
+            open_panel = "password"
         else:
             account_form = PrescriberAccountForm(request.POST, instance=user)
-            if account_form.is_valid():
+            photo_form   = PrescriberPhotoForm(request.POST, request.FILES, instance=user.profile)
+            if account_form.is_valid() and photo_form.is_valid():
                 account_form.save()
+                photo_form.save()
                 messages.success(request, "Your details have been updated.")
                 return redirect("dashboard:prescriber_home")
+            open_panel = "details"
 
     worklist = _prescriber_worklist()
     signed = (
@@ -1087,5 +1093,7 @@ def prescriber_home(request):
         "signed":        signed,
         "details":       getattr(user, "prescriber_details", None),
         "account_form":  account_form,
+        "photo_form":    photo_form,
         "password_form": password_form,
+        "open_panel":    open_panel,
     })
