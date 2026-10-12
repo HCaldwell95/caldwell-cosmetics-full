@@ -2,6 +2,11 @@ from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 
 from apps.bookings.models import Booking
+from apps.bookings.emails import (
+    send_booking_confirmation,
+    send_booking_cancelled,
+    send_booking_amended,
+)
 from apps.forms_system.models import (
     ConsultationForm,
     PhotographyConsent,
@@ -34,17 +39,18 @@ def on_photography_saved(sender, instance, created, **kwargs):
 
 @receiver(pre_save, sender=BotoxConsentForm, dispatch_uid='dashboard.before_botox_save')
 def before_botox_save(sender, instance, **kwargs):
+    instance._prev_client_signed     = False
+    instance._prev_prescriber_signed = False
     if instance.pk:
-        try:
-            instance._prev_client_signed = (
-                BotoxConsentForm.objects
-                .values_list('client_signed', flat=True)
-                .get(pk=instance.pk)
-            )
-        except BotoxConsentForm.DoesNotExist:
-            instance._prev_client_signed = False
-    else:
-        instance._prev_client_signed = False
+        prev = (
+            BotoxConsentForm.objects
+            .filter(pk=instance.pk)
+            .values('client_signed', 'prescriber_signed')
+            .first()
+        )
+        if prev:
+            instance._prev_client_signed     = prev['client_signed']
+            instance._prev_prescriber_signed = prev['prescriber_signed']
 
 
 @receiver(post_save, sender=BotoxConsentForm, dispatch_uid='dashboard.on_botox_saved')
@@ -52,6 +58,16 @@ def on_botox_saved(sender, instance, created, **kwargs):
     prev = getattr(instance, '_prev_client_signed', False)
     if instance.client_signed and not prev:
         _notify(instance.user, 'botox', instance.pk)
+
+    if instance.prescriber_signed and not getattr(instance, '_prev_prescriber_signed', False):
+        from apps.dashboard.models import Notification
+        outcome = 'prescribed for' if instance.is_prescribed else 'declined to prescribe for'
+        Notification.objects.get_or_create(
+            client=instance.user,
+            form_type=Notification.FORM_BOTOX_PRESCRIBED,
+            form_id=instance.pk,
+            defaults={'message_text': f"{instance.prescriber_name} {outcome} {instance.user.full_name}"},
+        )
 
 
 @receiver(pre_save, sender=PRPConsentForm, dispatch_uid='dashboard.before_prp_save')
@@ -139,6 +155,7 @@ def on_booking_saved(sender, instance, created, **kwargs):
             form_id=instance.pk,
             message_text=f"{name} booked {treatment_name} on {date_str} at {time_str}",
         )
+        send_booking_confirmation(instance)
         return
 
     prev_status = getattr(instance, '_prev_status', None)
@@ -150,6 +167,7 @@ def on_booking_saved(sender, instance, created, **kwargs):
             form_id=instance.pk,
             message_text=f"{name}'s {treatment_name} appointment on {date_str} was cancelled",
         )
+        send_booking_cancelled(instance)
         return
 
     if instance.status == Booking.STATUS_CONFIRMED:
@@ -168,3 +186,4 @@ def on_booking_saved(sender, instance, created, **kwargs):
                 form_id=instance.pk,
                 message_text=f"{name}'s booking was changed to {treatment_name} on {date_str} at {time_str}",
             )
+            send_booking_amended(instance)

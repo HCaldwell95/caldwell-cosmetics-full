@@ -1,5 +1,8 @@
+import json
+
 from django.db import models, transaction
 from django.conf import settings
+from django.core.serializers.json import DjangoJSONEncoder
 
 
 class BaseForm(models.Model):
@@ -223,7 +226,7 @@ class ConsultationForm(BaseForm):
     fractional_comments         = models.TextField(blank=True)
 
     class Meta(BaseForm.Meta):
-        verbose_name = "Consultation Form"
+        verbose_name = "Laser Consultation"
 
     def __str__(self):
         return f"Consultation — {self.user.full_name} ({self.completed_at.date()})"
@@ -234,7 +237,13 @@ class BotoxConsentForm(BaseForm):
     Botulinum Toxin Consent — two-step.
     Step 1: client section. Step 2: operator section.
     The form is considered complete only when operator_signed is True.
+    Between the two, the prescriber completes the prescriber section after
+    a face-to-face assessment.
     """
+
+    class PrescriptionDecision(models.TextChoices):
+        PRESCRIBED   = "prescribed",   "Prescribed"
+        NOT_SUITABLE = "not_suitable", "Not suitable — not prescribed"
 
     # ---- Step 1: Client ----
     full_name                   = models.CharField(max_length=200)
@@ -295,6 +304,30 @@ class BotoxConsentForm(BaseForm):
     client_signed               = models.BooleanField(default=False)
     client_signed_at            = models.DateTimeField(null=True, blank=True)
 
+    # ---- Prescriber ----
+    # Name and registration are copied at signing so the record stays
+    # accurate even if the prescriber's details change later.
+    prescriber                  = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name="botox_prescriptions",
+    )
+    prescriber_name             = models.CharField(max_length=200, blank=True)
+    prescriber_registration     = models.CharField(max_length=100, blank=True)
+    prescriber_face_to_face     = models.BooleanField(
+        default=False,
+        help_text="Prescriber confirmed a face-to-face assessment took place.",
+    )
+    prescription_decision       = models.CharField(max_length=20, choices=PrescriptionDecision.choices, blank=True)
+    prescribed_product          = models.CharField(max_length=200, blank=True)
+    prescribed_dose             = models.CharField(max_length=300, blank=True, help_text="Total units and areas.")
+    prescription_valid_until    = models.DateField(null=True, blank=True)
+    prescriber_notes            = models.TextField(blank=True)
+    prescriber_signature        = models.TextField(blank=True)
+    prescriber_signed           = models.BooleanField(default=False)
+    prescriber_signed_at        = models.DateTimeField(null=True, blank=True)
+
     # ---- Step 2: Operator ----
     treatment_notes             = models.TextField(blank=True)
     next_appointment            = models.CharField(max_length=200, blank=True)
@@ -344,15 +377,126 @@ class BotoxConsentForm(BaseForm):
         related_name="botox_operator_completions",
     )
 
+    # ---- Completion ----
+    # Set by the practitioner once every section is done. A finalised form
+    # is a read-only record: no section can be edited after this.
+    finalised                   = models.BooleanField(default=False)
+    finalised_at                = models.DateTimeField(null=True, blank=True)
+    finalised_by                = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name="botox_forms_finalised",
+    )
+
+    # Which fields each person owns. Saves only ever write their own
+    # section, so two people working on the form can't overwrite each other.
+    CLIENT_ANSWER_FIELDS = [
+        "full_name", "date_of_birth", "phone_number", "email", "address",
+        "emergency_contact_name", "emergency_contact_phone",
+        "has_allergies", "allergy_details", "neuromuscular_disorders", "skin_conditions",
+        "blood_disorders", "history_of_fainting", "other_conditions", "current_medications",
+        "previous_cosmetic_procedures", "botox_allergies",
+        "area_forehead", "area_frown_lines", "area_crows_feet", "area_other", "expectations",
+        "is_pregnant", "is_breastfeeding", "has_cold_sores", "has_medical_problems",
+        "medical_problems_details", "on_medication", "medication_details", "has_allergies_q2",
+        "allergy_details_q2", "previous_procedures", "previous_procedures_details", "yes_details",
+        "consent_interactions", "consent_appearance", "consent_limitations", "consent_alternatives",
+        "consent_followup", "consent_dissatisfaction", "consent_agreement", "consent_privacy_policy",
+        "guardian_name", "guardian_relationship", "guardian_phone", "guardian_email",
+    ]
+    CLIENT_FIELDS = CLIENT_ANSWER_FIELDS + [
+        "signature", "guardian_signature", "client_signed", "client_signed_at",
+        "completed_by_practitioner", "practitioner",
+    ]
+    PRESCRIBER_FIELDS = [
+        "prescriber", "prescriber_name", "prescriber_registration", "prescriber_face_to_face",
+        "prescription_decision", "prescribed_product", "prescribed_dose", "prescription_valid_until",
+        "prescriber_notes", "prescriber_signature", "prescriber_signed", "prescriber_signed_at",
+    ]
+    OPERATOR_TEXT_FIELDS = [
+        "treatment_notes", "next_appointment", "treatment_product_lot",
+        "units_forehead", "units_glabella", "units_crows_feet", "units_jelly_roll",
+        "units_bunny_lines", "units_gummy_smile", "units_smokers_lines", "units_lip_flip",
+        "units_dao_jowls", "units_chin", "units_masseter", "units_neck_bands", "units_total",
+        "operator_notes",
+    ]
+    OPERATOR_FIELDS = OPERATOR_TEXT_FIELDS + [
+        "treatment_cost",
+        "operator_signature", "operator_signed", "operator_signed_at", "operator_signed_by",
+    ]
+    FINALISE_FIELDS = ["finalised", "finalised_at", "finalised_by"]
+
     @property
     def is_fully_complete(self):
-        return self.client_signed and self.operator_signed
+        return self.finalised
+
+    @property
+    def can_finalise(self):
+        """Client and prescriber have signed, and the operator has too (unless not prescribed)."""
+        if self.finalised or not (self.client_signed and self.prescriber_signed):
+            return False
+        return self.operator_signed or not self.is_prescribed
+
+    def snapshot(self, fields):
+        """JSON-safe copy of `fields`, for the revision log."""
+        data = {}
+        for name in fields:
+            value = getattr(self, name)
+            if isinstance(value, models.Model):
+                value = value.pk
+            data[name] = value
+        return json.loads(json.dumps(data, cls=DjangoJSONEncoder))
+
+    def log_revision(self, user, section, action, fields=()):
+        return BotoxFormRevision.objects.create(
+            form=self, user=user, section=section, action=action,
+            data=self.snapshot(fields),
+        )
+
+    @property
+    def is_prescribed(self):
+        return self.prescriber_signed and self.prescription_decision == self.PrescriptionDecision.PRESCRIBED
 
     class Meta(BaseForm.Meta):
-        verbose_name = "Botulinum Toxin Consent Form"
+        verbose_name = "Botox Consent & Prescription"
 
     def __str__(self):
-        return f"Botox Consent — {self.user.full_name} ({self.completed_at.date()})"
+        return f"Botox Consent & Prescription — {self.user.full_name} ({self.completed_at.date()})"
+
+
+class BotoxFormRevision(models.Model):
+    """
+    Append-only history of every save to a Botox form, so earlier answers
+    and signatures are kept as evidence even when a section is edited.
+    """
+
+    class Section(models.TextChoices):
+        CLIENT     = "client",     "Client"
+        PRESCRIBER = "prescriber", "Prescriber"
+        OPERATOR   = "operator",   "Practitioner"
+        FORM       = "form",       "Form"
+
+    class Action(models.TextChoices):
+        SUBMITTED          = "submitted",          "Submitted"
+        UPDATED            = "updated",            "Updated"
+        SAVED              = "saved",              "Saved progress"
+        SIGNED             = "signed",             "Signed"
+        SIGNATURE_WITHDRAWN = "signature_withdrawn", "Signature withdrawn — client changed their answers"
+        COMPLETED          = "completed",          "Completed — now read-only"
+
+    form       = models.ForeignKey(BotoxConsentForm, on_delete=models.PROTECT, related_name="revisions")
+    user       = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+")
+    section    = models.CharField(max_length=20, choices=Section.choices)
+    action     = models.CharField(max_length=30, choices=Action.choices)
+    data       = models.JSONField(default=dict, encoder=DjangoJSONEncoder)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["created_at", "pk"]
+
+    def __str__(self):
+        return f"{self.form} — {self.get_section_display()} {self.get_action_display()}"
 
 
 class PhotographyConsent(BaseForm):
@@ -420,7 +564,7 @@ class RecordCard(models.Model):
 
     # Changes since last visit
     changes_consultation_form   = models.BooleanField(
-        default=False, help_text="Changes to consultation form?"
+        default=False, help_text="Changes to laser consultation?"
     )
     changes_medication          = models.BooleanField(
         default=False, help_text="Changes to medication/medical history?"

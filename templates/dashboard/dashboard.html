@@ -303,6 +303,7 @@
         noteNew:         "/dashboard/clients/{id}/notes/new/",
         noteView:        "/dashboard/clients/{pk}/notes/{note_pk}/",
         botoxOperator:   "/forms/botox/{id}/operator/",
+        botoxView:       "/forms/botox/{id}/view/",
         formConsultationView: "/forms/consultation/{id}/view/",
         formConsultationNew:  "/forms/consultation/{id}/new/",
         formPhotography:  "/forms/photography/?on_behalf_of={id}",
@@ -316,6 +317,6 @@
 </script>
 
 <script src="{% static 'js/booking.utils.js' %}"></script>
-<script src="{% static 'js/client-panel.js' %}"></script>
+<script src="{% static 'js/client-panel.js' %}?v=3"></script>
 <script src="{% static 'js/dashboard.js' %}"></script>
 {% endblock %}

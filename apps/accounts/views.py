@@ -3,6 +3,7 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView as DjangoLoginView
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.http import JsonResponse
 from django.utils import timezone
 
@@ -37,7 +38,11 @@ class LoginView(DjangoLoginView):
     template_name = "accounts/login.html"
 
     def get_success_url(self):
-        return self.get_redirect_url() or "/accounts/profile/"
+        if self.get_redirect_url():
+            return self.get_redirect_url()
+        if self.request.user.is_prescriber:
+            return reverse("dashboard:prescriber_home")
+        return "/accounts/profile/"
 
     def form_valid(self, form):
         messages.success(self.request, f"Welcome back, {form.get_user().first_name}!")
@@ -57,6 +62,9 @@ def logout_view(request):
 
 @login_required
 def profile(request):
+    # Prescribers have their own account page.
+    if request.user.is_prescriber:
+        return redirect("dashboard:prescriber_home")
     profile = get_object_or_404(Profile, user=request.user)
     return render(request, "accounts/profile.html", {"profile": profile})
 
@@ -81,7 +89,7 @@ def profile_edit(request):
 
 @login_required
 def deactivate_account(request):
-    if request.user.is_staff or request.user.is_superuser:
+    if request.user.is_staff or request.user.is_superuser or request.user.is_prescriber:
         messages.error(request, "Staff accounts cannot be deactivated here. Contact your system administrator.")
         return redirect("accounts:profile")
     if request.method == "POST":

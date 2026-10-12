@@ -1,6 +1,6 @@
 {% extends "base/base.html" %}
 {% load static %}
-{% block title %}Consultation Form — {{ target_user.full_name }} | Caldwell Cosmetics{% endblock %}
+{% block title %}Laser Consultation — {{ target_user.full_name }} | Caldwell Cosmetics{% endblock %}
 {% block extra_css %}<link rel="stylesheet" href="{% static 'css/pages/forms_system.css' %}">{% endblock %}
 
 {% block content %}
@@ -8,18 +8,22 @@
 
 <div class="cform-header">
     <span class="cform-header__eyebrow">Operator View</span>
-    <h1 class="cform-header__title">Consultation Form — {{ target_user.full_name }}</h1>
+    <h1 class="cform-header__title">Laser Consultation — {{ target_user.full_name }}</h1>
     {% if all_forms %}
     <p class="cform-header__sub">{{ all_forms|length }} form{{ all_forms|length|pluralize }} on record. Showing most recent.</p>
     {% else %}
-    <p class="cform-header__sub">No consultation form has been completed for this client yet.</p>
+    <p class="cform-header__sub">No laser consultation has been completed for this client yet.</p>
     {% endif %}
 </div>
 
 <!-- Action bar -->
 <div style="display:flex; gap:1rem; align-items:center; margin-bottom:1.75rem; flex-wrap:wrap;">
-    <a href="{% url 'forms_system:consultation_new' target_user.pk %}" class="btn btn--primary">+ New Consultation Form</a>
+    {% if user.is_practitioner %}
+    <a href="{% url 'forms_system:consultation_new' target_user.pk %}" class="btn btn--primary">+ New Laser Consultation</a>
     <a href="{% url 'dashboard:dashboard' %}" class="btn btn--ghost">← Back to Dashboard</a>
+    {% else %}
+    <a href="{% url 'dashboard:clients_page' %}" class="btn btn--ghost">← Back to Clients</a>
+    {% endif %}
 </div>
 
 {% if not form %}
@@ -151,7 +155,7 @@
         {% if form.skin_type %}<dt>Skin type</dt><dd>{{ form.get_skin_type_display }}</dd>{% endif %}
         <dt>Current tan</dt><dd>{% if form.current_tan %}Yes{% else %}No{% endif %}</dd>
         {% if form.last_uv_exposure %}<dt>Last UV exposure</dt><dd>{{ form.last_uv_exposure }}</dd>{% endif %}
-        <dt>Tanning injections</dt><dd>{% if form.tanning_injections %}Yes{% else %}No{% endif %}</dd>
+        <dt>Tanning injections / Melanotan / Tanning Enhancers</dt><dd>{% if form.tanning_injections %}Yes{% else %}No{% endif %}</dd>
         {% if form.referral_source %}<dt>Referral source</dt><dd>{{ form.referral_source }}</dd>{% endif %}
         {% if form.treatment_goals %}<dt>Treatment goals</dt><dd>{{ form.treatment_goals }}</dd>{% endif %}
     </dl>

@@ -1,0 +1,78 @@
+{% extends "base/base.html" %}
+{% load static %}
+{% block title %}Botox Consent &amp; Prescription — {{ botox.user.full_name }} | Caldwell Cosmetics{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/pages/forms_system.css' %}">{% endblock %}
+{% block content %}
+<div class="cform-page cform-page--wide">
+<div class="cform-header">
+    <span class="cform-header__eyebrow">Caldwell Cosmetics — {% if botox.finalised %}Completed Record{% else %}In Progress{% endif %}</span>
+    <h1 class="cform-header__title">Botox Consent &amp; Prescription</h1>
+    <p class="cform-header__sub">Client: <strong>{{ botox.user.full_name }}</strong> — started {{ botox.completed_at|date:"j F Y" }}.</p>
+</div>
+
+{% if botox.finalised %}
+<div class="cform-existing-banner">
+    <strong>Completed</strong> by {{ botox.finalised_by.full_name|default:"—" }} on {{ botox.finalised_at|date:"j F Y \a\t H:i" }}.
+    This is a read-only record and cannot be changed.
+</div>
+{% else %}
+<div class="cform-behalf-banner cform-minor-banner">This form hasn't been completed yet, so it may still change.</div>
+{% endif %}
+
+{% include "forms_system/botox/_client_summary.html" %}
+{% include "forms_system/botox/_prescription_summary.html" %}
+
+<div class="cform-section cform-section--readonly">
+    <h2 class="cform-section__title">Treatment Record <span class="cform-readonly-badge">Read Only</span></h2>
+    {% if botox.operator_signed %}
+    <dl class="cform-summary-dl">
+        <dt>Product / lot no.</dt><dd>{{ botox.treatment_product_lot|default:"—" }}</dd>
+        <dt>Units per area</dt>
+        <dd>
+            {% if botox.units_forehead %}Forehead / Frontalis: {{ botox.units_forehead }}<br>{% endif %}
+            {% if botox.units_glabella %}Glabella: {{ botox.units_glabella }}<br>{% endif %}
+            {% if botox.units_crows_feet %}Crows Feet / Brow Lift: {{ botox.units_crows_feet }}<br>{% endif %}
+            {% if botox.units_jelly_roll %}Jelly Roll: {{ botox.units_jelly_roll }}<br>{% endif %}
+            {% if botox.units_bunny_lines %}Bunny Lines: {{ botox.units_bunny_lines }}<br>{% endif %}
+            {% if botox.units_gummy_smile %}Gummy Smile: {{ botox.units_gummy_smile }}<br>{% endif %}
+            {% if botox.units_smokers_lines %}Smokers Lines: {{ botox.units_smokers_lines }}<br>{% endif %}
+            {% if botox.units_lip_flip %}Lip Flip: {{ botox.units_lip_flip }}<br>{% endif %}
+            {% if botox.units_dao_jowls %}DAO / Jowls: {{ botox.units_dao_jowls }}<br>{% endif %}
+            {% if botox.units_chin %}Chin: {{ botox.units_chin }}<br>{% endif %}
+            {% if botox.units_masseter %}Masseter: {{ botox.units_masseter }}<br>{% endif %}
+            {% if botox.units_neck_bands %}Neck Bands: {{ botox.units_neck_bands }}<br>{% endif %}
+        </dd>
+        <dt>Total units</dt><dd>{{ botox.units_total|default:"—" }}</dd>
+        <dt>Cost</dt><dd>{% if botox.treatment_cost is not None %}£{{ botox.treatment_cost }}{% else %}—{% endif %}</dd>
+        <dt>Next appointment</dt><dd>{{ botox.next_appointment|default:"—" }}</dd>
+        <dt>Agreed treatment</dt><dd>{{ botox.treatment_notes|default:"—"|linebreaksbr }}</dd>
+        <dt>Operator notes</dt><dd>{{ botox.operator_notes|default:"—"|linebreaksbr }}</dd>
+        <dt>Signed</dt><dd>{{ botox.operator_signed_by.full_name|default:"—" }} — {{ botox.operator_signed_at|date:"j F Y \a\t H:i" }}</dd>
+        <dt>Signature</dt><dd><img src="{{ botox.operator_signature }}" alt="Practitioner signature" class="cform-sig-preview"></dd>
+    </dl>
+    {% else %}
+    <p class="cform-hint">{% if botox.prescriber_signed and not botox.is_prescribed %}No treatment — not prescribed.{% else %}Not yet signed by the practitioner.{% endif %}</p>
+    {% endif %}
+</div>
+
+<div class="cform-section cform-section--readonly">
+    <h2 class="cform-section__title">History <span class="cform-readonly-badge">Audit Trail</span></h2>
+    {% if revisions %}
+    <dl class="cform-summary-dl">
+        {% for rev in revisions %}
+        <dt>{{ rev.created_at|date:"j M Y, H:i" }}</dt>
+        <dd>{{ rev.get_section_display }} — {{ rev.get_action_display }}{% if rev.user %} by {{ rev.user.full_name }}{% endif %}</dd>
+        {% endfor %}
+    </dl>
+    <p class="cform-hint">Every save is stored in full, including earlier answers and signatures.</p>
+    {% else %}
+    <p class="cform-hint">No history recorded — this form was completed before history tracking was added.</p>
+    {% endif %}
+</div>
+
+<div class="cform-submit-row">
+    {% if not botox.finalised and user.is_practitioner %}<a href="{% url 'forms_system:botox_operator' botox.pk %}" class="btn btn--primary">Continue Editing</a>{% endif %}
+    <a href="javascript:history.back()" class="btn btn--ghost">&larr; Back</a>
+</div>
+</div>
+{% endblock %}

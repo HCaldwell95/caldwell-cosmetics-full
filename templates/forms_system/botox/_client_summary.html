@@ -1,0 +1,67 @@
+<!-- Read-only client section. Expects `botox`. -->
+<div class="cform-section cform-section--readonly">
+    <h2 class="cform-section__title">Client Details <span class="cform-readonly-badge">Read Only</span></h2>
+    <dl class="cform-summary-dl">
+        <dt>Name</dt><dd>{{ botox.full_name }}</dd>
+        <dt>DOB</dt><dd>{{ botox.date_of_birth|date:"j F Y" }}</dd>
+        <dt>Phone</dt><dd>{{ botox.phone_number|default:"—" }}</dd>
+        <dt>Email</dt><dd>{{ botox.email }}</dd>
+        <dt>Address</dt><dd>{{ botox.address|default:"—"|linebreaksbr }}</dd>
+        <dt>Emergency contact</dt><dd>{{ botox.emergency_contact_name|default:"—" }}{% if botox.emergency_contact_phone %} — {{ botox.emergency_contact_phone }}{% endif %}</dd>
+        {% if botox.guardian_name %}<dt>Parent / guardian</dt><dd>{{ botox.guardian_name }} ({{ botox.guardian_relationship }}){% if botox.guardian_phone %} — {{ botox.guardian_phone }}{% endif %}</dd>{% endif %}
+    </dl>
+</div>
+
+<div class="cform-section cform-section--readonly">
+    <h2 class="cform-section__title">Medical History <span class="cform-readonly-badge">Read Only</span></h2>
+    <dl class="cform-summary-dl">
+        <dt>Allergies</dt><dd>{% if botox.has_allergies %}Yes{% if botox.allergy_details %} — {{ botox.allergy_details }}{% endif %}{% else %}No{% endif %}</dd>
+        <dt>Neuromuscular disorders</dt><dd>{{ botox.neuromuscular_disorders|yesno:"Yes,No" }}</dd>
+        <dt>Skin conditions</dt><dd>{{ botox.skin_conditions|yesno:"Yes,No" }}</dd>
+        <dt>Blood disorders</dt><dd>{{ botox.blood_disorders|yesno:"Yes,No" }}</dd>
+        <dt>History of fainting</dt><dd>{{ botox.history_of_fainting|yesno:"Yes,No" }}</dd>
+        <dt>Other conditions</dt><dd>{{ botox.other_conditions|default:"—" }}</dd>
+        <dt>Current medications</dt><dd>{{ botox.current_medications|default:"—" }}</dd>
+        <dt>Previous cosmetic procedures</dt><dd>{{ botox.previous_cosmetic_procedures|default:"—" }}</dd>
+        <dt>Botox allergies / reactions</dt><dd>{{ botox.botox_allergies|default:"—" }}</dd>
+        <dt>Pregnant</dt><dd>{{ botox.is_pregnant|yesno:"Yes,No" }}</dd>
+        <dt>Breastfeeding</dt><dd>{{ botox.is_breastfeeding|yesno:"Yes,No" }}</dd>
+        <dt>Cold sores</dt><dd>{{ botox.has_cold_sores|yesno:"Yes,No" }}</dd>
+        <dt>Medical problems</dt><dd>{{ botox.has_medical_problems|yesno:"Yes,No" }}</dd>
+        <dt>On medication / treatment</dt><dd>{{ botox.on_medication|yesno:"Yes,No" }}</dd>
+        <dt>Any allergies</dt><dd>{{ botox.has_allergies_q2|yesno:"Yes,No" }}</dd>
+        <dt>Previous procedures</dt><dd>{{ botox.previous_procedures|yesno:"Yes,No" }}</dd>
+        <dt>Details for "yes" answers</dt><dd>{{ botox.yes_details|default:"—" }}</dd>
+    </dl>
+</div>
+
+<div class="cform-section cform-section--readonly">
+    <h2 class="cform-section__title">Treatment Goals <span class="cform-readonly-badge">Read Only</span></h2>
+    <dl class="cform-summary-dl">
+        <dt>Areas requested</dt>
+        <dd>
+            {% if botox.area_forehead %}Forehead {% endif %}
+            {% if botox.area_frown_lines %}Frown Lines {% endif %}
+            {% if botox.area_crows_feet %}Crow's Feet {% endif %}
+            {% if botox.area_other %}{{ botox.area_other }}{% endif %}
+        </dd>
+        <dt>Expectations</dt><dd>{{ botox.expectations|default:"—" }}</dd>
+    </dl>
+</div>
+
+<div class="cform-section cform-section--readonly">
+    <h2 class="cform-section__title">Consent &amp; Signature <span class="cform-readonly-badge">Read Only</span></h2>
+    <dl class="cform-summary-dl">
+        <dt>Interactions</dt><dd>{{ botox.consent_interactions|yesno:"Agreed,Not agreed" }}</dd>
+        <dt>Appearance</dt><dd>{{ botox.consent_appearance|yesno:"Agreed,Not agreed" }}</dd>
+        <dt>Limitations</dt><dd>{{ botox.consent_limitations|yesno:"Agreed,Not agreed" }}</dd>
+        <dt>Alternatives</dt><dd>{{ botox.consent_alternatives|yesno:"Agreed,Not agreed" }}</dd>
+        <dt>Follow-up</dt><dd>{{ botox.consent_followup|yesno:"Agreed,Not agreed" }}</dd>
+        <dt>Dissatisfaction</dt><dd>{{ botox.consent_dissatisfaction|yesno:"Agreed,Not agreed" }}</dd>
+        <dt>Agreement</dt><dd>{{ botox.consent_agreement|yesno:"Agreed,Not agreed" }}</dd>
+        <dt>Photography &amp; privacy</dt><dd>{{ botox.consent_privacy_policy|yesno:"Agreed,Not agreed" }}</dd>
+        <dt>Signed</dt><dd>{{ botox.client_signed_at|date:"j F Y \a\t H:i" }}{% if botox.completed_by_practitioner %} (completed with the practitioner){% endif %}</dd>
+        <dt>Client signature</dt><dd>{% if botox.signature %}<img src="{{ botox.signature }}" alt="Client signature" class="cform-sig-preview">{% else %}—{% endif %}</dd>
+        {% if botox.guardian_signature %}<dt>Guardian signature</dt><dd><img src="{{ botox.guardian_signature }}" alt="Guardian signature" class="cform-sig-preview"></dd>{% endif %}
+    </dl>
+</div>

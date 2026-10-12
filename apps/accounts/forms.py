@@ -204,6 +204,39 @@ class ProfileEditForm(forms.ModelForm):
 
 
 # --------------------------------------------------
+# PRESCRIBER ACCOUNT FORM
+# Contact details only — registration details are set by the practitioner
+# in the admin, so prescribers can't change what goes on prescriptions.
+# --------------------------------------------------
+
+class PrescriberAccountForm(forms.ModelForm):
+    phone_number = forms.CharField(required=False, max_length=20)
+
+    class Meta:
+        model  = User
+        fields = ("first_name", "last_name", "email")
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["first_name"].required = True
+        self.fields["last_name"].required  = True
+        self.fields["phone_number"].initial = self.instance.profile.phone_number
+
+    def clean_email(self):
+        email = self.cleaned_data["email"]
+        if User.objects.filter(email__iexact=email).exclude(pk=self.instance.pk).exists():
+            raise forms.ValidationError("An account with this email address already exists.")
+        return email
+
+    def save(self, commit=True):
+        user = super().save(commit=commit)
+        if commit:
+            user.profile.phone_number = self.cleaned_data["phone_number"]
+            user.profile.save(update_fields=["phone_number"])
+        return user
+
+
+# --------------------------------------------------
 # STAFF PROFILE EDIT FORM
 # Extends client form to expose medical_notes
 # --------------------------------------------------

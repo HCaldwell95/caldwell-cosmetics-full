@@ -70,12 +70,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    if (categoryTabs.length) setTimeout(() => categoryTabs[0].click(), 0);
-
-    // Auto-filter to the active tab on load
-    const activeTab = document.querySelector('.category-tab--active');
-    if (activeTab) activeTab.click();
-
     // Category strip scrolling
     const catStripTrack = document.getElementById('categoryTabs');
     const catStripPrev  = document.getElementById('catStripPrev');
@@ -126,6 +120,14 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }, 100);
     }
+
+    // Must run after the category strip setup above — the tab click handler
+    // calls scrollCatStripToActive(), which reads catStripTrack.
+    if (categoryTabs.length) setTimeout(() => categoryTabs[0].click(), 0);
+
+    // Auto-filter to the active tab on load
+    const activeTab = document.querySelector('.category-tab--active');
+    if (activeTab) activeTab.click();
 
     window.selectTreatment = function (card) {
         selectedTreatment = {

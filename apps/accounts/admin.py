@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
-from .models import Profile, User, PrepaidBundle, AccountCredit, CreditTransaction
+from .models import Profile, PrescriberDetails, User, PrepaidBundle, AccountCredit, CreditTransaction
 
 
 class ProfileInline(admin.StackedInline):
@@ -18,11 +18,18 @@ class ProfileInline(admin.StackedInline):
     readonly_fields = ("gdpr_consent_date", "deactivated_at")
 
 
+class PrescriberDetailsInline(admin.StackedInline):
+    model = PrescriberDetails
+    can_delete = False
+    max_num = 1
+    verbose_name_plural = "Prescriber details"
+
+
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
     ordering = ("email",)
-    list_display = ("email", "first_name", "last_name", "is_staff", "account_status", "date_joined", "deactivated_at")
-    list_filter = ("is_staff", "is_active")
+    list_display = ("email", "first_name", "last_name", "role", "is_staff", "account_status", "date_joined", "deactivated_at")
+    list_filter = ("role", "is_staff", "is_active")
 
     @admin.display(description="Status", boolean=False)
     def account_status(self, obj):
@@ -42,6 +49,7 @@ class UserAdmin(BaseUserAdmin):
     fieldsets = (
         (None, {"fields": ("email", "password")}),
         ("Personal info", {"fields": ("first_name", "last_name")}),
+        ("Role", {"fields": ("role",)}),
         ("Permissions", {"fields": ("is_active", "is_staff", "is_superuser", "groups", "user_permissions")}),
         ("Important dates", {"fields": ("last_login", "date_joined")}),
     )
@@ -53,6 +61,12 @@ class UserAdmin(BaseUserAdmin):
     )
 
     inlines = (ProfileInline,)
+
+    def get_inlines(self, request, obj):
+        # Registration details only make sense for prescribers.
+        if obj and obj.role == User.Role.PRESCRIBER:
+            return (ProfileInline, PrescriberDetailsInline)
+        return (ProfileInline,)
 
 # accounts/admin.py
 

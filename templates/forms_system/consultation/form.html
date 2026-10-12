@@ -1,6 +1,6 @@
 {% extends "base/base.html" %}
 {% load static %}
-{% block title %}Consultation Form | Caldwell Cosmetics{% endblock %}
+{% block title %}Laser Consultation | Caldwell Cosmetics{% endblock %}
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/pages/forms_system.css' %}">
 {% endblock %}
@@ -18,14 +18,14 @@
 {% if existing %}
 <div class="cform-existing-banner">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-    A consultation form was completed on {{ existing.completed_at|date:"j F Y" }}.
+    A laser consultation was completed on {{ existing.completed_at|date:"j F Y" }}.
     {% if is_practitioner %}Submitting this form will create a new record.{% else %}If your details have changed, you may complete an updated form below.{% endif %}
 </div>
 {% endif %}
 
 <div class="cform-header">
     <span class="cform-header__eyebrow">Caldwell Cosmetics</span>
-    <h1 class="cform-header__title">Dynamix Consultation Form</h1>
+    <h1 class="cform-header__title">Laser Consultation</h1>
     <p class="cform-header__sub">Please complete all sections honestly and in full. This information is kept securely and used only to provide safe, effective treatment.</p>
 </div>
 
@@ -213,7 +213,7 @@
                 <input class="cform-input" type="text" name="last_uv_exposure">
             </div>
             <div class="cform-field">
-                <label class="cform-label">Have you used tanning injections / Melanotan?</label>
+                <label class="cform-label">Have you used tanning injections / Melanotan / Tanning Enhancers?</label>
                 <div class="cform-radio-row">
                     <label class="cform-check"><input type="radio" name="tanning_injections" value="yes"><span>Yes</span></label>
                     <label class="cform-check"><input type="radio" name="tanning_injections" value="no"><span>No</span></label>
@@ -452,13 +452,13 @@
     </div>
 
     <div class="cform-submit-row">
-        <button type="submit" class="btn btn--primary btn--lg" id="submitBtn">Submit Consultation Form</button>
+        <button type="submit" class="btn btn--primary btn--lg" id="submitBtn">Submit Laser Consultation</button>
     </div>
 
 </form>
 </div>
 
-<script src="{% static 'js/sig_pad.js' %}"></script>
+<script src="{% static 'js/sig_pad.js' %}?v=3"></script>
 <script>
 (function () {
     var dob     = document.getElementById('dobField');

@@ -100,8 +100,12 @@ function renderProfilePanel(data) {
 
     const u       = data.user;
     const forms   = data.forms;
-    const bundles = data.bundles;
+    const bundles = data.bundles || [];
     const credit  = data.credit;
+
+    // Prescribers get a read-only panel: no editing, booking history,
+    // bundles or credit (the server doesn't send those to them either).
+    const isPrescriber = typeof PANEL_ROLE !== 'undefined' && PANEL_ROLE === 'prescriber';
 
     panelName.textContent  = u.name;
     panelEmail.textContent = u.email;
@@ -129,18 +133,19 @@ function renderProfilePanel(data) {
     // Consultation
     function mkConsultPill(f, archived) {
         var href  = DASHBOARD_URLS.formConsultationView.replace('{id}', u.id) + '?form_pk=' + f.id;
-        var label = f.by_practitioner ? 'Consultation (Operator-assisted)' : 'Consultation';
+        var label = f.by_practitioner ? 'Laser Consultation (Operator-assisted)' : 'Laser Consultation';
         return pill(label, archived ? 'archived' : 'complete', href, 'Completed ' + f.date);
     }
     var consultCurrentPills = forms.consultation.forms.length
         ? mkConsultPill(forms.consultation.forms[0], false)
-        : pill('Consultation', 'incomplete', null, 'Not completed');
+        : pill('Laser Consultation', 'incomplete', null, 'Not completed');
     var consultArchivePills = forms.consultation.forms.slice(1).map(function (f) { return mkConsultPill(f, true); }).join('');
 
     // Photography
     function mkPhotoPill(f, archived) {
         var label = f.by_practitioner ? 'Photography (Operator-assisted)' : 'Photography';
-        return pill(label, archived ? 'archived' : 'complete', DASHBOARD_URLS.formPhotography.replace('{id}', u.id), 'Completed ' + f.date);
+        var href  = isPrescriber ? null : DASHBOARD_URLS.formPhotography.replace('{id}', u.id);
+        return pill(label, archived ? 'archived' : 'complete', href, 'Completed ' + f.date);
     }
     var photoCurrentPills = forms.photography.forms.length
         ? mkPhotoPill(forms.photography.forms[0], false)
@@ -149,19 +154,33 @@ function renderProfilePanel(data) {
 
     // Botox
     function mkBotoxPill(f, archived) {
-        var opHref = DASHBOARD_URLS.botoxOperator.replace('{id}', f.id);
-        if (f.fully_complete) return pill('Anti-Wrinkle Consent — ' + f.date, archived ? 'archived' : 'complete', opHref, 'Client ✓ · Operator ✓');
-        if (f.client_signed)  return pill('Anti-Wrinkle Consent — ' + f.date, 'incomplete', opHref, 'Client ✓ · Awaiting operator');
-        return pill('Anti-Wrinkle Consent — ' + f.date, 'incomplete', null, 'Incomplete');
+        var label = 'Botox Consent & Prescription — ' + f.date;
+        if (f.finalised) {
+            return pill(label, archived ? 'archived' : 'complete', DASHBOARD_URLS.botoxView.replace('{id}', f.id), 'Completed ' + f.finalised_date + ' · Read only');
+        }
+        if (!f.client_signed) return pill(label, 'incomplete', null, 'Incomplete');
+
+        var href = isPrescriber
+            ? DASHBOARD_URLS.botoxPrescriber.replace('{id}', f.id)
+            : DASHBOARD_URLS.botoxOperator.replace('{id}', f.id);
+        var prescriberStatus = !f.prescriber_signed ? 'Awaiting prescriber'
+                             : f.prescribed         ? 'Prescriber ✓'
+                             :                        'Not prescribed';
+        var operatorStatus   = f.operator_signed ? 'Operator ✓' : 'Awaiting operator';
+        var sub = 'Client ✓ · ' + prescriberStatus + ' · ' + operatorStatus;
+
+        // For the prescriber, their part being done is what counts.
+        var done = isPrescriber ? f.prescriber_signed : f.fully_complete;
+        return pill(label, done ? (archived ? 'archived' : 'complete') : 'incomplete', href, sub);
     }
     var botoxCurrentPills = forms.botox.forms.length
         ? mkBotoxPill(forms.botox.forms[0], false)
-        : pill('Anti-Wrinkle Consent', 'incomplete', null, 'Not completed');
+        : pill('Botox Consent & Prescription', 'incomplete', null, 'Not completed');
     var botoxArchivePills = forms.botox.forms.slice(1).map(function (f) { return mkBotoxPill(f, true); }).join('');
 
     // PRP
     function mkPrpPill(f, archived) {
-        var opHref = DASHBOARD_URLS.prpOperator.replace('{id}', f.id);
+        var opHref = isPrescriber ? null : DASHBOARD_URLS.prpOperator.replace('{id}', f.id);
         if (f.fully_complete) return pill('PRP Consent — ' + f.date, archived ? 'archived' : 'complete', opHref, 'Client ✓ · Operator ✓');
         if (f.client_signed)  return pill('PRP Consent — ' + f.date, 'incomplete', opHref, 'Client ✓ · Awaiting operator');
         return pill('PRP Consent — ' + f.date, 'incomplete', null, 'Incomplete');
@@ -250,6 +269,7 @@ function renderProfilePanel(data) {
         + '</div>'
 
         // Edit mode
+        + (isPrescriber ? '' : ''
         + '<div class="dash-panel-section" id="panelEditMode" style="display:none;">'
         + '<h3 class="dash-panel-section__title">Edit Profile</h3>'
         + '<div class="cform-grid cform-grid--2" style="gap:0.75rem;">'
@@ -281,6 +301,7 @@ function renderProfilePanel(data) {
         + '<button class="btn btn--primary btn--sm" id="panelEditSave">Save Changes</button>'
         + '</div>'
         + '</div>'
+        )
 
         // Upcoming bookings
         + '<div class="dash-panel-section"><h3 class="dash-panel-section__title">Upcoming Appointments</h3>'
@@ -301,6 +322,7 @@ function renderProfilePanel(data) {
         + '</div>'
 
         // Past bookings (collapsible)
+        + (isPrescriber ? '' : ''
         + '<div class="dash-panel-section">'
         + '<button class="dash-collapsible-toggle" id="pastBookingsToggle">Past Appointments '
         + '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></button>'
@@ -320,19 +342,22 @@ function renderProfilePanel(data) {
               }).join('')
             : '<p class="dash-muted">No past appointments.</p>')
         + '</div></div>'
+        )
 
         // Forms: General
         + '<div class="dash-panel-section">'
         + '<div class="dash-panel-section__header"><h3 class="dash-panel-section__title">General</h3>'
+        + (isPrescriber ? '</div>' : ''
         + '<div class="dash-form-launch">'
         + '<button class="dash-form-launch-btn" id="formPickerToggle">Create a new form '
         + '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></button>'
         + '<div class="dash-form-dropdown" id="formPickerDropdown" hidden>'
-        + '<a href="' + DASHBOARD_URLS.formConsultationNew.replace('{id}', u.id) + '" class="dash-form-dropdown__item" target="_blank">Consultation Form</a>'
-        + '<a href="' + DASHBOARD_URLS.formBotoxClient.replace('{id}', u.id) + '" class="dash-form-dropdown__item" target="_blank">Botox Consent</a>'
+        + '<a href="' + DASHBOARD_URLS.formConsultationNew.replace('{id}', u.id) + '" class="dash-form-dropdown__item" target="_blank">Laser Consultation</a>'
+        + '<a href="' + DASHBOARD_URLS.formBotoxClient.replace('{id}', u.id) + '" class="dash-form-dropdown__item" target="_blank">Botox Consent &amp; Prescription</a>'
         + '<a href="' + DASHBOARD_URLS.formPrpClient.replace('{id}', u.id) + '" class="dash-form-dropdown__item" target="_blank">PRP Consent</a>'
         + '<a href="' + DASHBOARD_URLS.formLaserReconsent.replace('{id}', u.id) + '" class="dash-form-dropdown__item" target="_blank">Laser Re-Consent</a>'
         + '</div></div></div>'
+        )
         + '<div class="dash-form-pills">' + consultCurrentPills + photoCurrentPills + '</div>'
         + archiveToggle('formArchiveGeneralToggle', 'formArchiveGeneralContent', consultArchivePills + photoArchivePills)
         + '</div>'
@@ -354,16 +379,17 @@ function renderProfilePanel(data) {
         // Record cards
         + '<div class="dash-panel-section">'
         + '<div class="dash-panel-section__header"><h3 class="dash-panel-section__title">Record Cards</h3>'
-        + '<a href="' + DASHBOARD_URLS.recordCardNew.replace('{id}', u.id) + '" class="btn btn--ghost btn--sm" target="_blank">+ New Record Card</a>'
+        + (isPrescriber ? '' : '<a href="' + DASHBOARD_URLS.recordCardNew.replace('{id}', u.id) + '" class="btn btn--ghost btn--sm" target="_blank">+ New Record Card</a>')
         + '</div><div class="dash-record-list">' + cardsHtml + '</div></div>'
 
         // Notes
         + '<div class="dash-panel-section">'
         + '<div class="dash-panel-section__header"><h3 class="dash-panel-section__title">Notes</h3>'
-        + '<a href="' + DASHBOARD_URLS.noteNew.replace('{id}', u.id) + '" class="btn btn--ghost btn--sm" target="_blank">+ New Note</a>'
+        + (isPrescriber ? '' : '<a href="' + DASHBOARD_URLS.noteNew.replace('{id}', u.id) + '" class="btn btn--ghost btn--sm" target="_blank">+ New Note</a>')
         + '</div><div class="dash-notes-list">' + notesHtml + '</div></div>'
 
-        // Bundles
+        // Bundles + credit
+        + (isPrescriber ? '' : ''
         + '<div class="dash-panel-section">'
         + '<div class="dash-panel-section__header"><h3 class="dash-panel-section__title">Pre-Paid Bundles</h3>'
         + '<button class="btn btn--ghost btn--sm" id="addBundleBtn">+ Add Bundle</button>'
@@ -390,7 +416,8 @@ function renderProfilePanel(data) {
                 }).join('')
               + '</ul>'
             : '<p class="dash-muted">No transactions yet.</p>')
-        + '</div></div>';
+        + '</div></div>'
+        );
 
     // Form picker dropdown
     var formPickerToggle   = document.getElementById('formPickerToggle');
@@ -420,13 +447,15 @@ function renderProfilePanel(data) {
         };
     }
 
-    document.getElementById('panelEditCancel').addEventListener('click', function () {
+    var panelEditCancel = document.getElementById('panelEditCancel');
+    if (panelEditCancel) panelEditCancel.addEventListener('click', function () {
         document.getElementById('panelViewMode').style.display = 'block';
         document.getElementById('panelEditMode').style.display = 'none';
         if (panelEditBtn) panelEditBtn.style.display = 'inline-flex';
     });
 
-    document.getElementById('panelEditSave').addEventListener('click', function () {
+    var panelEditSave = document.getElementById('panelEditSave');
+    if (panelEditSave) panelEditSave.addEventListener('click', function () {
         var payload = {
             first_name:    document.getElementById('editFirstName').value,
             last_name:     document.getElementById('editLastName').value,
@@ -462,7 +491,8 @@ function renderProfilePanel(data) {
     });
 
     // Past bookings toggle
-    document.getElementById('pastBookingsToggle').addEventListener('click', function () {
+    var pastBookingsToggle = document.getElementById('pastBookingsToggle');
+    if (pastBookingsToggle) pastBookingsToggle.addEventListener('click', function () {
         var content = document.getElementById('pastBookingsContent');
         var open    = content.style.display !== 'none';
         content.style.display = open ? 'none' : 'block';
@@ -470,7 +500,8 @@ function renderProfilePanel(data) {
     });
 
     // Credit history toggle
-    document.getElementById('creditHistoryToggle').addEventListener('click', function () {
+    var creditHistoryToggle = document.getElementById('creditHistoryToggle');
+    if (creditHistoryToggle) creditHistoryToggle.addEventListener('click', function () {
         var content = document.getElementById('creditHistoryContent');
         var open    = content.style.display !== 'none';
         content.style.display = open ? 'none' : 'block';
@@ -492,12 +523,14 @@ function renderProfilePanel(data) {
     });
 
     // Add bundle
-    document.getElementById('addBundleBtn').addEventListener('click', function () {
+    var addBundleBtn = document.getElementById('addBundleBtn');
+    if (addBundleBtn) addBundleBtn.addEventListener('click', function () {
         openModal(document.getElementById('bundleModalOverlay'));
     });
 
     // Adjust credit
-    document.getElementById('adjustCreditBtn').addEventListener('click', function () {
+    var adjustCreditBtn = document.getElementById('adjustCreditBtn');
+    if (adjustCreditBtn) adjustCreditBtn.addEventListener('click', function () {
         openModal(document.getElementById('creditModalOverlay'));
     });
 }

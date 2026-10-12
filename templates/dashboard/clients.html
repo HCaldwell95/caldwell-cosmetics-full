@@ -15,13 +15,15 @@
     <!-- Header -->
     <div class="dash-header">
         <div class="dash-header__left">
-            <span class="dash-header__eyebrow">Practitioner Portal</span>
+            <span class="dash-header__eyebrow">{% if user.is_practitioner %}Practitioner{% else %}Prescriber{% endif %} Portal</span>
             <h1 class="dash-header__title">Clients</h1>
         </div>
+        {% if user.is_practitioner %}
         <button class="btn btn--primary" id="addClientBtn">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             Add Client
         </button>
+        {% endif %}
     </div>
 
     <!-- Client table -->
@@ -189,7 +191,7 @@
                 <h2 class="dash-profile-panel__name" id="panelName">—</h2>
                 <p class="dash-profile-panel__email" id="panelEmail">—</p>
             </div>
-            <button class="btn btn--ghost btn--sm" id="panelEditBtn">Edit Profile</button>
+            {% if user.is_practitioner %}<button class="btn btn--ghost btn--sm" id="panelEditBtn">Edit Profile</button>{% endif %}
         </div>
 
         <div class="dash-profile-panel__body" id="profilePanelBody">
@@ -282,6 +284,8 @@
         noteNew:         "/dashboard/clients/{id}/notes/new/",
         noteView:        "/dashboard/clients/{pk}/notes/{note_pk}/",
         botoxOperator:   "/forms/botox/{id}/operator/",
+        botoxView:       "/forms/botox/{id}/view/",
+        botoxPrescriber: "/forms/botox/{id}/prescriber/",
         formConsultationView: "/forms/consultation/{id}/view/",
         formConsultationNew:  "/forms/consultation/{id}/new/",
         formPhotography:  "/forms/photography/?on_behalf_of={id}",
@@ -292,9 +296,10 @@
         prpOperator:      "/forms/prp/{id}/operator/",
     };
     const CSRF_TOKEN = "{{ csrf_token }}";
+    const PANEL_ROLE = "{% if user.is_practitioner %}practitioner{% else %}prescriber{% endif %}";
 </script>
 
 <script src="{% static 'js/booking.utils.js' %}"></script>
-<script src="{% static 'js/client-panel.js' %}"></script>
-<script src="{% static 'js/clients.js' %}"></script>
+<script src="{% static 'js/client-panel.js' %}?v=3"></script>
+<script src="{% static 'js/clients.js' %}?v=2"></script>
 {% endblock %}

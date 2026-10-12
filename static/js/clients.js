@@ -169,7 +169,8 @@ document.addEventListener('DOMContentLoaded', function () {
         document.body.style.overflow   = '';
     }
 
-    addClientBtn.addEventListener('click', openAddClientModal);
+    // Practitioner only — not rendered for prescribers.
+    if (addClientBtn) addClientBtn.addEventListener('click', openAddClientModal);
     addClientClose.addEventListener('click', closeAddClientModal);
     addClientCancel.addEventListener('click', closeAddClientModal);
     addClientOverlay.addEventListener('click', function (e) {

@@ -53,7 +53,7 @@
 
     <div class="cform-submit-row">
         <a href="javascript:history.back()" class="btn btn--outline">Back</a>
-        <a href="{% url 'dashboard:note_new' pk=client.pk %}" class="btn btn--ghost" target="_blank">+ New Note</a>
+        {% if user.is_practitioner %}<a href="{% url 'dashboard:note_new' pk=client.pk %}" class="btn btn--ghost" target="_blank">+ New Note</a>{% endif %}
     </div>
 
 </div>

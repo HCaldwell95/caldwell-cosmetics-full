@@ -16,6 +16,8 @@ urlpatterns = [
 
     # Operator step 2
     path("botox/<int:pk>/operator/",   views.botox_operator,       name="botox_operator"),
+    path("botox/<int:pk>/prescriber/", views.botox_prescriber,     name="botox_prescriber"),
+    path("botox/<int:pk>/view/",       views.botox_view,           name="botox_view"),
     path("prp/<int:pk>/operator/",     views.prp_operator,         name="prp_operator"),
 
     # Record cards (practitioner only)

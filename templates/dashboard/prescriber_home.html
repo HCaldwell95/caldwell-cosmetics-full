@@ -1,0 +1,144 @@
+{% extends "dashboard/base_dashboard.html" %}
+{% load static %}
+
+{% block title %}My Account | Caldwell Cosmetics{% endblock %}
+
+{% block nav_prescriber_home %}dash-sidenav__link--active{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/dashboard.css' %}?v=3">
+{% endblock %}
+
+{% block content %}
+<div class="dash-page">
+
+    <div class="dash-header">
+        <div class="dash-header__left">
+            <span class="dash-header__eyebrow">Prescriber Portal</span>
+            <h1 class="dash-header__title">My Account</h1>
+        </div>
+    </div>
+
+    {% for message in messages %}<div class="dash-flash dash-flash--{{ message.tags }}" role="status">{{ message }}</div>{% endfor %}
+
+    {% if not details %}
+    <div class="dash-flash dash-flash--warning" role="alert">
+        Your registration details haven't been set up yet, so you can view forms but can't sign prescriptions.
+        Please ask the clinic to add them.
+    </div>
+    {% endif %}
+
+    <!-- ================= Awaiting signature ================= -->
+    <section class="dash-account-section">
+        <h2 class="dash-account-section__title">
+            Awaiting Your Signature
+            <span class="dash-count-badge{% if not awaiting %} dash-count-badge--zero{% endif %}">{{ awaiting|length }}</span>
+        </h2>
+        <p class="dash-muted">Botox Consent &amp; Prescription forms the client has completed. Soonest appointment first.</p>
+
+        {% if awaiting %}
+        <div class="dash-client-table-wrap">
+            <table class="dash-client-table">
+                <thead>
+                    <tr><th>Client</th><th>Next appointment</th><th>Submitted</th><th>Status</th><th></th></tr>
+                </thead>
+                <tbody>
+                    {% for f in awaiting %}
+                    <tr>
+                        <td><strong>{{ f.user.full_name }}</strong></td>
+                        <td>{% if f.next_appt_date %}{{ f.next_appt_date|date:"D j M Y" }} at {{ f.next_appt_time|time:"H:i" }}{% else %}<span class="dash-muted">None booked</span>{% endif %}</td>
+                        <td>{{ f.client_signed_at|date:"j M Y" }}</td>
+                        <td>
+                            {% if f.worklist_status == "changed" %}<span class="dash-status dash-status--warning">Client changed answers — re-sign</span>
+                            {% elif f.worklist_status == "draft" %}<span class="dash-status">Draft saved</span>
+                            {% else %}<span class="dash-status dash-status--new">New</span>{% endif %}
+                        </td>
+                        <td style="text-align:right;"><a href="{% url 'forms_system:botox_prescriber' f.pk %}" class="btn btn--primary btn--sm">Review &amp; Sign</a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="dash-account-empty">Nothing waiting — you're all caught up.</p>
+        {% endif %}
+    </section>
+
+    <!-- ================= Details ================= -->
+    <div class="dash-account-grid">
+        <section class="dash-account-section">
+            <h2 class="dash-account-section__title">My Details</h2>
+            <form method="post" novalidate>
+                {% csrf_token %}
+                <input type="hidden" name="action" value="details">
+                <div class="dash-form-group"><label class="dash-label" for="id_first_name">First name</label><input class="dash-input" id="id_first_name" name="first_name" value="{{ account_form.first_name.value|default:'' }}" required>{% for e in account_form.first_name.errors %}<p class="dash-field-error">{{ e }}</p>{% endfor %}</div>
+                <div class="dash-form-group"><label class="dash-label" for="id_last_name">Last name</label><input class="dash-input" id="id_last_name" name="last_name" value="{{ account_form.last_name.value|default:'' }}" required>{% for e in account_form.last_name.errors %}<p class="dash-field-error">{{ e }}</p>{% endfor %}</div>
+                <div class="dash-form-group"><label class="dash-label" for="id_email">Email (used to log in)</label><input class="dash-input" type="email" id="id_email" name="email" value="{{ account_form.email.value|default:'' }}" required>{% for e in account_form.email.errors %}<p class="dash-field-error">{{ e }}</p>{% endfor %}</div>
+                <div class="dash-form-group"><label class="dash-label" for="id_phone_number">Phone</label><input class="dash-input" type="tel" id="id_phone_number" name="phone_number" value="{{ account_form.phone_number.value|default:'' }}"></div>
+                <button type="submit" class="btn btn--primary btn--sm">Save Details</button>
+            </form>
+        </section>
+
+        <section class="dash-account-section">
+            <h2 class="dash-account-section__title">Registration</h2>
+            {% if details %}
+            <dl class="dash-panel-dl">
+                <dt>Name on prescriptions</dt><dd>{{ details.display_name }}</dd>
+                <dt>Professional body</dt><dd>{{ details.get_professional_body_display }}</dd>
+                <dt>Registration number</dt><dd>{{ details.registration_number }}</dd>
+                <dt>Qualifications</dt><dd>{{ details.qualifications|default:"—" }}</dd>
+            </dl>
+            {% else %}
+            <p class="dash-muted">Not set up yet.</p>
+            {% endif %}
+            <p class="dash-muted" style="margin-top:0.75rem;">These appear on every prescription you sign. To change them, please contact the clinic.</p>
+        </section>
+
+        <section class="dash-account-section">
+            <h2 class="dash-account-section__title">Change Password</h2>
+            <form method="post" novalidate>
+                {% csrf_token %}
+                <input type="hidden" name="action" value="password">
+                {% for field in password_form %}
+                <div class="dash-form-group">
+                    <label class="dash-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    <input class="dash-input" type="password" id="{{ field.id_for_label }}" name="{{ field.html_name }}" autocomplete="{% if forloop.first %}current-password{% else %}new-password{% endif %}" required>
+                    {% for e in field.errors %}<p class="dash-field-error">{{ e }}</p>{% endfor %}
+                </div>
+                {% endfor %}
+                {% for e in password_form.non_field_errors %}<p class="dash-field-error">{{ e }}</p>{% endfor %}
+                <button type="submit" class="btn btn--primary btn--sm">Change Password</button>
+            </form>
+        </section>
+    </div>
+
+    <!-- ================= Signed history ================= -->
+    <section class="dash-account-section">
+        <h2 class="dash-account-section__title">Prescriptions I've Signed</h2>
+        {% if signed %}
+        <div class="dash-client-table-wrap">
+            <table class="dash-client-table">
+                <thead>
+                    <tr><th>Client</th><th>Signed</th><th>Decision</th><th>Product / dose</th><th>Form</th><th></th></tr>
+                </thead>
+                <tbody>
+                    {% for f in signed %}
+                    <tr>
+                        <td><strong>{{ f.user.full_name }}</strong></td>
+                        <td>{{ f.prescriber_signed_at|date:"j M Y" }}</td>
+                        <td>{{ f.get_prescription_decision_display }}</td>
+                        <td>{% if f.is_prescribed %}{{ f.prescribed_product }} — {{ f.prescribed_dose }}{% else %}—{% endif %}</td>
+                        <td>{% if f.finalised %}<span class="dash-status dash-status--done">Completed</span>{% else %}<span class="dash-status">In progress</span>{% endif %}</td>
+                        <td style="text-align:right;"><a href="{% if f.finalised %}{% url 'forms_system:botox_view' f.pk %}{% else %}{% url 'forms_system:botox_prescriber' f.pk %}{% endif %}" class="btn btn--ghost btn--sm">View</a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="dash-account-empty">You haven't signed any prescriptions yet.</p>
+        {% endif %}
+    </section>
+
+</div>
+{% endblock %}

@@ -3,7 +3,7 @@
 <header class="nav-header">
     <div class="nav-container container-fluid">
         <!-- Logo -->
-        <a href="{% if user.is_superuser %}{% url 'dashboard:dashboard' %}{% else %}/{% endif %}" class="logo-link" aria-label="{% if user.is_superuser %}Dashboard{% else %}Home page{% endif %}">
+        <a href="{% if user.is_superuser %}{% url 'dashboard:dashboard' %}{% elif user.is_prescriber %}{% url 'dashboard:prescriber_home' %}{% else %}/{% endif %}" class="logo-link" aria-label="{% if user.is_superuser or user.is_prescriber %}Dashboard{% else %}Home page{% endif %}">
             <img src="{% static 'images/mini-logo.png' %}" alt="Caldwell Cosmetics Logo" class="logo-image">
         </a>
 
@@ -28,9 +28,15 @@
                     <a href="{% url 'bookings:overview' %}" aria-label="Bookings">Bookings</a>
                 </li>
                 {% if user.is_authenticated %}
+                {% if user.is_prescriber %}
+                <li>
+                    <a href="{% url 'dashboard:prescriber_home' %}" aria-label="My Account">My Account</a>
+                </li>
+                {% else %}
                 <li class="{% if url_name == 'accounts:profile' %}active{% endif %}">
                     <a href="{% url 'accounts:profile' %}" aria-label="My Profile">My Profile</a>
                 </li>
+                {% endif %}
                 {% else %}
                 <li class="{% if url_name == 'accounts:login' or url_name == 'accounts:register' %}active{% endif %}">
                     <a href="{% url 'accounts:login' %}" aria-label="Sign In / Up">Sign In / Up</a>

@@ -1,29 +1,28 @@
 import base64
 import json
 from datetime import datetime
+from decimal import Decimal, InvalidOperation
 
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.db import transaction
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 from django.contrib.auth import get_user_model
+from apps.accounts.permissions import clinical_staff_required, practitioner_required
 from .utils import bool_from_post
 
-from .models import ConsultationForm, BotoxConsentForm, PhotographyConsent, RecordCard, PRPConsentForm, LaserReConsent
+from .models import (
+    ConsultationForm, BotoxConsentForm, BotoxFormRevision, PhotographyConsent,
+    RecordCard, PRPConsentForm, LaserReConsent,
+)
 
 User = get_user_model()
 
 
-def staff_required(view_func):
-    """Restricts view to superusers (practitioner)."""
-    from django.contrib.auth.decorators import user_passes_test
-    return login_required(
-        user_passes_test(
-            lambda u: u.is_superuser,
-            login_url="accounts:login",
-        )(view_func)
-    )
+staff_required = practitioner_required
 
 
 # ---------------------------------------------------------------------------
@@ -232,9 +231,9 @@ def _get_target_user(request):
 def form_status(request, user_id):
     """
     Returns JSON describing which forms the user has completed.
-    Accessible by the user themselves or any superuser.
+    Accessible by the user themselves or clinical staff.
     """
-    if request.user.pk != user_id and not request.user.is_superuser:
+    if request.user.pk != user_id and not request.user.is_clinical_staff:
         return JsonResponse({"error": "Forbidden"}, status=403)
 
     user = get_object_or_404(User, pk=user_id)
@@ -339,7 +338,7 @@ def consultation_form(request):
 # Consultation Form — operator view / history
 # ---------------------------------------------------------------------------
 
-@staff_required
+@clinical_staff_required
 def consultation_view(request, user_id):
     """Read-only view of a consultation form; ?form_pk=<pk> selects a specific historical entry."""
     target_user = get_object_or_404(User, pk=user_id)
@@ -460,94 +459,185 @@ def photography_consent(request):
 
 
 # ---------------------------------------------------------------------------
-# Botox — Step 1 (client)
+# Botox Consent & Prescription
+#
+# One form moves through three sections: client → prescriber → practitioner.
+# Until the practitioner completes it, each person can keep editing their own
+# section (saves only ever write that section's fields). Every save is kept
+# in BotoxFormRevision. Once completed the form is a read-only record, and
+# the client's next visit starts a new form.
 # ---------------------------------------------------------------------------
+
+Section = BotoxFormRevision.Section
+Action  = BotoxFormRevision.Action
+
+
+def _open_botox_form(user):
+    """The client's in-progress (not yet completed) Botox form, if any."""
+    return (
+        BotoxConsentForm.objects
+        .filter(user=user, finalised=False)
+        .order_by("-completed_at")
+        .first()
+    )
+
+
+def _botox_client_answers(data, is_minor):
+    answers = dict(
+        full_name=data.get("full_name", ""),
+        phone_number=data.get("phone_number", ""),
+        email=data.get("email", ""),
+        address=data.get("address", ""),
+        emergency_contact_name=data.get("emergency_contact_name", ""),
+        emergency_contact_phone=data.get("emergency_contact_phone", ""),
+
+        has_allergies=bool(data.get("has_allergies")),
+        allergy_details=data.get("allergy_details", ""),
+        neuromuscular_disorders=bool(data.get("neuromuscular_disorders")),
+        skin_conditions=bool(data.get("skin_conditions")),
+        blood_disorders=bool(data.get("blood_disorders")),
+        history_of_fainting=bool(data.get("history_of_fainting")),
+        other_conditions=data.get("other_conditions", ""),
+        current_medications=data.get("current_medications", ""),
+        previous_cosmetic_procedures=data.get("previous_cosmetic_procedures", ""),
+        botox_allergies=data.get("botox_allergies", ""),
+
+        area_forehead=bool(data.get("area_forehead")),
+        area_frown_lines=bool(data.get("area_frown_lines")),
+        area_crows_feet=bool(data.get("area_crows_feet")),
+        area_other=data.get("area_other", ""),
+        expectations=data.get("expectations", ""),
+
+        is_pregnant=bool_from_post(data.get("is_pregnant")),
+        is_breastfeeding=bool_from_post(data.get("is_breastfeeding")),
+        has_cold_sores=bool_from_post(data.get("has_cold_sores")),
+        has_medical_problems=bool_from_post(data.get("has_medical_problems")),
+        medical_problems_details=data.get("medical_problems_details", ""),
+        on_medication=bool_from_post(data.get("on_medication")),
+        medication_details=data.get("medication_details", ""),
+        has_allergies_q2=bool_from_post(data.get("has_allergies_q2")),
+        allergy_details_q2=data.get("allergy_details_q2", ""),
+        previous_procedures=bool_from_post(data.get("previous_procedures")),
+        previous_procedures_details=data.get("previous_procedures_details", ""),
+        yes_details=data.get("yes_details", ""),
+
+        consent_interactions=bool(data.get("consent_interactions")),
+        consent_appearance=bool(data.get("consent_appearance")),
+        consent_limitations=bool(data.get("consent_limitations")),
+        consent_alternatives=bool(data.get("consent_alternatives")),
+        consent_followup=bool(data.get("consent_followup")),
+        consent_dissatisfaction=bool(data.get("consent_dissatisfaction")),
+        consent_agreement=bool(data.get("consent_agreement")),
+        consent_privacy_policy=bool(data.get("consent_privacy_policy")),
+    )
+    # Clear guardian details if the client is (now) an adult.
+    guardian = _extract_guardian(data if is_minor else {})
+    return answers, guardian
+
 
 @login_required
 def botox_client(request):
     target_user = _get_target_user(request)
     on_behalf   = _is_practitioner_mode(request)
-    existing    = _get_or_none(BotoxConsentForm, user=target_user)
 
     if request.method == "POST":
         data     = request.POST
         sig      = data.get("signature", "")
         is_minor = _dob_is_minor(data.get("date_of_birth", ""))
 
+        answers, guardian = _botox_client_answers(data, is_minor)
+        try:
+            dob = datetime.strptime(data.get("date_of_birth", ""), "%Y-%m-%d").date()
+        except ValueError:
+            dob = None
+        answers.update(guardian, date_of_birth=dob)
+
+        def rejected(message):
+            # Re-show the form with what they entered, rather than a bare error.
+            if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+                return JsonResponse({"ok": False, "error": message}, status=400)
+            open_form = _open_botox_form(target_user)
+            entered   = BotoxConsentForm(user=target_user, **answers)
+            if open_form:
+                entered.pk               = open_form.pk
+                entered.client_signed_at = open_form.client_signed_at
+                entered.prescriber_signed = open_form.prescriber_signed
+            return render(request, "forms_system/botox/client.html", {
+                "f": entered,
+                "error": message,
+                "target_user": target_user,
+                "on_behalf": on_behalf,
+                "profile_is_minor": _profile_is_minor(target_user),
+            }, status=400)
+
         if not _validate_sig(sig):
-            return JsonResponse({"ok": False, "error": "A valid signature is required."}, status=400)
+            return rejected("Your signature didn't come through. Please sign in the box again and resubmit.")
+        if _validate_guardian(data, is_minor):
+            return rejected("Clients under 18 need a parent or guardian's name, relationship, phone number and signature.")
+        if dob is None:
+            return rejected("Please enter a valid date of birth.")
 
-        err = _validate_guardian(data, is_minor)
-        if err:
-            return err
-
-        g   = _extract_guardian(data) if is_minor else {}
         now = timezone.now()
 
-        botox = BotoxConsentForm.objects.create(
-            user=target_user,
-            completed_by_practitioner=on_behalf,
-            practitioner=request.user if on_behalf else None,
-            signature=sig,
-            **g,
+        with transaction.atomic():
+            botox = (
+                BotoxConsentForm.objects
+                .select_for_update()
+                .filter(user=target_user, finalised=False)
+                .order_by("-completed_at")
+                .first()
+            )
 
-            full_name=data.get("full_name", ""),
-            date_of_birth=data.get("date_of_birth"),
-            phone_number=data.get("phone_number", ""),
-            email=data.get("email", ""),
-            address=data.get("address", ""),
-            emergency_contact_name=data.get("emergency_contact_name", ""),
-            emergency_contact_phone=data.get("emergency_contact_phone", ""),
+            if botox is None:
+                botox = BotoxConsentForm.objects.create(
+                    user=target_user,
+                    completed_by_practitioner=on_behalf,
+                    practitioner=request.user if on_behalf else None,
+                    signature=sig,
+                    client_signed=True,
+                    client_signed_at=now,
+                    **answers,
+                )
+                botox.log_revision(request.user, Section.CLIENT, Action.SUBMITTED, BotoxConsentForm.CLIENT_FIELDS)
+            else:
+                before = botox.snapshot(BotoxConsentForm.CLIENT_ANSWER_FIELDS)
+                for field, value in answers.items():
+                    setattr(botox, field, value)
+                botox.signature        = sig
+                botox.client_signed    = True
+                botox.client_signed_at = now
+                if on_behalf:
+                    botox.completed_by_practitioner = True
+                    botox.practitioner              = request.user
+                botox.save(update_fields=BotoxConsentForm.CLIENT_FIELDS)
+                botox.log_revision(request.user, Section.CLIENT, Action.UPDATED, BotoxConsentForm.CLIENT_FIELDS)
 
-            has_allergies=bool(data.get("has_allergies")),
-            allergy_details=data.get("allergy_details", ""),
-            neuromuscular_disorders=bool(data.get("neuromuscular_disorders")),
-            skin_conditions=bool(data.get("skin_conditions")),
-            blood_disorders=bool(data.get("blood_disorders")),
-            history_of_fainting=bool(data.get("history_of_fainting")),
-            other_conditions=data.get("other_conditions", ""),
-            current_medications=data.get("current_medications", ""),
-            previous_cosmetic_procedures=data.get("previous_cosmetic_procedures", ""),
-            botox_allergies=data.get("botox_allergies", ""),
-
-            area_forehead=bool(data.get("area_forehead")),
-            area_frown_lines=bool(data.get("area_frown_lines")),
-            area_crows_feet=bool(data.get("area_crows_feet")),
-            area_other=data.get("area_other", ""),
-            expectations=data.get("expectations", ""),
-
-            is_pregnant=bool_from_post(data.get("is_pregnant")),
-            is_breastfeeding=bool_from_post(data.get("is_breastfeeding")),
-            has_cold_sores=bool_from_post(data.get("has_cold_sores")),
-            has_medical_problems=bool_from_post(data.get("has_medical_problems")),
-            medical_problems_details=data.get("medical_problems_details", ""),
-            on_medication=bool_from_post(data.get("on_medication")),
-            medication_details=data.get("medication_details", ""),
-            has_allergies_q2=bool_from_post(data.get("has_allergies_q2")),
-            allergy_details_q2=data.get("allergy_details_q2", ""),
-            previous_procedures=bool_from_post(data.get("previous_procedures")),
-            previous_procedures_details=data.get("previous_procedures_details", ""),
-            yes_details=data.get("yes_details", ""),
-
-            consent_interactions=bool(data.get("consent_interactions")),
-            consent_appearance=bool(data.get("consent_appearance")),
-            consent_limitations=bool(data.get("consent_limitations")),
-            consent_alternatives=bool(data.get("consent_alternatives")),
-            consent_followup=bool(data.get("consent_followup")),
-            consent_dissatisfaction=bool(data.get("consent_dissatisfaction")),
-            consent_agreement=bool(data.get("consent_agreement")),
-            consent_privacy_policy=bool(data.get("consent_privacy_policy")),
-
-            client_signed=True,
-            client_signed_at=now,
-        )
+                # The prescriber signed off the old answers — they need to review the new ones.
+                answers_changed = botox.snapshot(BotoxConsentForm.CLIENT_ANSWER_FIELDS) != before
+                if answers_changed and botox.prescriber_signed:
+                    botox.prescriber_signature = ""
+                    botox.prescriber_signed    = False
+                    botox.prescriber_signed_at = None
+                    botox.save(update_fields=["prescriber_signature", "prescriber_signed", "prescriber_signed_at"])
+                    botox.log_revision(request.user, Section.PRESCRIBER, Action.SIGNATURE_WITHDRAWN, BotoxConsentForm.PRESCRIBER_FIELDS)
 
         if request.headers.get("X-Requested-With") == "XMLHttpRequest":
             return JsonResponse({"ok": True, "botox_id": botox.pk})
         return _post_submit_redirect(request)
 
+    open_form = _open_botox_form(target_user)
+    last_completed = None
+    if open_form is None:
+        last_completed = (
+            BotoxConsentForm.objects
+            .filter(user=target_user, finalised=True)
+            .order_by("-finalised_at")
+            .first()
+        )
+
     return render(request, "forms_system/botox/client.html", {
-        "existing": existing,
+        "f": open_form,
+        "last_completed": last_completed,
         "target_user": target_user,
         "on_behalf": on_behalf,
         "profile_is_minor": _profile_is_minor(target_user),
@@ -555,63 +645,207 @@ def botox_client(request):
 
 
 # ---------------------------------------------------------------------------
-# Botox — Step 2 (operator)
+# Botox — Prescriber section
+# ---------------------------------------------------------------------------
+
+def _prescriber_block_reason(user, botox):
+    """Why `user` can't edit the prescriber section, or None if they can."""
+    if botox.finalised:
+        return "This form has been completed and is now read-only."
+    if not user.is_prescriber:
+        return "Only a prescriber can complete this section."
+    if not hasattr(user, "prescriber_details"):
+        return "Your prescriber registration details haven't been set up yet. Please ask the clinic to add them."
+    if not botox.client_signed:
+        return "The client hasn't completed their section of this form yet."
+    return None
+
+
+def _prescriber_values(botox):
+    return {
+        "prescriber_face_to_face":  botox.prescriber_face_to_face,
+        "prescription_decision":    botox.prescription_decision,
+        "prescribed_product":       botox.prescribed_product,
+        "prescribed_dose":          botox.prescribed_dose,
+        "prescription_valid_until": botox.prescription_valid_until.isoformat() if botox.prescription_valid_until else "",
+        "prescriber_notes":         botox.prescriber_notes,
+    }
+
+
+@clinical_staff_required
+def botox_prescriber(request, pk):
+    """
+    Prescriber reviews the client's section and records their decision.
+    They can save progress or sign, and keep editing until the practitioner
+    completes the form. The practitioner can view this page but not sign it.
+    """
+    botox = get_object_or_404(BotoxConsentForm, pk=pk)
+    if botox.finalised:
+        return redirect("forms_system:botox_view", pk=pk)
+
+    error  = None
+    values = _prescriber_values(botox)
+
+    if request.method == "POST":
+        data    = request.POST
+        values  = data
+        signing = data.get("action") == "sign"
+
+        with transaction.atomic():
+            botox = BotoxConsentForm.objects.select_for_update().get(pk=pk)
+            error = _prescriber_block_reason(request.user, botox)
+
+            decision = data.get("prescription_decision", "")
+            if decision not in BotoxConsentForm.PrescriptionDecision.values:
+                decision = ""
+            product     = data.get("prescribed_product", "").strip()
+            dose        = data.get("prescribed_dose", "").strip()
+            sig         = data.get("prescriber_signature", "")
+            valid_until = None
+
+            if not error and data.get("prescription_valid_until"):
+                try:
+                    valid_until = datetime.strptime(data["prescription_valid_until"], "%Y-%m-%d").date()
+                except ValueError:
+                    error = "Please enter a valid 'valid until' date."
+
+            if not error and signing:
+                if not data.get("prescriber_face_to_face"):
+                    error = "Please confirm you have assessed the client face to face."
+                elif not decision:
+                    error = "Please choose whether you are prescribing."
+                elif decision == BotoxConsentForm.PrescriptionDecision.PRESCRIBED and not (product and dose):
+                    error = "Please enter the product and dose being prescribed."
+                elif not _validate_sig(sig):
+                    error = "A valid prescriber signature is required."
+
+            if not error:
+                details = request.user.prescriber_details
+                botox.prescriber               = request.user
+                botox.prescriber_name          = details.display_name
+                botox.prescriber_registration  = details.registration_display
+                botox.prescriber_face_to_face  = bool(data.get("prescriber_face_to_face"))
+                botox.prescription_decision    = decision
+                botox.prescribed_product       = product
+                botox.prescribed_dose          = dose
+                botox.prescription_valid_until = valid_until
+                botox.prescriber_notes         = data.get("prescriber_notes", "")
+                # Saving progress after signing withdraws the signature — it
+                # must always match what's on the form.
+                botox.prescriber_signature     = sig if signing else ""
+                botox.prescriber_signed        = signing
+                botox.prescriber_signed_at     = timezone.now() if signing else None
+                botox.save(update_fields=BotoxConsentForm.PRESCRIBER_FIELDS)
+                botox.log_revision(
+                    request.user, Section.PRESCRIBER,
+                    Action.SIGNED if signing else Action.SAVED,
+                    BotoxConsentForm.PRESCRIBER_FIELDS,
+                )
+                if signing:
+                    # Back to the worklist so they can move on to the next client.
+                    messages.success(request, f"Signed for {botox.user.full_name}.")
+                    return redirect("dashboard:prescriber_home")
+                messages.success(request, "Progress saved — not yet signed.")
+                return redirect("forms_system:botox_prescriber", pk=pk)
+
+    last_prescriber_rev = botox.revisions.filter(section=Section.PRESCRIBER).last()
+    block_reason = _prescriber_block_reason(request.user, botox)
+
+    return render(request, "forms_system/botox/prescriber.html", {
+        "botox":     botox,
+        "can_edit":  block_reason is None,
+        "block_reason": block_reason if request.user.is_prescriber else None,
+        "signature_withdrawn": bool(last_prescriber_rev and last_prescriber_rev.action == Action.SIGNATURE_WITHDRAWN),
+        "error":     error,
+        "values":    values,
+        "decisions": BotoxConsentForm.PrescriptionDecision.choices,
+        "prescriber_details": getattr(request.user, "prescriber_details", None),
+    })
+
+
+# ---------------------------------------------------------------------------
+# Botox — Practitioner section and completion
 # ---------------------------------------------------------------------------
 
 @staff_required
 def botox_operator(request, pk):
     botox = get_object_or_404(BotoxConsentForm, pk=pk)
+    if botox.finalised:
+        return redirect("forms_system:botox_view", pk=pk)
+
+    error = None
 
     if request.method == "POST":
-        data = request.POST
-        sig  = data.get("operator_signature", "")
+        data   = request.POST
+        action = data.get("action")
 
-        if not _validate_sig(sig):
-            return JsonResponse(
-                {"ok": False, "error": "A valid operator signature is required."}, status=400
-            )
+        with transaction.atomic():
+            botox = BotoxConsentForm.objects.select_for_update().get(pk=pk)
+            if botox.finalised:
+                return redirect("forms_system:botox_view", pk=pk)
 
-        botox.treatment_notes        = data.get("treatment_notes", "")
-        botox.next_appointment       = data.get("next_appointment", "")
-        botox.treatment_product_lot  = data.get("treatment_product_lot", "")
-        botox.units_forehead         = data.get("units_forehead", "")
-        botox.units_glabella         = data.get("units_glabella", "")
-        botox.units_crows_feet       = data.get("units_crows_feet", "")
-        botox.units_jelly_roll       = data.get("units_jelly_roll", "")
-        botox.units_bunny_lines      = data.get("units_bunny_lines", "")
-        botox.units_gummy_smile      = data.get("units_gummy_smile", "")
-        botox.units_smokers_lines    = data.get("units_smokers_lines", "")
-        botox.units_lip_flip         = data.get("units_lip_flip", "")
-        botox.units_dao_jowls        = data.get("units_dao_jowls", "")
-        botox.units_chin             = data.get("units_chin", "")
-        botox.units_masseter         = data.get("units_masseter", "")
-        botox.units_neck_bands       = data.get("units_neck_bands", "")
-        botox.units_total            = data.get("units_total", "")
-        raw_cost = data.get("treatment_cost") or ""
-        if raw_cost:
-            try:
-                from decimal import Decimal, InvalidOperation
-                cost_val = Decimal(str(raw_cost))
-                if cost_val < 0 or cost_val > 10000:
-                    return JsonResponse({"ok": False, "error": "Invalid treatment cost."}, status=400)
-                botox.treatment_cost = cost_val
-            except (InvalidOperation, ValueError):
-                return JsonResponse({"ok": False, "error": "Invalid treatment cost."}, status=400)
-        else:
-            botox.treatment_cost = None
-        botox.operator_notes         = data.get("operator_notes", "")
-        botox.operator_signature   = sig
-        botox.operator_signed      = True
-        botox.operator_signed_at   = timezone.now()
-        botox.operator_signed_by   = request.user
-        botox.save()
+            if action == "complete":
+                if not data.get("confirm_complete"):
+                    error = "Please tick the box to confirm the form is complete."
+                elif not botox.can_finalise:
+                    error = "This form can't be completed yet — check every section has been signed."
+                else:
+                    botox.finalised    = True
+                    botox.finalised_at = timezone.now()
+                    botox.finalised_by = request.user
+                    botox.save(update_fields=BotoxConsentForm.FINALISE_FIELDS)
+                    botox.log_revision(
+                        request.user, Section.FORM, Action.COMPLETED,
+                        BotoxConsentForm.CLIENT_FIELDS + BotoxConsentForm.PRESCRIBER_FIELDS
+                        + BotoxConsentForm.OPERATOR_FIELDS + BotoxConsentForm.FINALISE_FIELDS,
+                    )
+                    return redirect("forms_system:botox_view", pk=pk)
+            else:
+                signing = action == "sign"
+                sig     = data.get("operator_signature", "")
+                cost    = None
 
-        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
-            return JsonResponse({"ok": True})
-        return _post_submit_redirect(request)
+                raw_cost = data.get("treatment_cost") or ""
+                if raw_cost:
+                    try:
+                        cost = Decimal(str(raw_cost))
+                        if cost < 0 or cost > 10000:
+                            error = "Invalid treatment cost."
+                    except (InvalidOperation, ValueError):
+                        error = "Invalid treatment cost."
+
+                if not error and signing and not _validate_sig(sig):
+                    error = "A valid operator signature is required."
+
+                if not error:
+                    for field in BotoxConsentForm.OPERATOR_TEXT_FIELDS:
+                        setattr(botox, field, data.get(field, ""))
+                    botox.treatment_cost     = cost
+                    botox.operator_signature = sig if signing else ""
+                    botox.operator_signed    = signing
+                    botox.operator_signed_at = timezone.now() if signing else None
+                    botox.operator_signed_by = request.user if signing else None
+                    botox.save(update_fields=BotoxConsentForm.OPERATOR_FIELDS)
+                    botox.log_revision(
+                        request.user, Section.OPERATOR,
+                        Action.SIGNED if signing else Action.SAVED,
+                        BotoxConsentForm.OPERATOR_FIELDS,
+                    )
+                    return redirect("forms_system:botox_operator", pk=pk)
 
     return render(request, "forms_system/botox/operator.html", {
         "botox": botox,
+        "error": error,
+    })
+
+
+@clinical_staff_required
+def botox_view(request, pk):
+    """Read-only record of a Botox form, with its full save history."""
+    botox = get_object_or_404(BotoxConsentForm.objects.select_related("user", "finalised_by"), pk=pk)
+    return render(request, "forms_system/botox/view.html", {
+        "botox":     botox,
+        "revisions": botox.revisions.select_related("user"),
     })
 
 
@@ -724,8 +958,8 @@ def record_card_new(request, user_id):
 def record_card_view(request, pk):
     card = get_object_or_404(RecordCard, pk=pk)
 
-    # Clients can only see their own; staff can see all
-    if not request.user.is_superuser and card.user != request.user:
+    # Clients can only see their own; clinical staff can see all
+    if not request.user.is_clinical_staff and card.user != request.user:
         return _post_submit_redirect(request)
 
     return render(request, "forms_system/record_card/view.html", {"card": card})
@@ -915,7 +1149,7 @@ def laser_reconsent(request):
     })
 
 
-@staff_required
+@clinical_staff_required
 def laser_reconsent_view(request, pk):
     """Read-only view of a single historical laser re-consent record."""
     reconsent = get_object_or_404(LaserReConsent, pk=pk)

@@ -35,8 +35,26 @@ SECURE_HSTS_PRELOAD = True
 # --------------------------------------------------
 # EMAIL (real)
 # --------------------------------------------------
+# All values come from environment variables set in the Render dashboard —
+# never commit real credentials here. See EMAIL_SETUP.md for where to get
+# these from your transactional email provider.
 
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = os.environ.get("EMAIL_HOST")
+EMAIL_PORT = int(os.environ.get("EMAIL_PORT", 587))
+EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", "True") == "True"
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
+# Emails are sent while the booking request waits, so never let a slow
+# provider hang a client's booking.
+EMAIL_TIMEOUT = 10
+
+# Shown to clients as the sender. Must be on a domain you've verified with
+# your email provider (see EMAIL_SETUP.md).
+DEFAULT_FROM_EMAIL = os.environ.get(
+    "DEFAULT_FROM_EMAIL", "Caldwell Cosmetics <info@caldwellcosmetics.co.uk>"
+)
+SERVER_EMAIL = DEFAULT_FROM_EMAIL
 
 # --------------------------------------------------
 # STATIC

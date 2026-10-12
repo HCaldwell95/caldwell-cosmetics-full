@@ -13,7 +13,7 @@
 </div>
 
 <div class="cform-section">
-    <p class="cform-hint" style="color:var(--color-text,#2d2d2d); font-size:0.875rem; line-height:1.6;">By completing this form, you confirm that the information in your original consultation form remains accurate and up to date, and that you are happy to proceed with today's treatment. If any circumstances have changed since your last visit, please inform your practitioner before signing.</p>
+    <p class="cform-hint" style="color:var(--color-text,#2d2d2d); font-size:0.875rem; line-height:1.6;">By completing this form, you confirm that the information in your original laser consultation remains accurate and up to date, and that you are happy to proceed with today's treatment. If any circumstances have changed since your last visit, please inform your practitioner before signing.</p>
 </div>
 
 <form id="laserReconsentForm" class="cform" method="post" action="{% url 'forms_system:laser_reconsent' %}{% if on_behalf %}?on_behalf_of={{ target_user.pk }}{% endif %}">
@@ -26,7 +26,7 @@
 
         <div class="cform-yn-table">
             <div class="cform-yn-row">
-                <span>Have there been any changes to your consultation form or medical history since your last visit?</span>
+                <span>Have there been any changes to your laser consultation or medical history since your last visit?</span>
                 <div class="cform-radio-row">
                     <label class="cform-check"><input type="radio" name="changes_consultation_form" value="1"><span>Yes</span></label>
                     <label class="cform-check"><input type="radio" name="changes_consultation_form" value="0" checked><span>No</span></label>
@@ -76,7 +76,7 @@
         <div class="cform-consent-list">
             <label class="cform-consent-item">
                 <input type="checkbox" name="consent_proceed" required>
-                <span>I confirm that the information in my original consultation form remains accurate and up to date. I understand the risks, side effects, and aftercare requirements associated with today's treatment. I have had the opportunity to ask any questions. I willingly consent to proceed with today's laser / IPL treatment.</span>
+                <span>I confirm that the information in my original laser consultation remains accurate and up to date. I understand the risks, side effects, and aftercare requirements associated with today's treatment. I have had the opportunity to ask any questions. I willingly consent to proceed with today's laser / IPL treatment.</span>
             </label>
         </div>
     </div>
@@ -139,5 +139,5 @@
     </div>
 </form>
 </div>
-<script src="{% static 'js/sig_pad.js' %}"></script>
+<script src="{% static 'js/sig_pad.js' %}?v=3"></script>
 {% endblock %}

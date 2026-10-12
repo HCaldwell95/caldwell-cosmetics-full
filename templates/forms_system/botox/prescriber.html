@@ -1,0 +1,119 @@
+{% extends "base/base.html" %}
+{% load static %}
+{% block title %}Botox Consent &amp; Prescription — Prescriber | Caldwell Cosmetics{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/pages/forms_system.css' %}">{% endblock %}
+{% block content %}
+<div class="cform-page cform-page--wide">
+<div class="cform-header">
+    <span class="cform-header__eyebrow">Caldwell Cosmetics — Prescriber Section</span>
+    <h1 class="cform-header__title">Botox Consent &amp; Prescription</h1>
+    <p class="cform-header__sub">Client: <strong>{{ botox.user.full_name }}</strong> — submitted {{ botox.client_signed_at|date:"j F Y \a\t H:i" }}.</p>
+</div>
+
+{% if error %}<div class="cform-behalf-banner cform-error-banner" role="alert">{{ error }}</div>{% endif %}
+{% for message in messages %}<div class="cform-existing-banner" role="status">{{ message }}</div>{% endfor %}
+{% if signature_withdrawn %}
+<div class="cform-behalf-banner cform-minor-banner" role="alert"><strong>The client has changed their answers since this was signed.</strong> Please review their section again and re-sign.</div>
+{% elif botox.prescriber_signed %}
+<div class="cform-existing-banner">Signed by {{ botox.prescriber_name }} on {{ botox.prescriber_signed_at|date:"j F Y \a\t H:i" }}.{% if can_edit %} You can still make changes until the practitioner completes the form — saving again will need your signature.{% endif %}</div>
+{% endif %}
+
+{% include "forms_system/botox/_client_summary.html" %}
+
+{% if can_edit %}
+
+<form id="botoxPrescriberForm" class="cform" method="post" action="{% url 'forms_system:botox_prescriber' botox.pk %}">
+    {% csrf_token %}
+
+    <div class="cform-section cform-section--operator">
+        <h2 class="cform-section__title">Prescription <span class="cform-operator-badge">Prescriber</span></h2>
+
+        <div class="cform-grid cform-grid--2" style="margin-bottom:1rem;">
+            <div class="cform-field">
+                <label class="cform-label">Prescriber</label>
+                <input class="cform-input" type="text" value="{{ prescriber_details.display_name }}" readonly>
+            </div>
+            <div class="cform-field">
+                <label class="cform-label">Registration</label>
+                <input class="cform-input" type="text" value="{{ prescriber_details.registration_display }}" readonly>
+            </div>
+        </div>
+
+        <div class="cform-field">
+            <label class="cform-check">
+                <input type="checkbox" name="prescriber_face_to_face" value="1" {% if values.prescriber_face_to_face %}checked{% endif %}>
+                <span>I have assessed this client face to face and reviewed their medical history above.</span>
+            </label>
+        </div>
+
+        <div class="cform-field">
+            <label class="cform-label">Decision</label>
+            <div class="cform-radio-row">
+                {% for value, label in decisions %}
+                <label class="cform-check"><input type="radio" name="prescription_decision" value="{{ value }}" {% if values.prescription_decision == value %}checked{% endif %}><span>{{ label }}</span></label>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="cform-grid cform-grid--2" id="prescribedFields">
+            <div class="cform-field">
+                <label class="cform-label">Product</label>
+                <input class="cform-input" type="text" name="prescribed_product" placeholder="e.g. Botox (Allergan) 100u" value="{{ values.prescribed_product|default:'' }}">
+            </div>
+            <div class="cform-field">
+                <label class="cform-label">Valid until <span class="cform-hint">(optional)</span></label>
+                <input class="cform-input" type="date" name="prescription_valid_until" value="{{ values.prescription_valid_until|default:'' }}">
+            </div>
+            <div class="cform-field cform-field--full">
+                <label class="cform-label">Dose / areas</label>
+                <input class="cform-input" type="text" name="prescribed_dose" placeholder="e.g. Up to 64 units — forehead, glabella, crow's feet" value="{{ values.prescribed_dose|default:'' }}">
+            </div>
+        </div>
+
+        <div class="cform-field">
+            <label class="cform-label">Prescriber notes</label>
+            <textarea class="cform-input" name="prescriber_notes" rows="3">{{ values.prescriber_notes|default:'' }}</textarea>
+        </div>
+    </div>
+
+    <div class="cform-section">
+        <h2 class="cform-section__title">Prescriber Signature</h2>
+        <p class="cform-hint">I confirm the decision above is based on my face-to-face assessment of this client.</p>
+        {% if botox.prescriber_signed %}<p class="cform-hint">Current signature: <img src="{{ botox.prescriber_signature }}" alt="Current prescriber signature" class="cform-sig-preview"></p>{% endif %}
+        <div class="cform-sig-wrap"><canvas id="sigCanvas" class="cform-sig-canvas"></canvas><div class="cform-sig-actions"><button type="button" class="btn btn--ghost btn--sm" id="sigClear">Clear</button></div></div>
+        <input type="hidden" name="prescriber_signature" id="sigData">
+    </div>
+
+    <div class="cform-submit-row" style="gap:1rem; flex-wrap:wrap;">
+        <button type="submit" name="action" value="save" class="btn btn--ghost btn--lg" data-no-signature>Save Progress</button>
+        <button type="submit" name="action" value="sign" class="btn btn--primary btn--lg">Save &amp; Sign</button>
+    </div>
+    <p class="cform-hint" style="text-align:right;">Saving progress without signing will remove any existing signature on this section.</p>
+</form>
+<script src="{% static 'js/sig_pad.js' %}?v=3"></script>
+<script>
+(function () {
+    // Product and dose only apply when prescribing.
+    var form   = document.getElementById('botoxPrescriberForm');
+    var fields = document.getElementById('prescribedFields');
+    function sync() {
+        var checked = form.querySelector('input[name="prescription_decision"]:checked');
+        fields.hidden = !!checked && checked.value !== 'prescribed';
+    }
+    form.querySelectorAll('input[name="prescription_decision"]').forEach(function (r) { r.addEventListener('change', sync); });
+    sync();
+})();
+</script>
+
+{% else %}
+
+    {% include "forms_system/botox/_prescription_summary.html" %}
+    {% if block_reason %}<p class="cform-hint">{{ block_reason }}</p>{% endif %}
+
+{% endif %}
+
+<div class="cform-submit-row">
+    <a href="{% if user.is_practitioner %}{% url 'forms_system:botox_operator' botox.pk %}{% else %}{% url 'dashboard:prescriber_home' %}{% endif %}" class="btn btn--ghost">&larr; {% if user.is_practitioner %}Back{% else %}Back to My Account{% endif %}</a>
+</div>
+</div>
+{% endblock %}

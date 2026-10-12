@@ -1,6 +1,6 @@
 {% extends "base/base.html" %}
 {% load static %}
-{% block title %}New Consultation Form — {{ target_user.full_name }} | Caldwell Cosmetics{% endblock %}
+{% block title %}New Laser Consultation — {{ target_user.full_name }} | Caldwell Cosmetics{% endblock %}
 {% block extra_css %}<link rel="stylesheet" href="{% static 'css/pages/forms_system.css' %}">{% endblock %}
 
 {% block content %}
@@ -107,7 +107,7 @@
 {% else %}
 <div class="record-card-prev">
     <h2 class="cform-section__title">Previous Consultation</h2>
-    <p class="cform-hint">No previous consultation form exists for this client. This will be the first.</p>
+    <p class="cform-hint">No previous laser consultation exists for this client. This will be the first.</p>
 </div>
 {% endif %}
 
@@ -116,7 +116,7 @@
 
 <div class="cform-header" style="padding-top:0;">
     <span class="cform-header__eyebrow">Operator Only</span>
-    <h1 class="cform-header__title">{% if previous %}Update Consultation Form{% else %}New Consultation Form{% endif %}</h1>
+    <h1 class="cform-header__title">{% if previous %}Update Laser Consultation{% else %}New Laser Consultation{% endif %}</h1>
     <p class="cform-header__sub">{{ target_user.full_name }}</p>
     {% if previous %}<p class="cform-hint">Pre-filled from the {{ previous.completed_at|date:"j F Y" }} entry — edit any field and save to record a new, dated entry.</p>{% endif %}
 </div>
@@ -305,7 +305,7 @@
                 <input class="cform-input" type="text" name="last_uv_exposure" value="{{ previous.last_uv_exposure }}">
             </div>
             <div class="cform-field">
-                <label class="cform-label">Tanning injections / Melanotan?</label>
+                <label class="cform-label">Tanning injections / Melanotan / Tanning Enhancers?</label>
                 <div class="cform-radio-row">
                     <label class="cform-check"><input type="radio" name="tanning_injections" value="yes" {% if previous.tanning_injections %}checked{% endif %}><span>Yes</span></label>
                     <label class="cform-check"><input type="radio" name="tanning_injections" value="no" {% if previous and not previous.tanning_injections %}checked{% endif %}><span>No</span></label>
@@ -540,7 +540,7 @@
 
     <div class="cform-submit-row">
         <a href="{% url 'forms_system:consultation_view' target_user.pk %}" class="btn btn--ghost btn--lg">Cancel</a>
-        <button type="submit" class="btn btn--primary btn--lg" id="submitBtn">Save Consultation Form</button>
+        <button type="submit" class="btn btn--primary btn--lg" id="submitBtn">Save Laser Consultation</button>
     </div>
 
 </form>
@@ -548,7 +548,7 @@
 </div>{# end record-card-layout #}
 </div>{# end cform-page #}
 
-<script src="{% static 'js/sig_pad.js' %}"></script>
+<script src="{% static 'js/sig_pad.js' %}?v=3"></script>
 <script>
 (function () {
     var dob     = document.getElementById('dobField');

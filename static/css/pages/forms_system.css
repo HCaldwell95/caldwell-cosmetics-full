@@ -160,6 +160,12 @@
     color: #92400e;
 }
 
+.cform-error-banner {
+    background-color: #fef2f2;
+    border-color: #dc2626;
+    color: #991b1b;
+}
+
 /* =====================================================
    Form sections
    ===================================================== */

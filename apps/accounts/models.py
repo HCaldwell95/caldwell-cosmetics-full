@@ -38,8 +38,22 @@ class UserManager(BaseUserManager):
 # --------------------------------------------------
 
 class User(AbstractUser):
+    # The practitioner (clinic owner) is a superuser and needs no role.
+    # Prescribers get read access to clients and their forms, and can sign
+    # the prescriber section of the Botox form — nothing else.
+    class Role(models.TextChoices):
+        CLIENT     = "client",     "Client"
+        PRESCRIBER = "prescriber", "Prescriber"
+
     username = None
     email = models.EmailField(unique=True, verbose_name="Email address")
+    role  = models.CharField(
+        max_length=20,
+        choices=Role.choices,
+        default=Role.CLIENT,
+        help_text="Prescribers can view all clients and their forms, and sign prescriptions. "
+                  "They cannot see the calendar, bookings, bundles or credit.",
+    )
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []  # email is already required by USERNAME_FIELD
@@ -56,6 +70,57 @@ class User(AbstractUser):
     @property
     def full_name(self):
         return f"{self.first_name} {self.last_name}".strip() or self.email
+
+    @property
+    def is_practitioner(self):
+        return self.is_active and self.is_superuser
+
+    @property
+    def is_prescriber(self):
+        return self.is_active and self.role == self.Role.PRESCRIBER
+
+    @property
+    def is_clinical_staff(self):
+        return self.is_practitioner or self.is_prescriber
+
+
+# --------------------------------------------------
+# PRESCRIBER DETAILS
+# Professional registration for users with the prescriber role.
+# Copied onto each prescription at signing so the record stays accurate.
+# --------------------------------------------------
+
+class PrescriberDetails(models.Model):
+    class ProfessionalBody(models.TextChoices):
+        GMC  = "GMC",  "GMC — General Medical Council"
+        NMC  = "NMC",  "NMC — Nursing & Midwifery Council"
+        GDC  = "GDC",  "GDC — General Dental Council"
+        GPHC = "GPhC", "GPhC — General Pharmaceutical Council"
+
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name="prescriber_details",
+    )
+    title               = models.CharField(max_length=20, blank=True, help_text='e.g. "Dr"')
+    professional_body   = models.CharField(max_length=10, choices=ProfessionalBody.choices, default=ProfessionalBody.GMC)
+    registration_number = models.CharField(max_length=30)
+    qualifications      = models.CharField(max_length=200, blank=True, help_text="e.g. MBChB, MRCGP")
+
+    class Meta:
+        verbose_name = "Prescriber details"
+        verbose_name_plural = "Prescriber details"
+
+    def __str__(self):
+        return f"{self.display_name} ({self.registration_display})"
+
+    @property
+    def display_name(self):
+        return f"{self.title} {self.user.full_name}".strip()
+
+    @property
+    def registration_display(self):
+        return f"{self.professional_body} {self.registration_number}"
 
 
 # --------------------------------------------------

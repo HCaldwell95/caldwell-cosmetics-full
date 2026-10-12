@@ -2,21 +2,26 @@ import json
 from datetime import date, timedelta
 from decimal import Decimal, InvalidOperation
 
-from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib import messages
+from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth.forms import PasswordChangeForm
 from django.core.mail import send_mail
 from django.db import IntegrityError, models, transaction
+from django.db.models import OuterRef, Prefetch, Subquery
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
-from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_POST
 
+from apps.accounts.forms import PrescriberAccountForm
+from apps.accounts.permissions import clinical_staff_required, practitioner_required, prescriber_required
 from apps.bookings.models import Booking, ClosedDate
 from apps.bookings.views import BOOKING_HORIZON_DAYS
 from apps.treatments.models import Treatment, TreatmentCategory
 from apps.forms_system.models import (
     ConsultationForm,
     BotoxConsentForm,
+    BotoxFormRevision,
     PhotographyConsent,
     RecordCard,
     PRPConsentForm,
@@ -60,15 +65,12 @@ def _parse_json(request):
         return None, JsonResponse({"ok": False, "error": "Invalid JSON body."}, status=400)
 
 
-def is_admin(user):
-    return user.is_authenticated and user.is_superuser
+# Practitioner only: calendar, bookings, closed dates, notifications, editing
+# clients, bundles and credit.
+admin_view = practitioner_required
 
-
-admin_required = user_passes_test(is_admin, login_url="accounts:login")
-
-
-def admin_view(view_func):
-    return never_cache(login_required(admin_required(view_func)))
+# Practitioner or prescriber: the client list and read-only client records.
+clinical_view = clinical_staff_required
 
 
 # ---------------------------------------------------------------------------
@@ -122,6 +124,11 @@ def _client_form_status(user):
                     "id":               f.pk,
                     "date":             fmt(f.completed_at),
                     "client_signed":    f.client_signed,
+                    "prescriber_signed": f.prescriber_signed,
+                    "prescribed":       f.is_prescribed,
+                    "operator_signed":  f.operator_signed,
+                    "finalised":        f.finalised,
+                    "finalised_date":   fmt(f.finalised_at),
                     "fully_complete":   f.is_fully_complete,
                     "is_latest":        i == 0,
                 }
@@ -188,7 +195,7 @@ def dashboard(request):
     return render(request, "dashboard/dashboard.html", context)
 
 
-@admin_view
+@clinical_view
 def clients_page(request):
     return render(request, "dashboard/clients.html")
 
@@ -559,11 +566,15 @@ def user_search(request):
 # Client list
 # ---------------------------------------------------------------------------
 
-@admin_view
+@clinical_view
 def client_list(request):
     q = request.GET.get("q", "").strip()
 
-    clients = User.objects.filter(is_active=True, is_staff=False, is_superuser=False)
+    clients = (
+        User.objects
+        .filter(is_active=True, is_staff=False, is_superuser=False)
+        .exclude(role=User.Role.PRESCRIBER)
+    )
 
     if q:
         clients = clients.filter(
@@ -662,7 +673,7 @@ def client_create(request):
 # Client profile detail
 # ---------------------------------------------------------------------------
 
-@admin_view
+@clinical_view
 def client_profile(request, pk):
     user    = get_object_or_404(User, pk=pk)
     profile = getattr(user, "profile", None)
@@ -676,18 +687,7 @@ def client_profile(request, pk):
         .order_by("date", "start_time")
     )
 
-    past = (
-        Booking.objects
-        .filter(user=user, date__lt=today)
-        .select_related("treatment__category")
-        .order_by("-date", "-start_time")[:10]
-    )
-
-    bundles = _client_bundle_data(user)
-    credit  = _client_credit(user)
     forms   = _client_form_status(user)
-
-    treatments = Treatment.objects.filter(is_active=True, category__is_bookable=True).order_by("name")
 
     record_cards = (
         RecordCard.objects
@@ -702,7 +702,7 @@ def client_profile(request, pk):
         .order_by("-created_at")
     )
 
-    return JsonResponse({
+    data = {
         "user": {
             "id":           user.pk,
             "name":         user.full_name,
@@ -734,6 +734,43 @@ def client_profile(request, pk):
             }
             for b in upcoming
         ],
+        "forms": forms,
+        "record_cards": [
+            {
+                "id":               rc.pk,
+                "treatment_number": rc.treatment_number,
+                "date":             rc.date.strftime("%d %b %Y"),
+                "treatment_for":    rc.treatment_for,
+            }
+            for rc in record_cards
+        ],
+        "notes": [
+            {
+                "id":     n.pk,
+                "number": n.number,
+                "title":  n.title,
+                "date":   n.created_at.strftime("%d/%m/%Y"),
+                "author": n.author.get_full_name() if n.author else "Unknown",
+            }
+            for n in notes
+        ],
+    }
+
+    # Booking history, bundles and credit are practitioner-only.
+    if not request.user.is_practitioner:
+        return JsonResponse(data)
+
+    past = (
+        Booking.objects
+        .filter(user=user, date__lt=today)
+        .select_related("treatment__category")
+        .order_by("-date", "-start_time")[:10]
+    )
+    bundles    = _client_bundle_data(user)
+    credit     = _client_credit(user)
+    treatments = Treatment.objects.filter(is_active=True, category__is_bookable=True).order_by("name")
+
+    data.update({
         "past_bookings": [
             {
                 "id":              b.pk,
@@ -772,31 +809,12 @@ def client_profile(request, pk):
                 for t in credit.transactions.order_by("-created_at")
             ] if credit else [],
         },
-        "forms": forms,
-        "record_cards": [
-            {
-                "id":               rc.pk,
-                "treatment_number": rc.treatment_number,
-                "date":             rc.date.strftime("%d %b %Y"),
-                "treatment_for":    rc.treatment_for,
-            }
-            for rc in record_cards
-        ],
         "treatments": [
             {"id": t.pk, "name": t.name}
             for t in treatments
         ],
-        "notes": [
-            {
-                "id":     n.pk,
-                "number": n.number,
-                "title":  n.title,
-                "date":   n.created_at.strftime("%d/%m/%Y"),
-                "author": n.author.get_full_name() if n.author else "Unknown",
-            }
-            for n in notes
-        ],
     })
+    return JsonResponse(data)
 
 
 # ---------------------------------------------------------------------------
@@ -976,7 +994,7 @@ def note_new(request, pk):
     })
 
 
-@admin_view
+@clinical_view
 def note_view(request, pk, note_pk):
     user    = get_object_or_404(User, pk=pk)
     note    = get_object_or_404(ClientNote, pk=note_pk, user=user)
@@ -986,4 +1004,82 @@ def note_view(request, pk, note_pk):
         "client":  user,
         "profile": profile,
         "note":    note,
+    })
+
+
+# ---------------------------------------------------------------------------
+# Prescriber — My Account
+# ---------------------------------------------------------------------------
+
+def _prescriber_worklist():
+    """
+    Botox forms the client has signed that still need a prescriber's
+    signature, soonest appointment first (then oldest submission).
+    """
+    today = timezone.now().date()
+    next_booking = (
+        Booking.objects
+        .filter(user=OuterRef("user"), status=Booking.STATUS_CONFIRMED, date__gte=today)
+        .order_by("date", "start_time")
+    )
+    forms = list(
+        BotoxConsentForm.objects
+        .filter(finalised=False, client_signed=True, prescriber_signed=False, user__is_active=True)
+        .select_related("user")
+        .annotate(
+            next_appt_date=Subquery(next_booking.values("date")[:1]),
+            next_appt_time=Subquery(next_booking.values("start_time")[:1]),
+        )
+        .prefetch_related(Prefetch(
+            "revisions",
+            queryset=BotoxFormRevision.objects.filter(section=BotoxFormRevision.Section.PRESCRIBER),
+            to_attr="prescriber_revisions",
+        ))
+    )
+    for f in forms:
+        last = f.prescriber_revisions[-1] if f.prescriber_revisions else None
+        if last and last.action == BotoxFormRevision.Action.SIGNATURE_WITHDRAWN:
+            f.worklist_status = "changed"
+        elif last:
+            f.worklist_status = "draft"
+        else:
+            f.worklist_status = "new"
+    forms.sort(key=lambda f: (f.next_appt_date is None, f.next_appt_date or today, f.client_signed_at))
+    return forms
+
+
+@prescriber_required
+def prescriber_home(request):
+    user = request.user
+    account_form  = PrescriberAccountForm(instance=user)
+    password_form = PasswordChangeForm(user)
+
+    if request.method == "POST":
+        if request.POST.get("action") == "password":
+            password_form = PasswordChangeForm(user, request.POST)
+            if password_form.is_valid():
+                password_form.save()
+                update_session_auth_hash(request, password_form.user)  # stay logged in
+                messages.success(request, "Your password has been changed.")
+                return redirect("dashboard:prescriber_home")
+        else:
+            account_form = PrescriberAccountForm(request.POST, instance=user)
+            if account_form.is_valid():
+                account_form.save()
+                messages.success(request, "Your details have been updated.")
+                return redirect("dashboard:prescriber_home")
+
+    signed = (
+        BotoxConsentForm.objects
+        .filter(prescriber=user, prescriber_signed=True)
+        .select_related("user")
+        .order_by("-prescriber_signed_at")[:100]
+    )
+
+    return render(request, "dashboard/prescriber_home.html", {
+        "awaiting":      _prescriber_worklist(),
+        "signed":        signed,
+        "details":       getattr(user, "prescriber_details", None),
+        "account_form":  account_form,
+        "password_form": password_form,
     })

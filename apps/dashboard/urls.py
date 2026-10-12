@@ -19,6 +19,9 @@ urlpatterns = [
     path("closed-dates/create/",            views.closed_date_create, name="closed_date_create"),
     path("closed-dates/<int:pk>/delete/",   views.closed_date_delete, name="closed_date_delete"),
 
+    # Prescriber — My Account (worklist, details, password, signed history)
+    path("prescriber/",                     views.prescriber_home,  name="prescriber_home"),
+
     # Profile section
     path("clients/",                        views.client_list,      name="client_list"),
     path("clients/create/",                 views.client_create,    name="client_create"),

@@ -1953,3 +1953,83 @@ a.dash-form-pill:hover {
     margin: 0;
     font-size: 0.9rem;
 }
+/* =====================================================
+   Prescriber — My Account
+   ===================================================== */
+
+.dash-account-section {
+    background: #fff;
+    border: 1px solid #f0ece5;
+    border-radius: 10px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.dash-account-section__title {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 1.05rem;
+    margin: 0 0 0.75rem;
+}
+
+.dash-account-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.dash-account-grid .dash-account-section { margin-bottom: 0; }
+
+.dash-account-empty {
+    padding: 1rem;
+    text-align: center;
+    color: #888;
+    background: #fdfbf7;
+    border-radius: 8px;
+    margin: 0;
+}
+
+.dash-count-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.6rem;
+    padding: 0.1rem 0.5rem;
+    border-radius: 999px;
+    background: #dc2626;
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.dash-count-badge--zero { background: #16a34a; }
+
+.dash-status {
+    display: inline-block;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    background: #f3f4f6;
+    color: #374151;
+    white-space: nowrap;
+}
+
+.dash-status--new     { background: #dbeafe; color: #1e40af; }
+.dash-status--warning { background: #fef3c7; color: #92400e; }
+.dash-status--done    { background: #d1fae5; color: #065f46; }
+
+.dash-flash {
+    padding: 0.75rem 1rem;
+    border-radius: 6px;
+    border-left: 3px solid #16a34a;
+    background: #f0fdf4;
+    color: #15803d;
+    font-size: 0.875rem;
+    margin-bottom: 1rem;
+}
+
+.dash-flash--warning { border-color: #f59e0b; background: #fffbeb; color: #92400e; }
+.dash-flash--error   { border-color: #dc2626; background: #fef2f2; color: #991b1b; }
