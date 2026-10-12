@@ -364,6 +364,19 @@ function renderProfilePanel(data) {
         + archiveToggle('formArchiveLaserToggle', 'formArchiveLaserContent', laserArchivePills, 'Older standalone re-consents')
         + '</div>'
 
+        // Progress photos (practitioner only — shown to the client on their profile)
+        + (data.photos ? ''
+        + '<div class="dash-panel-section">'
+        + '<div class="dash-panel-section__header"><h3 class="dash-panel-section__title">Progress Photos</h3>'
+        + '<a href="' + DASHBOARD_URLS.clientPhotos.replace('{id}', u.id) + '" class="btn btn--ghost btn--sm" target="_blank">'
+        + (data.photos.count ? 'Add / Manage' : '+ Add Photos') + '</a>'
+        + '</div><p class="dash-muted">'
+        + (data.photos.count
+            ? data.photos.count + ' photo' + (data.photos.count === 1 ? '' : 's') + ' · latest ' + esc(data.photos.last_date)
+            : 'No photos yet.')
+        + '</p></div>'
+        : '')
+
         // Notes
         + '<div class="dash-panel-section">'
         + '<div class="dash-panel-section__header"><h3 class="dash-panel-section__title">Notes</h3>'

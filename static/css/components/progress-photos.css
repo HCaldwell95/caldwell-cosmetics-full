@@ -1,0 +1,327 @@
+/* =====================================================
+   PROGRESS PHOTOS
+   Client profile carousel, practitioner photo manager
+   and the shared full-screen viewer.
+   ===================================================== */
+
+/* ---- Before / After stamp ---- */
+.pphoto-stamp {
+    position: absolute;
+    top: 0.65rem;
+    left: 0.65rem;
+    z-index: 2;
+    font-family: var(--font-montserrat);
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 20px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+    pointer-events: none;
+}
+.pphoto-stamp--before { background: #fef3c7; color: #92400e; }
+.pphoto-stamp--after  { background: #dcfce7; color: #166534; }
+
+/* ---- Round arrow buttons ---- */
+.pphotos-arrow {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid #e8e0d5;
+    background: #fff;
+    color: var(--color-secondary);
+    cursor: pointer;
+    transition: background 0.15s ease, opacity 0.15s ease;
+}
+.pphotos-arrow:hover:not(:disabled) { background: #f5f0ea; }
+.pphotos-arrow:disabled { opacity: 0.35; cursor: default; }
+.pphotos-arrow svg { width: 14px; height: 14px; }
+
+/* =====================================================
+   Client profile: "My Progress"
+   ===================================================== */
+
+.pphotos__head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+}
+
+.pphotos__nav {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
+.pphotos__nav[hidden] { display: none; }
+
+.pphotos__count {
+    font-family: var(--font-montserrat);
+    font-size: 0.72rem;
+    color: var(--color-text-light);
+    min-width: 4.5rem;
+    text-align: center;
+}
+
+/* Date boxes: three across (like My Forms), scrolled one at a time. */
+.pphotos-track {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: calc((100% - 2rem) / 3);
+    gap: 1rem;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+}
+.pphotos-track::-webkit-scrollbar { display: none; }
+
+.pphotos-set {
+    scroll-snap-align: start;
+    background: #fdfaf6;
+    border: 1px solid #e8e0d5;
+    border-radius: 10px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.pphotos-set__head {
+    padding: 0.75rem 1rem 0.6rem;
+    border-bottom: 1px solid #e8e0d5;
+    background: #faf7f3;
+}
+
+.pphotos-set__date {
+    font-family: var(--font-montserrat);
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    color: var(--color-text-light);
+    margin: 0;
+}
+
+.pphotos-set__treatment {
+    font-family: var(--font-montserrat);
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--color-secondary);
+    margin: 0.2rem 0 0;
+}
+
+.pphotos-set__frame {
+    position: relative;
+    aspect-ratio: 4 / 5;
+    background: #f3ede6;
+}
+
+.pphotos-slide {
+    position: absolute;
+    inset: 0;
+    display: none;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: zoom-in;
+}
+.pphotos-slide.is-active { display: block; }
+.pphotos-slide img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.pphotos-set__controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.6rem 0.75rem;
+    border-top: 1px solid #e8e0d5;
+}
+
+.pphotos-dots {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+.pphotos-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    border: 0;
+    padding: 0;
+    background: #e0d6ca;
+    cursor: pointer;
+}
+.pphotos-dot.is-active { background: var(--color-primary); }
+
+.pphotos-set__single {
+    font-family: var(--font-montserrat);
+    font-size: 0.7rem;
+    color: var(--color-text-light);
+    text-align: center;
+    width: 100%;
+}
+
+@media (max-width: 1024px) {
+    .pphotos-track { grid-auto-columns: calc((100% - 1rem) / 2); }
+}
+@media (max-width: 640px) {
+    .pphotos-track { grid-auto-columns: 100%; }
+}
+
+/* =====================================================
+   Full-screen viewer
+   ===================================================== */
+
+.pphoto-lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 3.5rem 4.5rem 1.5rem;
+    background: rgba(20, 16, 14, 0.92);
+}
+.pphoto-lightbox[hidden] { display: none; }
+
+.pphoto-lightbox__figure {
+    position: relative;
+    margin: 0;
+    max-width: 100%;
+    max-height: calc(100% - 3rem);
+    display: flex;
+}
+
+.pphoto-lightbox__img {
+    max-width: 100%;
+    max-height: calc(100vh - 8rem);
+    object-fit: contain;
+    border-radius: 6px;
+    display: block;
+}
+
+.pphoto-lightbox__caption {
+    font-family: var(--font-montserrat);
+    font-size: 0.8rem;
+    color: #f5f0ea;
+    text-align: center;
+}
+.pphoto-lightbox__caption span { opacity: 0.7; }
+
+.pphoto-lightbox .pphotos-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 44px;
+    height: 44px;
+    background: rgba(255, 255, 255, 0.92);
+    border: 0;
+}
+.pphoto-lightbox .pphotos-arrow svg { width: 18px; height: 18px; }
+.pphoto-lightbox__prev { left: 1rem; }
+.pphoto-lightbox__next { right: 1rem; }
+
+.pphoto-lightbox__close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 0;
+    background: rgba(255, 255, 255, 0.92);
+    color: var(--color-secondary);
+    font-size: 1.4rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
+@media (max-width: 640px) {
+    .pphoto-lightbox { padding: 3.5rem 0.5rem 1.25rem; }
+    .pphoto-lightbox .pphotos-arrow { top: auto; bottom: 1rem; transform: none; }
+}
+
+/* =====================================================
+   Practitioner photo manager
+   ===================================================== */
+
+.pphoto-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: 1rem;
+}
+
+.pphoto-tile {
+    border: 1px solid #e8e0d5;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #fdfaf6;
+}
+
+.pphoto-tile__frame {
+    position: relative;
+    aspect-ratio: 4 / 5;
+    background: #f3ede6;
+}
+.pphoto-tile__frame .pphotos-slide { display: block; }
+
+.pphoto-tile__actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    padding: 0.5rem;
+}
+.pphoto-tile__actions form { margin: 0; }
+.pphoto-tile__actions select { flex: 1; min-width: 0; }
+
+.pphoto-upload-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+.pphoto-upload-list:empty { display: none; }
+
+.pphoto-upload-row {
+    display: grid;
+    grid-template-columns: 56px 1fr 150px;
+    gap: 0.75rem;
+    align-items: center;
+    padding: 0.5rem;
+    border: 1px solid #e8e0d5;
+    border-radius: 8px;
+    background: #fdfaf6;
+}
+.pphoto-upload-row img {
+    width: 56px;
+    height: 56px;
+    object-fit: cover;
+    border-radius: 6px;
+    background: #f3ede6;
+}
+.pphoto-upload-row__name {
+    font-family: var(--font-montserrat);
+    font-size: 0.8rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+    .pphoto-upload-row { grid-template-columns: 48px 1fr; }
+    .pphoto-upload-row select { grid-column: 1 / -1; }
+}

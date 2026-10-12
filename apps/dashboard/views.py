@@ -26,7 +26,7 @@ from apps.forms_system.models import (
     PRPConsentForm,
     LaserReConsent,
 )
-from .models import ClientNote, Notification
+from .models import ClientNote, Notification, ProgressPhoto, ProgressPhotoSet
 
 try:
     from apps.accounts.models import User, PrepaidBundle, AccountCredit, CreditTransaction
@@ -723,9 +723,15 @@ def client_profile(request, pk):
         ],
     }
 
-    # Booking history, bundles and credit are practitioner-only.
+    # Booking history, bundles, credit and photos are practitioner-only.
     if not request.user.is_practitioner:
         return JsonResponse(data)
+
+    photo_sets = ProgressPhotoSet.objects.filter(user=user)
+    data["photos"] = {
+        "count":     ProgressPhoto.objects.filter(photo_set__user=user).count(),
+        "last_date": _fmt(photo_sets.filter(photos__isnull=False).values_list("date", flat=True).first()),
+    }
 
     past = (
         Booking.objects

@@ -1,0 +1,57 @@
+{# Client's progress photos, one box per treatment date. Expects `photo_sets` (see dashboard.photos.photo_sets_for). #}
+<section class="profile-card profile-card--wide" data-pphotos>
+    <div class="pphotos__head">
+        <div>
+            <h2 class="profile-card__title">My Progress</h2>
+            <p class="profile-card__subtitle">Photos from your treatments, added by your practitioner. Tap a photo to enlarge it.</p>
+        </div>
+        <div class="pphotos__nav" data-pphotos-nav hidden>
+            <button type="button" class="pphotos-arrow" data-pphotos-prev aria-label="Earlier dates">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            <span class="pphotos__count" data-pphotos-count aria-live="polite"></span>
+            <button type="button" class="pphotos-arrow" data-pphotos-next aria-label="Later dates">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+        </div>
+    </div>
+
+    <div class="pphotos-track" data-pphotos-track>
+        {% for s in photo_sets %}
+        {% with count=s.ordered|length %}
+        <article class="pphotos-set" data-photo-set data-photo-sync
+                 data-title="{{ s.date|date:'j F Y' }}{% if s.treatment %} — {{ s.treatment }}{% endif %}">
+            <header class="pphotos-set__head">
+                <p class="pphotos-set__date">{{ s.date|date:"j M Y" }}</p>
+                <p class="pphotos-set__treatment">{{ s.treatment|default:"Treatment" }}</p>
+            </header>
+            <div class="pphotos-set__frame">
+                {% for p in s.ordered %}
+                <button type="button" class="pphotos-slide{% if forloop.first %} is-active{% endif %}"
+                        data-full="{{ p.full_url }}" data-label="{{ p.label }}"
+                        aria-label="Enlarge photo {{ forloop.counter }} of {{ count }}">
+                    {% if p.label %}<span class="pphoto-stamp pphoto-stamp--{{ p.label }}">{{ p.get_label_display }}</span>{% endif %}
+                    <img src="{{ p.thumb_url }}" alt="{{ p.get_label_display|default:'Treatment' }} photo, {{ s.date|date:'j F Y' }}" loading="lazy">
+                </button>
+                {% endfor %}
+            </div>
+            <div class="pphotos-set__controls">
+                {% if count > 1 %}
+                <button type="button" class="pphotos-arrow" data-photo-prev aria-label="Previous photo">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+                </button>
+                <div class="pphotos-dots">
+                    {% for p in s.ordered %}<button type="button" class="pphotos-dot{% if forloop.first %} is-active{% endif %}" aria-label="Photo {{ forloop.counter }}"></button>{% endfor %}
+                </div>
+                <button type="button" class="pphotos-arrow" data-photo-next aria-label="Next photo">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+                </button>
+                {% else %}
+                <span class="pphotos-set__single">1 photo</span>
+                {% endif %}
+            </div>
+        </article>
+        {% endwith %}
+        {% endfor %}
+    </div>
+</section>

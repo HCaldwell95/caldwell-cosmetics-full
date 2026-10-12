@@ -1,5 +1,5 @@
 from django.urls import path
-from . import views
+from . import photos, views
 
 app_name = "dashboard"
 
@@ -38,6 +38,9 @@ urlpatterns = [
     # Client notes (operator only)
     path("clients/<int:pk>/notes/new/",              views.note_new,  name="note_new"),
     path("clients/<int:pk>/notes/<int:note_pk>/",    views.note_view, name="note_view"),
+
+    # Progress photos (practitioner uploads; the client sees them on their profile)
+    path("clients/<int:pk>/photos/",                 photos.client_photos, name="client_photos"),
 
     # Notifications
     path("notifications/",                          views.notifications_page,        name="notifications_page"),

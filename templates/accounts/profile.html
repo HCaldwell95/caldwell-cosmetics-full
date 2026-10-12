@@ -7,6 +7,7 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/pages/accounts.css' %}">
 {% if user.is_practitioner %}<link rel="stylesheet" href="{% static 'css/components/worklist.css' %}?v=1">{% endif %}
+{% if photo_sets %}<link rel="stylesheet" href="{% static 'css/components/progress-photos.css' %}?v=1">{% endif %}
 {% endblock %}
 
 {% block content %}
@@ -127,6 +128,8 @@
             </div>
         </section>
         {% endif %}
+
+        {% if photo_sets %}{% include "accounts/_progress_photos.html" %}{% endif %}
 
         <section class="profile-card">
             <h2 class="profile-card__title">Pre-Paid Treatments</h2>
@@ -417,5 +420,7 @@ function safeColour(c) {
     });
 })();
 </script>
+
+{% if photo_sets %}<script src="{% static 'js/progress-photos.js' %}?v=1"></script>{% endif %}
 
 {% endblock %}

@@ -1,6 +1,8 @@
 from django.db import models, transaction
 from django.conf import settings
 
+from cloudinary.models import CloudinaryField
+
 
 class Notification(models.Model):
     # --- Consent form types ---
@@ -112,3 +114,80 @@ class ClientNote(models.Model):
                 )
                 self.number = (last.number + 1) if last else 1
         super().save(*args, **kwargs)
+
+
+# ---------------------------------------------------------------------------
+# Progress photos — uploaded by the practitioner, shown to the client on
+# their profile page, grouped by treatment date.
+# ---------------------------------------------------------------------------
+
+class ProgressPhotoSet(models.Model):
+    """One treatment date's photos for a client."""
+
+    user       = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="photo_sets",
+    )
+    date       = models.DateField()
+    treatment  = models.CharField(max_length=200, blank=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="+",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering        = ["-date", "-pk"]
+        unique_together = [("user", "date", "treatment")]
+
+    def __str__(self):
+        return f"Photos — {self.user} ({self.date}{', ' + self.treatment if self.treatment else ''})"
+
+    def ordered_photos(self):
+        """Before photos first, then after, then unlabelled — each oldest first."""
+        return sorted(self.photos.all(), key=lambda p: (ProgressPhoto.LABEL_ORDER[p.label], p.pk))
+
+
+class ProgressPhoto(models.Model):
+    class Label(models.TextChoices):
+        BEFORE = "before", "Before"
+        AFTER  = "after",  "After"
+        NONE   = "",       "No label"
+
+    LABEL_ORDER = {Label.BEFORE: 0, Label.AFTER: 1, Label.NONE: 2}
+
+    photo_set   = models.ForeignKey(ProgressPhotoSet, on_delete=models.CASCADE, related_name="photos")
+    # Clinical photos are stored privately: they're only reachable through
+    # signed links that this site generates (see `url`).
+    image       = CloudinaryField("image", type="authenticated", folder="client_progress_photos")
+    label       = models.CharField(max_length=10, choices=Label.choices, blank=True)
+    uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="+",
+    )
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["pk"]
+
+    def __str__(self):
+        return f"{self.get_label_display()} photo — {self.photo_set}"
+
+    def url(self, width):
+        return self.image.build_url(
+            sign_url=True, secure=True, width=width, crop="limit",
+            quality="auto", fetch_format="auto",
+        )
+
+    @property
+    def thumb_url(self):
+        return self.url(900)
+
+    @property
+    def full_url(self):
+        return self.url(2000)

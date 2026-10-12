@@ -1,11 +1,13 @@
 import base64
 from datetime import date
+from unittest import mock
 
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
 
 from apps.accounts.models import PrescriberDetails, User
-from apps.dashboard.models import Notification
+from apps.dashboard.models import Notification, ProgressPhoto, ProgressPhotoSet
 from apps.forms_system.models import BotoxConsentForm
 
 PNG_SIG = "data:image/png;base64," + base64.b64encode(b"\x89PNG\r\n\x1a\n" + b"0" * 16).decode()
@@ -308,3 +310,99 @@ class PrescriberAccountTests(TestCase):
         self.prescriber.refresh_from_db()
         self.assertTrue(self.prescriber.check_password("a-much-better-passphrase-42"))
         self.assertEqual(self.client.get(reverse("dashboard:prescriber_home")).status_code, 200)
+
+
+# Cloudinary is mocked: uploads return a fake private resource, and deletes are recorded.
+def _fake_upload(file, **options):
+    from cloudinary import CloudinaryResource
+    _fake_upload.calls.append(options)
+    return CloudinaryResource(f"client_progress_photos/{file.name}", version=1, format="jpg",
+                              type=options["type"], resource_type="image")
+
+
+_fake_upload.calls = []
+
+
+@mock.patch("cloudinary.models.uploader.upload_resource", side_effect=_fake_upload)
+@mock.patch("apps.dashboard.signals.uploader.destroy")
+class ProgressPhotoTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.practitioner = User.objects.create_superuser(email="owner@example.com", password="x" * 12)
+        cls.client_user  = User.objects.create_user(email="client@example.com", password="x" * 12, first_name="Amy")
+        cls.other_client = User.objects.create_user(email="other@example.com", password="x" * 12, first_name="Bo")
+
+    def setUp(self):
+        _fake_upload.calls.clear()
+        self.url = reverse("dashboard:client_photos", args=[self.client_user.pk])
+        self.client.force_login(self.practitioner)
+
+    def image(self, name="face.jpg"):
+        return SimpleUploadedFile(name, b"\xff\xd8\xff fake jpeg", content_type="image/jpeg")
+
+    def upload(self, *files, **data):
+        post = {"action": "upload", "date": "2026-10-01", "treatment": "Laser Hair Removal", "images": list(files)}
+        post.update(data)
+        return self.client.post(self.url, post)
+
+    def test_upload_groups_by_date_with_labels_and_private_storage(self, destroy, upload):
+        r = self.upload(self.image("a.jpg"), self.image("b.jpg"), label_0="after", label_1="before")
+        self.assertRedirects(r, self.url, fetch_redirect_response=False)
+        self.upload(self.image("c.jpg"), default_label="after")  # same date + treatment → same box
+
+        photo_set = ProgressPhotoSet.objects.get(user=self.client_user)
+        self.assertEqual((photo_set.date, photo_set.treatment), (date(2026, 10, 1), "Laser Hair Removal"))
+        self.assertEqual([p.label for p in photo_set.ordered_photos()], ["before", "after", "after"])
+        self.assertTrue(all(c["type"] == "authenticated" for c in _fake_upload.calls))
+
+        photo = photo_set.photos.first()
+        self.assertIn("/image/authenticated/s--", photo.full_url)  # signed link to the private image
+
+    def test_client_sees_their_photos_on_profile(self, destroy, upload):
+        self.upload(self.image(), default_label="before")
+        self.client.force_login(self.client_user)
+        page = self.client.get(reverse("accounts:profile"))
+        self.assertContains(page, "My Progress")
+        self.assertContains(page, "Laser Hair Removal")
+        self.assertContains(page, "pphoto-stamp--before")
+
+        self.client.force_login(self.other_client)
+        self.assertNotContains(self.client.get(reverse("accounts:profile")), "My Progress")
+
+    def test_relabel_move_and_delete(self, destroy, upload):
+        self.upload(self.image())
+        photo = ProgressPhoto.objects.get()
+        self.client.post(self.url, {"action": "relabel", "photo": photo.pk, "label": "after"})
+        photo.refresh_from_db()
+        self.assertEqual(photo.label, "after")
+
+        self.client.post(self.url, {"action": "edit_set", "set": photo.photo_set_id, "date": "2026-09-30", "treatment": "IPL"})
+        self.assertEqual(ProgressPhotoSet.objects.get().treatment, "IPL")
+
+        self.client.post(self.url, {"action": "delete_photo", "photo": photo.pk})
+        self.assertFalse(ProgressPhoto.objects.exists())
+        self.assertFalse(ProgressPhotoSet.objects.exists())  # empty box removed
+        destroy.assert_called_once_with(photo.image.public_id, type="authenticated", invalidate=True)
+
+    def test_rejects_non_images_and_future_dates(self, destroy, upload):
+        bad = SimpleUploadedFile("notes.pdf", b"%PDF", content_type="application/pdf")
+        self.assertEqual(self.upload(bad).status_code, 400)
+        self.assertEqual(self.upload(self.image(), date="2999-01-01").status_code, 400)
+        self.assertFalse(ProgressPhoto.objects.exists())
+
+    def test_only_practitioner_can_manage(self, destroy, upload):
+        self.upload(self.image())
+        photo = ProgressPhoto.objects.get()
+        prescriber = User.objects.create_user(email="dr@example.com", password="x" * 12, role=User.Role.PRESCRIBER)
+        for user in (self.client_user, prescriber):
+            self.client.force_login(user)
+            self.assertNotEqual(self.client.get(self.url).status_code, 200)
+            self.client.post(self.url, {"action": "delete_photo", "photo": photo.pk})
+        self.assertTrue(ProgressPhoto.objects.exists())
+
+    def test_cannot_touch_another_clients_photo(self, destroy, upload):
+        self.upload(self.image())
+        photo = ProgressPhoto.objects.get()
+        other_url = reverse("dashboard:client_photos", args=[self.other_client.pk])
+        self.assertEqual(self.client.post(other_url, {"action": "delete_photo", "photo": photo.pk}).status_code, 404)
+        self.assertTrue(ProgressPhoto.objects.exists())

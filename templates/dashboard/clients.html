@@ -284,6 +284,7 @@
         recordCardView:  "/forms/records/{id}/view/",
         noteNew:         "/dashboard/clients/{id}/notes/new/",
         noteView:        "/dashboard/clients/{pk}/notes/{note_pk}/",
+        clientPhotos:    "/dashboard/clients/{id}/photos/",
         botoxOperator:   "/forms/botox/{id}/operator/",
         botoxView:       "/forms/botox/{id}/view/",
         botoxPrescriber: "/forms/botox/{id}/prescriber/",
@@ -300,6 +301,6 @@
 </script>
 
 <script src="{% static 'js/booking.utils.js' %}"></script>
-<script src="{% static 'js/client-panel.js' %}?v=6"></script>
+<script src="{% static 'js/client-panel.js' %}?v=7"></script>
 <script src="{% static 'js/clients.js' %}?v=2"></script>
 {% endblock %}

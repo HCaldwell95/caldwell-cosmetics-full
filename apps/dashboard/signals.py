@@ -1,4 +1,7 @@
-from django.db.models.signals import post_save, pre_save
+import logging
+
+from cloudinary import uploader
+from django.db.models.signals import post_delete, post_save, pre_save
 from django.dispatch import receiver
 
 from apps.bookings.models import Booking
@@ -189,3 +192,18 @@ def on_booking_saved(sender, instance, created, **kwargs):
                 message_text=f"{name}'s booking was changed to {treatment_name} on {date_str} at {time_str}",
             )
             send_booking_amended(instance)
+
+
+# ---------------------------------------------------------------------------
+# Progress photos
+# ---------------------------------------------------------------------------
+
+@receiver(post_delete, sender='dashboard.ProgressPhoto', dispatch_uid='dashboard.on_progress_photo_deleted')
+def on_progress_photo_deleted(sender, instance, **kwargs):
+    """Removes the image from Cloudinary too, so a deleted photo is really gone."""
+    if not instance.image:
+        return
+    try:
+        uploader.destroy(instance.image.public_id, type="authenticated", invalidate=True)
+    except Exception:  # noqa: BLE001 — the record is already deleted; just log it
+        logging.getLogger(__name__).exception("Couldn't delete progress photo %s from Cloudinary", instance.image.public_id)

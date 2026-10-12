@@ -70,6 +70,9 @@ def profile(request):
     if request.user.is_practitioner:
         from apps.forms_system import worklists
         context["awaiting"], context["unbooked"] = worklists.split_by_appointment(worklists.practitioner_worklist())
+    else:
+        from apps.dashboard.photos import photo_sets_for
+        context["photo_sets"] = photo_sets_for(request.user)
     return render(request, "accounts/profile.html", context)
 
 
