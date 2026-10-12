@@ -1,0 +1,18 @@
+<!-- Read-only record card client section (the re-consent). Expects `f`. -->
+<div class="cform-section cform-section--readonly">
+    <h2 class="cform-section__title">Client Re-Consent <span class="cform-readonly-badge">Read Only</span></h2>
+    <dl class="cform-summary-dl">
+        <dt>Changes to laser consultation / medical history</dt><dd>{{ f.changes_consultation_form|yesno:"Yes,No" }}</dd>
+        <dt>Changes to medication</dt><dd>{{ f.changes_medication|yesno:"Yes,No" }}</dd>
+        <dt>Recent UV exposure / sunbed / fake tan</dt><dd>{{ f.changes_uv_exposure|yesno:"Yes,No" }}</dd>
+        <dt>Active or fake tan in treatment area</dt><dd>{{ f.active_tan|yesno:"Yes,No" }}</dd>
+        {% if f.changes_detail %}<dt>Details</dt><dd>{{ f.changes_detail|linebreaksbr }}</dd>{% endif %}
+        <dt>Feedback since last treatment</dt><dd>{{ f.client_feedback|default:"—"|linebreaksbr }}</dd>
+        <dt>Consents to settings being changed</dt><dd>{{ f.consent_settings_change|yesno:"Yes,No" }}</dd>
+        <dt>Re-consent declaration</dt><dd>{% if f.consent_proceed %}Agreed{% elif f.reconsent_signature %}Signed (before the declaration was added){% else %}Not yet given{% endif %}</dd>
+        {% if f.guardian_name %}<dt>Parent / guardian</dt><dd>{{ f.guardian_name }} ({{ f.guardian_relationship }}){% if f.guardian_phone %} — {{ f.guardian_phone }}{% endif %}</dd>{% endif %}
+        <dt>Client signed</dt>
+        <dd>{% if f.reconsent_signature %}{{ f.reconsent_signed_at|date:"j F Y \a\t H:i"|default:"—" }}<br><img src="{{ f.reconsent_signature }}" alt="Client re-consent signature" class="cform-sig-preview">{% else %}Not yet signed{% endif %}</dd>
+        {% if f.guardian_signature %}<dt>Guardian signature</dt><dd><img src="{{ f.guardian_signature }}" alt="Guardian signature" class="cform-sig-preview"></dd>{% endif %}
+    </dl>
+</div>

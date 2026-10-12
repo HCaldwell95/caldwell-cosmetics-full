@@ -272,12 +272,15 @@ function safeColour(c) {
                            : data.prp.client_signed  ? 'Awaiting practitioner countersignature'
                            : 'Action required';
 
-            // Laser re-consent
+            // Laser re-consent — the client's part of each treatment record card
             const laserCount = data.laser_reconsent.count || 0;
-            const laserState = laserCount > 0 ? 'complete' : 'incomplete';
-            const laserSub   = laserCount > 0
-                ? `${laserCount} form${laserCount > 1 ? 's' : ''} on file · last ${data.laser_reconsent.last_date}`
-                : 'Action required';
+            const laserState = data.laser_reconsent.current_signed ? 'complete'
+                             : laserCount > 0 ? 'partial' : 'incomplete';
+            const laserSub   = data.laser_reconsent.current_signed
+                ? `Signed ${data.laser_reconsent.last_date} for your next treatment · you can update it until then`
+                : laserCount > 0
+                ? `Last signed ${data.laser_reconsent.last_date} · complete before each laser appointment`
+                : 'Complete before your laser appointment';
 
             // Record cards (practitioner-completed — view only)
             const rc       = data.record_cards || {};

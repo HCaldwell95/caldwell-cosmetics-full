@@ -1,0 +1,50 @@
+{% extends "base/base.html" %}
+{% load static %}
+{% block title %}Laser Re-Consent | Caldwell Cosmetics{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/pages/forms_system.css' %}">{% endblock %}
+{% block content %}
+<div class="cform-page">
+{% if on_behalf %}<div class="cform-behalf-banner">Completing on behalf of <strong>{{ target_user.full_name }}</strong>.</div>{% endif %}
+{% include "forms_system/_lifecycle/client_banner.html" %}
+
+<div class="cform-header">
+    <span class="cform-header__eyebrow">Caldwell Cosmetics</span>
+    <h1 class="cform-header__title">Laser &amp; IPL Re-Consent</h1>
+    <p class="cform-header__sub">Please complete this before each laser or IPL appointment. It forms the first part of your treatment record card, which your practitioner completes on the day.</p>
+</div>
+
+<div class="cform-section">
+    <p class="cform-hint" style="color:var(--color-text,#2d2d2d); font-size:0.875rem; line-height:1.6;">By completing this form, you confirm that the information in your laser consultation remains accurate and up to date, and that you are happy to proceed with your treatment. If any circumstances have changed since your last visit, please tell your practitioner before signing.</p>
+</div>
+
+<form id="laserReconsentForm" class="cform" method="post" action="{% url 'forms_system:laser_reconsent' %}{% if on_behalf %}?on_behalf_of={{ target_user.pk }}{% endif %}">
+    {% csrf_token %}
+
+    {% include "forms_system/record_card/_reconsent_fields.html" with consent_required=True %}
+
+    <div class="cform-section">
+        <h2 class="cform-section__title">{% if on_behalf %}Client Signature (taken by practitioner){% else %}Client Signature{% endif %}</h2>
+        {% if on_behalf %}
+        <p class="cform-hint" style="color:#92400e; background-color:#fffbeb; border-left:3px solid #fde68a; padding:0.6rem 0.75rem; border-radius:4px; margin-bottom:1rem;">You are completing this on behalf of {{ target_user.full_name }}. It will be recorded with your name and the current time.</p>
+        {% endif %}
+        <div class="cform-sig-wrap">
+            <canvas id="sigCanvas" class="cform-sig-canvas"></canvas>
+            <div class="cform-sig-actions">
+                <button type="button" class="btn btn--ghost btn--sm" id="sigClear">Clear</button>
+            </div>
+        </div>
+        <input type="hidden" name="reconsent_signature" id="sigData">
+        <p class="cform-sig-name">{{ target_user.full_name }}</p>
+    </div>
+
+    {% if profile_is_minor %}
+    {% include "forms_system/record_card/_guardian.html" %}
+    {% endif %}
+
+    <div class="cform-submit-row">
+        <button type="submit" class="btn btn--primary btn--lg">{% if editing %}Update &amp; Sign{% else %}Submit Re-Consent{% endif %}</button>
+    </div>
+</form>
+</div>
+<script src="{% static 'js/sig_pad.js' %}?v=4"></script>
+{% endblock %}

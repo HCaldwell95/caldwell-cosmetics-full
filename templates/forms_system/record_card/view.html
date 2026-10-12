@@ -1,232 +1,54 @@
-{% extends "base/base.html" %}
-{% load static %}
+{% extends "forms_system/_lifecycle/record_page.html" %}
+{% load forms_extras %}
 
-{% block title %}Record Card #{{ card.treatment_number }} | Caldwell Cosmetics{% endblock %}
+{% block title %}Record Card #{{ f.treatment_number }} — {{ f.user.full_name }} | Caldwell Cosmetics{% endblock %}
 
-{% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/pages/forms_system.css' %}">
-{% endblock %}
+{% block client_section %}{% include "forms_system/record_card/_client_summary.html" %}{% endblock %}
 
-{% block content %}
-<div class="cform-page cform-page--wide">
+{% block practitioner_section %}
+<dl class="cform-summary-dl">
+    <dt>Treatment</dt><dd>#{{ f.treatment_number }} — {{ f.date|date:"j F Y" }} at {{ f.time|time:"H:i" }}</dd>
+    <dt>Treatment for</dt><dd>{{ f.treatment_for|default:"—" }}</dd>
+    <dt>Devices</dt>
+    <dd>
+        {% if f.device_remove_650 %}ReMove 650<br>{% endif %}
+        {% if f.device_rebright_585 %}ReBright 585<br>{% endif %}
+        {% if f.device_remove_lp1064 %}ReMove LP1064<br>{% endif %}
+        {% if f.device_resurface %}ResurFACE<br>{% endif %}
+        {% if f.device_remodel %}ReModel<br>{% endif %}
+        {% if f.device_illumifacial %}illumiFacial<br>{% endif %}
+        {% if f.device_remove_q1064 %}ReMove Q1064<br>{% endif %}
+        {% if f.device_remove_q532 %}ReMove Q532<br>{% endif %}
+    </dd>
+</dl>
 
-    <!-- HEADER -->
-    <div class="cform-header">
-        <span class="cform-header__eyebrow">{% if card.finalised %}Completed Record Card{% elif card.withdrawn %}Withdrawn Record Card{% else %}Draft Record Card{% endif %}</span>
-        <h1 class="cform-header__title">
-            Dynamix Record Card — {{ card.user.full_name }}
-        </h1>
-        <p class="cform-header__sub">
-            Treatment #{{ card.treatment_number }} • {{ card.date }} {{ card.time }}
-        </p>
-    </div>
-{% include "forms_system/_lifecycle/record_status.html" %}
-
-    <!-- MAIN SECTION -->
-    <div class="cform-section cform-section--readonly">
-
-        <h2 class="cform-section__title">Record Card Details</h2>
-
-        <div class="cform-grid cform-grid--3">
-
-            <div>
-                <label class="cform-label">Date</label>
-                <p class="cform-readonly-value">{{ card.date }}</p>
-            </div>
-
-            <div>
-                <label class="cform-label">Time</label>
-                <p class="cform-readonly-value">{{ card.time }}</p>
-            </div>
-
-            <div>
-                <label class="cform-label">Treatment For</label>
-                <p class="cform-readonly-value">
-                    {{ card.treatment_for|default:"—" }}
-                </p>
-            </div>
-
-        </div>
-    </div>
-
-    <!-- DEVICE -->
-    <div class="cform-section">
-
-        <h2 class="cform-section__title">Device Selection</h2>
-
-        <div class="cform-check-grid">
-
-            {% if card.device_remove_650 %}<div class="cform-readonly-value">✔ ReMove 650</div>{% endif %}
-            {% if card.device_rebright_585 %}<div class="cform-readonly-value">✔ ReBright 585</div>{% endif %}
-            {% if card.device_remove_lp1064 %}<div class="cform-readonly-value">✔ ReMove LP1064</div>{% endif %}
-            {% if card.device_resurface %}<div class="cform-readonly-value">✔ ResurFACE</div>{% endif %}
-            {% if card.device_remodel %}<div class="cform-readonly-value">✔ ReModel</div>{% endif %}
-            {% if card.device_illumifacial %}<div class="cform-readonly-value">✔ illumiFacial</div>{% endif %}
-            {% if card.device_remove_q1064 %}<div class="cform-readonly-value">✔ ReMove Q1064</div>{% endif %}
-            {% if card.device_remove_q532 %}<div class="cform-readonly-value">✔ ReMove Q532</div>{% endif %}
-
-        </div>
-    </div>
-
-    <!-- CHANGES -->
-    <div class="cform-section">
-
-        <h2 class="cform-section__title">Changes Since Last Visit</h2>
-
-        <dl class="cform-summary-dl">
-
-            <dt>Laser Consultation</dt>
-            <dd>{% if card.changes_consultation_form %}Yes{% else %}No{% endif %}</dd>
-
-            <dt>Medication</dt>
-            <dd>{% if card.changes_medication %}Yes{% else %}No{% endif %}</dd>
-
-            <dt>UV Exposure</dt>
-            <dd>{% if card.changes_uv_exposure %}Yes{% else %}No{% endif %}</dd>
-
-            <dt>Consent Change</dt>
-            <dd>{% if card.consent_settings_change %}Yes{% else %}No{% endif %}</dd>
-
-        </dl>
-
-        {% if card.client_feedback %}
-        <div style="margin-top: 1rem;">
-            <label class="cform-label">Client Feedback</label>
-            <p class="cform-readonly-value">{{ card.client_feedback }}</p>
-        </div>
-        {% endif %}
-
-    </div>
-
-    <!-- TREATMENT TABLE -->
-    <div class="cform-section">
-
-        <h2 class="cform-section__title">Treatment Areas</h2>
-
-        <div class="record-card-table record-card-table--prev">
-          <div class="record-card-table__scroll">
-            <table>
-            <thead>
-                <tr>
-                <th>Area</th>
-                <th>Skin Type</th>
-                <th>Spot</th>
-                <th>Fluence</th>
-                <th>Pulses</th>
-                <th>Delay</th>
-                <th>Shots</th>
-                <th>Cost</th>
-                </tr>
-            </thead>
-            <tbody>
-
-                {% if card.area_1 %}
-                <tr>
-                    <td>{{ card.area_1 }}</td>
-                    <td>{{ card.skin_type_1 }}</td>
-                    <td>{{ card.spot_size_1 }}</td>
-                    <td>{{ card.fluence_1 }}</td>
-                    <td>{{ card.pulses_1 }}</td>
-                    <td>{{ card.delay_1 }}</td>
-                    <td>{{ card.shots_1 }}</td>
-                    <td>{% if card.cost_1 %}£{{ card.cost_1 }}{% else %}—{% endif %}</td>
-                </tr>
-                {% endif %}
-
-                {% if card.area_2 %}
-                <tr>
-                    <td>{{ card.area_2 }}</td>
-                    <td>{{ card.skin_type_2 }}</td>
-                    <td>{{ card.spot_size_2 }}</td>
-                    <td>{{ card.fluence_2 }}</td>
-                    <td>{{ card.pulses_2 }}</td>
-                    <td>{{ card.delay_2 }}</td>
-                    <td>{{ card.shots_2 }}</td>
-                    <td>{% if card.cost_2 %}£{{ card.cost_2 }}{% else %}—{% endif %}</td>
-                </tr>
-                {% endif %}
-
-                {% if card.area_3 %}
-                <tr>
-                    <td>{{ card.area_3 }}</td>
-                    <td>{{ card.skin_type_3 }}</td>
-                    <td>{{ card.spot_size_3 }}</td>
-                    <td>{{ card.fluence_3 }}</td>
-                    <td>{{ card.pulses_3 }}</td>
-                    <td>{{ card.delay_3 }}</td>
-                    <td>{{ card.shots_3 }}</td>
-                    <td>{% if card.cost_3 %}£{{ card.cost_3 }}{% else %}—{% endif %}</td>
-                </tr>
-                {% endif %}
-
-                {% if card.area_4 %}
-                <tr>
-                    <td>{{ card.area_4 }}</td>
-                    <td>{{ card.skin_type_4 }}</td>
-                    <td>{{ card.spot_size_4 }}</td>
-                    <td>{{ card.fluence_4 }}</td>
-                    <td>{{ card.pulses_4 }}</td>
-                    <td>{{ card.delay_4 }}</td>
-                    <td>{{ card.shots_4 }}</td>
-                    <td>{% if card.cost_4 %}£{{ card.cost_4 }}{% else %}—{% endif %}</td>
-                </tr>
-                {% endif %}
-
-                {% if card.area_5 %}
-                <tr>
-                    <td>{{ card.area_5 }}</td>
-                    <td>{{ card.skin_type_5 }}</td>
-                    <td>{{ card.spot_size_5 }}</td>
-                    <td>{{ card.fluence_5 }}</td>
-                    <td>{{ card.pulses_5 }}</td>
-                    <td>{{ card.delay_5 }}</td>
-                    <td>{{ card.shots_5 }}</td>
-                    <td>{% if card.cost_5 %}£{{ card.cost_5 }}{% else %}—{% endif %}</td>
-                </tr>
-                {% endif %}
-
-            </tbody>
-            </table>
-          </div>
-        </div>
-    </div>
-
-    <!-- OPERATOR NOTES -->
-    {% if card.operator_comments %}
-    <div class="cform-section">
-        <h2 class="cform-section__title">Operator Comments</h2>
-        <p class="cform-readonly-value">{{ card.operator_comments }}</p>
-    </div>
+<div class="record-card-table record-card-table--prev" style="margin-top:1rem;">
+  <div class="record-card-table__scroll">
+    <table>
+    <thead>
+        <tr><th>Area</th><th>Skin Type</th><th>Spot</th><th>Fluence</th><th>Pulses</th><th>Delay</th><th>Shots</th><th>Cost</th></tr>
+    </thead>
+    <tbody>
+    {% for n in "12345" %}
+    {% if f|attr_row:n %}
+    <tr>
+        <td>{{ f|rc_area:n }}</td>
+        <td>{{ f|rc_skin_type:n }}</td>
+        <td>{{ f|rc_spot:n }}</td>
+        <td>{{ f|rc_fluence:n }}</td>
+        <td>{{ f|rc_pulses:n }}</td>
+        <td>{{ f|rc_delay:n }}</td>
+        <td>{{ f|rc_shots:n }}</td>
+        <td>{% if f|rc_cost:n %}£{{ f|rc_cost:n }}{% else %}—{% endif %}</td>
+    </tr>
     {% endif %}
-
-    <!-- SIGNATURE -->
-    <div class="cform-section">
-
-        <h2 class="cform-section__title">Re-Consent Signature</h2>
-
-        {% if card.reconsent_signature %}
-            <img class="cform-sig-preview" src="{{ card.reconsent_signature }}" alt="Signature">
-        {% else %}
-            <p class="cform-readonly-value">No signature captured</p>
-        {% endif %}
-
-        <p class="cform-sig-name">
-            {% if card.reconsent_signed_at %}Signed at {{ card.reconsent_signed_at|date:"j F Y H:i" }}{% endif %}
-        </p>
-
-    </div>
-
-    <!-- PRACTITIONER SIGNATURE -->
-    <div class="cform-section">
-        <h2 class="cform-section__title">Practitioner Signature</h2>
-        {% if card.operator_signed %}
-            <img class="cform-sig-preview" src="{{ card.operator_signature }}" alt="Practitioner signature">
-            <p class="cform-sig-name">Signed by {{ card.operator_signed_by.full_name|default:"—" }} on {{ card.operator_signed_at|date:"j F Y H:i" }}</p>
-        {% else %}
-            <p class="cform-readonly-value">Not signed</p>
-        {% endif %}
-    </div>
-
-    {% include "forms_system/_lifecycle/history.html" %}
+    {% endfor %}
+    </tbody>
+    </table>
+  </div>
 </div>
+
+<dl class="cform-summary-dl" style="margin-top:1rem;">
+    <dt>Operator comments</dt><dd>{{ f.operator_comments|default:"None"|linebreaksbr }}</dd>
+</dl>
 {% endblock %}

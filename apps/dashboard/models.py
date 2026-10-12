@@ -8,7 +8,8 @@ class Notification(models.Model):
     FORM_PHOTOGRAPHY     = 'photography'
     FORM_BOTOX           = 'botox'
     FORM_PRP             = 'prp'
-    FORM_LASER_RECONSENT = 'laser_reconsent'
+    FORM_LASER_RECONSENT = 'laser_reconsent'  # archived standalone re-consents
+    FORM_RECORD_CARD     = 'record_card'
     FORM_BOTOX_PRESCRIBED = 'botox_prescribed'
 
     # --- Booking types ---
@@ -24,6 +25,7 @@ class Notification(models.Model):
         FORM_BOTOX:           'Botox Consent & Prescription',
         FORM_PRP:             'PRP Consent',
         FORM_LASER_RECONSENT: 'Laser Re-Consent',
+        FORM_RECORD_CARD:     'Laser Re-Consent',
         FORM_BOTOX_PRESCRIBED: 'Botox Prescription',
         BOOKING_CREATED:      'New Booking',
         BOOKING_CANCELLED:    'Booking Cancelled',
@@ -66,7 +68,8 @@ class Notification(models.Model):
             self.FORM_BOTOX:           f'/forms/botox/{self.form_id}/operator/',
             self.FORM_BOTOX_PRESCRIBED: f'/forms/botox/{self.form_id}/operator/',
             self.FORM_PRP:             f'/forms/prp/{self.form_id}/operator/',
-            self.FORM_LASER_RECONSENT: f'/forms/laser/{self.form_id}/operator/',
+            self.FORM_LASER_RECONSENT: f'/forms/laser/{self.form_id}/view/',
+            self.FORM_RECORD_CARD:     f'/forms/records/{self.form_id}/edit/',
         }
         return urls.get(self.form_type, '#')
 

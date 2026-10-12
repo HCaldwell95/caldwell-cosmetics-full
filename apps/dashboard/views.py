@@ -120,7 +120,7 @@ def _client_form_status(user):
         "photography":     forms(PhotographyConsent),
         "botox":           forms(BotoxConsentForm),
         "prp":             forms(PRPConsentForm),
-        "laser_reconsent": forms(LaserReConsent),
+        "laser_reconsent": forms(LaserReConsent),  # archived; re-consents are now on record cards
         "record_cards":    RecordCard.objects.filter(user=user).count(),
     }
 
@@ -704,6 +704,8 @@ def client_profile(request, pk):
                 "date":             rc.date.strftime("%d %b %Y"),
                 "treatment_for":    rc.treatment_for,
                 "status":           "completed" if rc.finalised else "withdrawn" if rc.withdrawn else "draft",
+                "client_signed":    rc.client_section_done,
+                "operator_signed":  rc.operator_signed,
                 "view_url":         rc.view_url,
                 "operator_url":     rc.operator_url,
             }

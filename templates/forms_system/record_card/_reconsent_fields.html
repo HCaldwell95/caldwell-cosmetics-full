@@ -1,0 +1,68 @@
+{# The client's re-consent questions (record card client section). Expects `f`; `consent_required` makes the declaration required. #}
+<div class="cform-section">
+    <h2 class="cform-section__title">Pre-Treatment Checks</h2>
+    <p class="cform-hint">Please answer honestly. If you answer Yes to any of these, please discuss with your practitioner before proceeding.</p>
+
+    <div class="cform-yn-table">
+        <div class="cform-yn-row">
+            <span>Have there been any changes to your laser consultation or medical history since your last visit?</span>
+            <div class="cform-radio-row">
+                <label class="cform-check"><input type="radio" name="changes_consultation_form" value="1" {% if f.changes_consultation_form %}checked{% endif %}><span>Yes</span></label>
+                <label class="cform-check"><input type="radio" name="changes_consultation_form" value="0" {% if not f.changes_consultation_form %}checked{% endif %}><span>No</span></label>
+            </div>
+        </div>
+        <div class="cform-yn-row">
+            <span>Have there been any changes to your medication or medical treatments since your last visit?</span>
+            <div class="cform-radio-row">
+                <label class="cform-check"><input type="radio" name="changes_medication" value="1" {% if f.changes_medication %}checked{% endif %}><span>Yes</span></label>
+                <label class="cform-check"><input type="radio" name="changes_medication" value="0" {% if not f.changes_medication %}checked{% endif %}><span>No</span></label>
+            </div>
+        </div>
+        <div class="cform-yn-row">
+            <span>Have you had any recent UV exposure, sunbed use, or applied fake tan since your last visit?</span>
+            <div class="cform-radio-row">
+                <label class="cform-check"><input type="radio" name="changes_uv_exposure" value="1" {% if f.changes_uv_exposure %}checked{% endif %}><span>Yes</span></label>
+                <label class="cform-check"><input type="radio" name="changes_uv_exposure" value="0" {% if not f.changes_uv_exposure %}checked{% endif %}><span>No</span></label>
+            </div>
+        </div>
+        <div class="cform-yn-row">
+            <span>Do you currently have any active or fake tan in the treatment area?</span>
+            <div class="cform-radio-row">
+                <label class="cform-check"><input type="radio" name="active_tan" value="1" {% if f.active_tan %}checked{% endif %}><span>Yes</span></label>
+                <label class="cform-check"><input type="radio" name="active_tan" value="0" {% if not f.active_tan %}checked{% endif %}><span>No</span></label>
+            </div>
+        </div>
+    </div>
+
+    <div class="cform-field" style="margin-top:1rem;">
+        <label class="cform-label">If you answered Yes to any of the above, please provide details</label>
+        <textarea class="cform-input" name="changes_detail" rows="3">{{ f.changes_detail|default_if_none:'' }}</textarea>
+    </div>
+</div>
+
+<div class="cform-section">
+    <h2 class="cform-section__title">Feedback Since Last Treatment</h2>
+    <div class="cform-field">
+        <label class="cform-label">How has your skin been since your last appointment? Any reactions, concerns, or changes?</label>
+        <textarea class="cform-input" name="client_feedback" rows="3" placeholder="e.g. No issues / Mild redness for 2 days / Slight bruising that resolved…">{{ f.client_feedback|default_if_none:'' }}</textarea>
+    </div>
+</div>
+
+<div class="cform-section cform-section--consent">
+    <h2 class="cform-section__title">Re-Consent Declaration</h2>
+    <div class="cform-yn-table" style="margin-bottom:1rem;">
+        <div class="cform-yn-row">
+            <span>Do you consent to your treatment settings being changed to meet clinical endpoints?</span>
+            <div class="cform-radio-row">
+                <label class="cform-check"><input type="radio" name="consent_settings_change" value="1" {% if f.consent_settings_change %}checked{% endif %}><span>Yes</span></label>
+                <label class="cform-check"><input type="radio" name="consent_settings_change" value="0" {% if not f.consent_settings_change %}checked{% endif %}><span>No</span></label>
+            </div>
+        </div>
+    </div>
+    <div class="cform-consent-list">
+        <label class="cform-consent-item">
+            <input type="checkbox" name="consent_proceed" {% if consent_required %}required{% endif %} {% if f.consent_proceed %}checked{% endif %}>
+            <span>I confirm that the information in my laser consultation remains accurate and up to date, and that the information I have given is correct to the best of my knowledge. I understand that results vary and multiple treatments may be necessary. I understand the risks, possible side effects and aftercare requirements, and that I must avoid sun exposure on the treated area. I have had the opportunity to ask any questions, and I re-consent to today's laser / IPL treatment.</span>
+        </label>
+    </div>
+</div>

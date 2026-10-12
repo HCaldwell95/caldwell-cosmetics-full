@@ -18,11 +18,12 @@ from django.utils import timezone
 from apps.bookings.models import Booking
 
 from .models import (
-    BotoxConsentForm, ConsultationForm, FormRevision, LaserReConsent,
+    BotoxConsentForm, ConsultationForm, FormRevision,
     PhotographyConsent, PRPConsentForm, RecordCard,
 )
 
-LIFECYCLE_MODELS = (ConsultationForm, PhotographyConsent, BotoxConsentForm, PRPConsentForm, LaserReConsent, RecordCard)
+# Archived LaserReConsent forms are all closed, so they never need anything.
+LIFECYCLE_MODELS = (ConsultationForm, PhotographyConsent, BotoxConsentForm, PRPConsentForm, RecordCard)
 
 
 def _open_forms(model):
@@ -88,6 +89,8 @@ def practitioner_worklist():
     forms = []
     for model in LIFECYCLE_MODELS:
         for f in _with_revisions(_open_forms(model), FormRevision.Section.OPERATOR):
+            # Record cards are the practitioner's own, so their drafts are listed
+            # even before the client has signed their re-consent.
             if not f.client_section_done and model is not RecordCard:
                 continue
             if f.can_finalise:

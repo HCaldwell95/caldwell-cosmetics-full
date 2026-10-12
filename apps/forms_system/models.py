@@ -6,6 +6,11 @@ from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelatio
 from django.contrib.contenttypes.models import ContentType
 from django.core.serializers.json import DjangoJSONEncoder
 from django.urls import reverse
+from django.utils import timezone
+
+
+def _current_time():
+    return timezone.localtime().time().replace(second=0, microsecond=0)
 
 
 class BaseForm(models.Model):
@@ -645,10 +650,15 @@ class PhotographyConsent(LifecycleMixin, BaseForm):
 
 class RecordCard(LifecycleMixin, models.Model):
     """
-    Dynamix Record Card — one per treatment session.
-    Practitioner-only: the practitioner fills it in (taking the client's
-    re-consent signature on their device), can keep editing it as a draft,
-    then signs and completes it — after which it's read-only.
+    Dynamix Record Card — one per laser treatment session, combining the
+    client's re-consent with the practitioner's treatment record:
+
+    1. Client section (re-consent): pre-treatment checks, feedback and
+       signature — completed by the client on their own device, or taken on
+       the practitioner's device at the clinic.
+    2. Practitioner section: date, devices, settings, comments and signature.
+    3. The practitioner completes it, after which it's read-only.
+
     Each card links to the previous one for the same client.
     """
     user = models.ForeignKey(
@@ -659,8 +669,9 @@ class RecordCard(LifecycleMixin, models.Model):
     treatment_number = models.PositiveIntegerField(
         help_text="Auto-incremented per client.",
     )
-    date        = models.DateField()
-    time        = models.TimeField()
+    # Default to when the card is started; the practitioner can adjust them.
+    date        = models.DateField(default=timezone.localdate)
+    time        = models.TimeField(default=_current_time)
     treatment_for = models.CharField(max_length=200, blank=True)
 
     # Device selection
@@ -683,13 +694,16 @@ class RecordCard(LifecycleMixin, models.Model):
     changes_uv_exposure         = models.BooleanField(
         default=False, help_text="Recent UV exposure or fake tan?"
     )
+    active_tan                  = models.BooleanField(default=False)
+    changes_detail              = models.TextField(blank=True)
     consent_settings_change     = models.BooleanField(
         default=False,
         help_text="Client consents to settings being changed to meet clinical endpoints.",
     )
     client_feedback             = models.TextField(blank=True)
+    consent_proceed             = models.BooleanField(default=False)
 
-    # Re-consent signature (taken on the practitioner's device at the clinic)
+    # Client re-consent signature (their device, or the practitioner's at the clinic)
     reconsent_signature         = models.TextField(
         blank=True,
         help_text="Base64 PNG of client re-consent signature.",
@@ -762,13 +776,15 @@ class RecordCard(LifecycleMixin, models.Model):
     OPERATOR_URL_NAME = "forms_system:record_card_edit"
     FORM_TITLE        = "Record Card"
 
-    # The practitioner owns the whole card, so every content field is theirs.
-    NOT_EDITABLE = {"id", "user", "treatment_number", "created_by", "created_at"}
+    CLIENT_ANSWER_FIELDS = [
+        "changes_consultation_form", "changes_medication", "changes_uv_exposure", "active_tan",
+        "changes_detail", "client_feedback", "consent_settings_change", "consent_proceed",
+        "guardian_name", "guardian_relationship", "guardian_phone", "guardian_email",
+    ]
+    CLIENT_FIELDS = CLIENT_ANSWER_FIELDS + ["reconsent_signature", "reconsent_signed_at", "guardian_signature"]
 
-    @classmethod
-    def editable_fields(cls):
-        lifecycle = set(cls.OPERATOR_SIGNATURE_FIELDS + cls.FINALISE_FIELDS + cls.WITHDRAW_FIELDS)
-        return [f.name for f in cls._meta.concrete_fields if f.name not in cls.NOT_EDITABLE | lifecycle]
+    # OPERATOR_FIELDS (everything else on the card) is set at the end of this module.
+    NOT_EDITABLE = {"id", "user", "treatment_number", "created_by", "created_at"}
 
     @property
     def client_section_done(self):
@@ -886,9 +902,9 @@ class PRPConsentForm(LifecycleMixin, BaseForm):
 
 class LaserReConsent(LifecycleMixin, models.Model):
     """
-    Standalone laser re-consent — completed at each laser appointment.
-    The client signs (or the practitioner on their behalf); the practitioner
-    adds treatment notes, countersigns and completes it.
+    Archive of standalone laser re-consents, from before the re-consent
+    became the client section of the Record Card. No new ones are created;
+    existing ones are read-only records.
     """
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -971,3 +987,12 @@ for _model in (ConsultationForm, PhotographyConsent, PRPConsentForm):
     _model.CLIENT_FIELDS = _model.CLIENT_ANSWER_FIELDS + _BASEFORM_CLIENT_META + (
         ["client_signed", "client_signed_at"] if hasattr(_model, "client_signed") else []
     )
+
+
+# Record card: the practitioner's section is everything that isn't the client's.
+_RECORD_CARD_SKIP = RecordCard.NOT_EDITABLE | set(RecordCard.CLIENT_FIELDS) | set(
+    LifecycleMixin.OPERATOR_SIGNATURE_FIELDS + LifecycleMixin.FINALISE_FIELDS + LifecycleMixin.WITHDRAW_FIELDS
+)
+RecordCard.OPERATOR_FIELDS = [
+    f.name for f in RecordCard._meta.concrete_fields if f.name not in _RECORD_CARD_SKIP
+] + LifecycleMixin.OPERATOR_SIGNATURE_FIELDS

@@ -289,6 +289,7 @@ class _LifecycleCases:
     signature_field    = "signature"
     answer_field       = None  # a free-text client field to change
     practitioner_field = None  # a free-text practitioner field
+    practitioner_extra = {}    # other required practitioner fields
 
     @classmethod
     def setUpTestData(cls):
@@ -310,7 +311,8 @@ class _LifecycleCases:
 
     def practitioner_posts(self, action, **overrides):
         self.client.force_login(self.practitioner)
-        data = {"action": action, self.practitioner_field: "practitioner note", "operator_signature": png_sig("op")}
+        data = {"action": action, self.practitioner_field: "practitioner note", "operator_signature": png_sig("op"),
+                **self.practitioner_extra}
         if action == "complete":
             data["confirm_complete"] = "1"
         if action == "withdraw":
@@ -423,10 +425,15 @@ class PRPLifecycleTests(_LifecycleCases, TestCase):
     answer_field, practitioner_field = "current_medications", "operator_notes"
 
 
-class LaserReConsentLifecycleTests(_LifecycleCases, TestCase):
-    model, client_url_name = LaserReConsent, "forms_system:laser_reconsent"
-    signature_field = "client_signature"
-    answer_field, practitioner_field = "changes_detail", "treatment_notes"
+class RecordCardReConsentLifecycleTests(_LifecycleCases, TestCase):
+    """The client's re-consent (on their own device) is the record card's client section."""
+    model, client_url_name = RecordCard, "forms_system:laser_reconsent"
+    signature_field = "reconsent_signature"
+    answer_field, practitioner_field = "changes_detail", "operator_comments"
+    practitioner_extra = {"date": "2026-10-01", "time": "10:30"}
+
+    def client_data(self, **overrides):
+        return super().client_data(consent_proceed="on", **overrides)
 
 
 class RecordCardLifecycleTests(TestCase):
@@ -440,9 +447,81 @@ class RecordCardLifecycleTests(TestCase):
 
     def card_data(self, **overrides):
         data = {"date": "2026-10-01", "time": "10:30", "treatment_for": "Hair removal", "area_1": "Legs",
+                "consent_proceed": "on", "client_feedback": "No issues",
                 "reconsent_signature": png_sig("client"), "operator_signature": png_sig("op"), "action": "save"}
         data.update(overrides)
         return data
+
+    def client_reconsents(self, **overrides):
+        self.client.force_login(self.client_user)
+        data = {"consent_proceed": "on", "client_feedback": "Skin fine", "reconsent_signature": png_sig("client")}
+        data.update(overrides)
+        r = self.client.post(reverse("forms_system:laser_reconsent"), data)
+        self.client.force_login(self.practitioner)
+        return r
+
+    def test_client_reconsent_then_practitioner_completes_same_card(self):
+        from apps.dashboard.models import Notification
+        self.client_reconsents()
+        card = RecordCard.objects.get(user=self.client_user)
+        self.assertEqual((card.client_feedback, card.date), ("Skin fine", date.today()))
+        self.assertTrue(Notification.objects.filter(form_type="record_card", form_id=card.pk).exists())
+
+        # Starting a new card picks up the one the client began.
+        new_url = reverse("forms_system:record_card_new", args=[self.client_user.pk])
+        self.assertRedirects(self.client.get(new_url), card.operator_url, fetch_redirect_response=False)
+        page = self.client.get(card.operator_url)
+        self.assertContains(page, "Skin fine")
+        self.assertNotContains(page, 'id="reconsentSigCanvas"')  # already signed — shown read-only
+
+        # The practitioner's save can't change the client's section.
+        self.client.post(card.operator_url, self.card_data(client_feedback="overwritten", action="sign"))
+        self.client.post(card.operator_url, {"action": "complete", "confirm_complete": "1"})
+        card.refresh_from_db()
+        self.assertEqual((card.client_feedback, card.area_1), ("Skin fine", "Legs"))
+        self.assertTrue(card.finalised)
+        self.assertEqual(RecordCard.objects.filter(user=self.client_user).count(), 1)
+
+        # The client's next re-consent starts the next card.
+        self.client_reconsents()
+        self.assertEqual(list(RecordCard.objects.filter(user=self.client_user).order_by("pk")
+                              .values_list("treatment_number", "finalised")), [(1, True), (2, False)])
+
+    def test_reconsent_taken_on_practitioner_page_is_logged_as_client_section(self):
+        self.client.post(reverse("forms_system:record_card_new", args=[self.client_user.pk]), self.card_data())
+        card = RecordCard.objects.get(user=self.client_user)
+        self.assertTrue(card.consent_proceed)
+        self.assertEqual(
+            list(card.revisions.values_list("section", "action")),
+            [(Section.OPERATOR, Action.SAVED), (Section.CLIENT, Action.SUBMITTED)],
+        )
+        from apps.dashboard.models import Notification
+        self.assertFalse(Notification.objects.filter(form_type="record_card").exists())  # practitioner started it
+
+    def test_reconsent_needs_declaration_before_signing(self):
+        r = self.client.post(reverse("forms_system:record_card_new", args=[self.client_user.pk]),
+                             self.card_data(consent_proceed=""))
+        self.assertContains(r, "must tick the re-consent declaration")
+        self.assertFalse(RecordCard.objects.exists())
+
+    def test_answers_saved_before_client_signs(self):
+        self.client.post(reverse("forms_system:record_card_new", args=[self.client_user.pk]),
+                         self.card_data(reconsent_signature="", consent_proceed=""))
+        card = RecordCard.objects.get(user=self.client_user)
+        self.assertEqual(card.client_feedback, "No issues")
+        self.assertFalse(card.client_section_done)
+        self.assertEqual(card.revisions.filter(section=Section.CLIENT).get().action, Action.SAVED)
+
+        # The client can then sign the same card on their own device.
+        self.client_reconsents(client_feedback="Signed at home")
+        card.refresh_from_db()
+        self.assertTrue(card.client_section_done)
+        self.assertEqual(RecordCard.objects.filter(user=self.client_user).count(), 1)
+
+    def test_archived_reconsent_still_viewable(self):
+        old = LaserReConsent.objects.create(user=self.client_user, client_signature=png_sig("c"), finalised=True)
+        self.assertEqual(self.client.get(old.view_url).status_code, 200)
+        self.assertRedirects(self.client.get(old.operator_url), old.view_url, fetch_redirect_response=False)
 
     def test_draft_then_sign_then_complete(self):
         new_url = reverse("forms_system:record_card_new", args=[self.client_user.pk])

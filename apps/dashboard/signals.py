@@ -12,7 +12,7 @@ from apps.forms_system.models import (
     PhotographyConsent,
     BotoxConsentForm,
     PRPConsentForm,
-    LaserReConsent,
+    RecordCard,
 )
 
 
@@ -92,10 +92,12 @@ def on_prp_saved(sender, instance, created, **kwargs):
         _notify(instance.user, 'prp', instance.pk)
 
 
-@receiver(post_save, sender=LaserReConsent, dispatch_uid='dashboard.on_laser_reconsent_saved')
-def on_laser_reconsent_saved(sender, instance, created, **kwargs):
-    if created and instance.client_signature:
-        _notify(instance.user, 'laser_reconsent', instance.pk)
+@receiver(post_save, sender=RecordCard, dispatch_uid='dashboard.on_record_card_saved')
+def on_record_card_saved(sender, instance, created, **kwargs):
+    # The client completing their re-consent themselves starts a card;
+    # cards the practitioner starts have created_by set.
+    if created and instance.reconsent_signature and not instance.created_by_id:
+        _notify(instance.user, 'record_card', instance.pk)
 
 
 # ---------------------------------------------------------------------------

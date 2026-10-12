@@ -119,10 +119,15 @@ def form_status(request, user_id):
 
     user = get_object_or_404(User, pk=user_id)
 
-    laser_forms   = LaserReConsent.objects.filter(user=user, withdrawn=False)
-    laser_latest  = laser_forms.order_by("-completed_at").first()
     record_cards  = RecordCard.objects.filter(user=user, withdrawn=False)
     record_latest = record_cards.order_by("-date").first()
+
+    # Re-consents: the client section of each record card, plus any archived
+    # standalone ones from before they were combined.
+    reconsents = list(record_cards.exclude(reconsent_signature="").values_list("reconsent_signed_at", flat=True))
+    reconsents += list(LaserReConsent.objects.filter(user=user, withdrawn=False).values_list("completed_at", flat=True))
+    reconsents = sorted(filter(None, reconsents))
+    current_card = lifecycle.open_form(RecordCard, user)
 
     return JsonResponse({
         "consultation": _status(_latest(ConsultationForm, user)),
@@ -130,8 +135,10 @@ def form_status(request, user_id):
         "botox":        _status(_latest(BotoxConsentForm, user)),
         "prp":          _status(_latest(PRPConsentForm, user)),
         "laser_reconsent": {
-            "count":     laser_forms.count(),
-            "last_date": laser_latest.completed_at.strftime("%d %b %Y") if laser_latest else None,
+            "count":     len(reconsents),
+            "last_date": reconsents[-1].strftime("%d %b %Y") if reconsents else None,
+            # Signed for their upcoming treatment, and can still update it.
+            "current_signed": bool(current_card and current_card.client_section_done),
         },
         "record_cards": {
             "count":     record_cards.count(),
@@ -152,7 +159,7 @@ def form_status(request, user_id):
 #   record page        — read-only view of the form and its full history
 # ---------------------------------------------------------------------------
 
-def _client_page(request, model, template, *, signature_field="signature",
+def _client_page(request, model, template, *, signature_field="signature", signed_at_field="client_signed_at",
                  prefill_from_last=False, on_answers_changed=None, context=None):
     """
     Shows / saves the client's section of their in-progress form of `model`,
@@ -196,16 +203,21 @@ def _client_page(request, model, template, *, signature_field="signature",
             values["guardian_signature"] = data.get("guardian_signature", "") if is_minor else ""
             if hasattr(model, "client_signed"):
                 values["client_signed"] = True
-            if hasattr(model, "client_signed_at"):
-                values["client_signed_at"] = timezone.now()
+            if hasattr(model, signed_at_field):
+                values[signed_at_field] = timezone.now()
+            create_values = {}
             if on_behalf:
-                values["practitioner"] = request.user
+                if hasattr(model, "practitioner"):
+                    values["practitioner"] = request.user
                 if hasattr(model, "completed_by_practitioner"):
                     values["completed_by_practitioner"] = True
+                if hasattr(model, "created_by"):
+                    create_values["created_by"] = request.user
 
             form = lifecycle.save_client_section(
                 request, model, target_user, values,
                 model.CLIENT_ANSWER_FIELDS, model.CLIENT_FIELDS, on_answers_changed,
+                create_values=create_values,
             )
 
             if _is_xhr(request):
@@ -234,7 +246,8 @@ def _client_page(request, model, template, *, signature_field="signature",
     }, status=400 if error else 200)
 
 
-def _practitioner_page(request, model, pk, template, *, apply_section=None, section_fields=None, context=None, as_name=None):
+def _practitioner_page(request, model, pk, template, *, apply_section=None, section_fields=None,
+                       on_saved=None, context=None, as_name=None):
     """
     The practitioner's page for one form: their section (save / sign) plus
     Complete and Withdraw. Closed forms redirect to the read-only record.
@@ -246,7 +259,7 @@ def _practitioner_page(request, model, pk, template, *, apply_section=None, sect
     error = None
     if request.method == "POST":
         apply_section = apply_section or lifecycle.apply_values(model, lifecycle.practitioner_input_fields(model))
-        response, error = lifecycle.handle_practitioner_post(request, model, pk, apply_section, section_fields)
+        response, error = lifecycle.handle_practitioner_post(request, model, pk, apply_section, section_fields, on_saved)
         if response:
             return response
         form.refresh_from_db()
@@ -506,54 +519,21 @@ def prp_view(request, pk):
 
 
 # ---------------------------------------------------------------------------
-# Laser Re-Consent
+# Record Cards (laser treatment record + the client's re-consent)
+#
+# The client section is the re-consent: the client completes it on their own
+# device before their appointment (the "Laser Re-Consent" page), or the
+# practitioner takes it on their device at the clinic, on the card itself.
+# The practitioner records the treatment, signs and completes the card.
 # ---------------------------------------------------------------------------
 
 @login_required
 def laser_reconsent(request):
-    return _client_page(request, LaserReConsent, "forms_system/laser/reconsent.html", signature_field="client_signature")
-
-
-@staff_required
-def laser_operator(request, pk):
-    return _practitioner_page(request, LaserReConsent, pk, "forms_system/laser/operator.html")
-
-
-@clinical_staff_required
-def laser_reconsent_view(request, pk):
-    return _record_page(request, LaserReConsent, pk, "forms_system/laser/reconsent_view.html", as_name="reconsent")
-
-
-# ---------------------------------------------------------------------------
-# Record Cards
-#
-# Practitioner-led: the practitioner fills in the card, taking the client's
-# re-consent signature on their device. It stays an editable draft until
-# they sign and complete it.
-# ---------------------------------------------------------------------------
-
-def _apply_record_card(card, data):
-    """Sets the card's fields from POST; signatures are only replaced when re-drawn."""
-    fields = [n for n in RecordCard.editable_fields()
-              if n not in ("reconsent_signature", "reconsent_signed_at", "guardian_signature")]
-    values, error = lifecycle.values_from_post(RecordCard, fields, data)
-    if error:
-        return error
-    for name, value in values.items():
-        setattr(card, name, value)
-
-    reconsent = data.get("reconsent_signature", "")
-    if reconsent and _validate_sig(reconsent):
-        card.reconsent_signature = reconsent
-        card.reconsent_signed_at = timezone.now()
-    guardian = data.get("guardian_signature", "")
-    if guardian and _validate_sig(guardian):
-        card.guardian_signature = guardian
-    return None
-
-
-def _record_card_section_fields():
-    return RecordCard.editable_fields() + RecordCard.OPERATOR_SIGNATURE_FIELDS
+    """The client's re-consent: the client section of their open record card."""
+    return _client_page(
+        request, RecordCard, "forms_system/record_card/reconsent.html",
+        signature_field="reconsent_signature", signed_at_field="reconsent_signed_at",
+    )
 
 
 def _previous_card(user, exclude_pk=None):
@@ -563,17 +543,82 @@ def _previous_card(user, exclude_pk=None):
     return cards.first()
 
 
+def _apply_reconsent(card, data, signer):
+    """
+    Takes the client's re-consent on the practitioner's page, if the client
+    hasn't already given it. Answers can be saved before the client signs;
+    once they've signed, changes go through the re-consent page instead.
+    """
+    if card.client_section_done:
+        return None
+    answers, error = lifecycle.values_from_post(RecordCard, RecordCard.CLIENT_ANSWER_FIELDS, data)
+    if error:
+        return error
+
+    is_minor = _profile_is_minor(card.user)
+    if not is_minor:
+        answers.update({name: "" for name in GUARDIAN_FIELDS})
+
+    sig = data.get("reconsent_signature", "")
+    signed = _validate_sig(sig)
+    if signed:
+        if not answers["consent_proceed"]:
+            return "The client must tick the re-consent declaration before signing."
+        error = _guardian_error(data, is_minor)
+        if error:
+            return error
+
+    before = card.snapshot(RecordCard.CLIENT_ANSWER_FIELDS)
+    for name, value in answers.items():
+        setattr(card, name, value)
+    if signed:
+        card.reconsent_signature = sig
+        card.reconsent_signed_at = timezone.now()
+        card.guardian_signature  = data.get("guardian_signature", "") if is_minor else ""
+
+    if signed or card.snapshot(RecordCard.CLIENT_ANSWER_FIELDS) != before:
+        card._client_section_action = Action.SUBMITTED if signed else Action.SAVED
+        card._client_section_by     = signer
+    return None
+
+
+def _apply_record_card(signer):
+    apply_treatment = lifecycle.apply_values(RecordCard, lifecycle.practitioner_input_fields(RecordCard))
+
+    def apply(card, data):
+        return apply_treatment(card, data) or _apply_reconsent(card, data, signer)
+    return apply
+
+
+def _save_reconsent(card):
+    """Saves and logs the client section if it was entered on the practitioner's page."""
+    action = getattr(card, "_client_section_action", None)
+    if action:
+        card.save(update_fields=RecordCard.CLIENT_FIELDS)
+        card.log_revision(card._client_section_by, Section.CLIENT, action, RecordCard.CLIENT_FIELDS)
+
+
 @staff_required
 def record_card_new(request, user_id):
     target_user = get_object_or_404(User, pk=user_id)
-    error = None
 
+    # One card in progress at a time — e.g. the client may already have
+    # completed their re-consent for today on their own device.
+    current = lifecycle.open_form(RecordCard, target_user)
+    if current:
+        if request.method == "POST":
+            return record_card_edit(request, current.pk)
+        return redirect(current.operator_url)
+
+    error = None
     if request.method == "POST":
         card  = RecordCard(user=target_user, created_by=request.user)
-        error = _apply_record_card(card, request.POST)
+        error = _apply_record_card(request.user)(card, request.POST)
         if not error:
             card.save()
-            card.log_revision(request.user, Section.OPERATOR, Action.SAVED, _record_card_section_fields())
+            card.log_revision(request.user, Section.OPERATOR, Action.SAVED, RecordCard.OPERATOR_FIELDS)
+            if getattr(card, "_client_section_action", None):
+                card.log_revision(request.user, Section.CLIENT, card._client_section_action, RecordCard.CLIENT_FIELDS)
             # Signing / completing happens on the card's own page.
             if request.POST.get("action") in ("sign", "complete"):
                 return record_card_edit(request, card.pk)
@@ -593,14 +638,26 @@ def record_card_edit(request, pk):
     card = get_object_or_404(RecordCard, pk=pk)
     return _practitioner_page(
         request, RecordCard, pk, "forms_system/record_card/new.html",
-        apply_section=_apply_record_card,
-        section_fields=_record_card_section_fields(),
+        apply_section=_apply_record_card(request.user),
+        on_saved=_save_reconsent,
         context={
             "target_user": card.user,
             "previous":    _previous_card(card.user, exclude_pk=card.pk),
             "is_minor":    _profile_is_minor(card.user),
         },
     )
+
+
+@clinical_staff_required
+def laser_reconsent_view(request, pk):
+    """Archived standalone re-consent (from before they joined the record card)."""
+    return _record_page(request, LaserReConsent, pk, "forms_system/laser/reconsent_view.html", as_name="reconsent")
+
+
+@staff_required
+def laser_operator(request, pk):
+    # Archived re-consents are read-only; kept so old links still work.
+    return redirect("forms_system:laser_reconsent_view", pk=pk)
 
 
 @login_required

@@ -109,9 +109,11 @@ def values_from_post(model, fields, data):
 # Client section
 # ---------------------------------------------------------------------------
 
-def save_client_section(request, model, target_user, values, answer_fields, client_fields, on_answers_changed=None):
+def save_client_section(request, model, target_user, values, answer_fields, client_fields,
+                        on_answers_changed=None, create_values=None):
     """
     Creates the client's open form, or updates it if they already have one.
+    `create_values` are only set when creating (e.g. who started it).
 
     If the client changes their answers after the practitioner has signed,
     the practitioner's signature is withdrawn — it covered the old answers.
@@ -126,7 +128,7 @@ def save_client_section(request, model, target_user, values, answer_fields, clie
             .first()
         )
         if form is None:
-            form = model.objects.create(user=target_user, **values)
+            form = model.objects.create(user=target_user, **values, **(create_values or {}))
             form.log_revision(request.user, Section.CLIENT, Action.SUBMITTED, client_fields)
             return form
 
@@ -167,7 +169,7 @@ def last_revision_was_withdrawn(form, section):
 # Practitioner section, completion and withdrawal
 # ---------------------------------------------------------------------------
 
-def handle_practitioner_post(request, model, pk, apply_section, section_fields=None, after_complete=None):
+def handle_practitioner_post(request, model, pk, apply_section, section_fields=None, on_saved=None):
     """
     Handles every button on a practitioner page:
 
@@ -175,6 +177,7 @@ def handle_practitioner_post(request, model, pk, apply_section, section_fields=N
       fields (returning an error message or None); the section is saved,
       with the operator signature when signing (or cleared when only saving
       progress, so a signature always matches what's on the form).
+      `on_saved(form)` runs after the save, in the same transaction.
     - "complete": locks the form as a read-only record.
     - "withdraw": closes it without completing, with a reason.
 
@@ -230,6 +233,8 @@ def handle_practitioner_post(request, model, pk, apply_section, section_fields=N
         form.operator_signed_by = request.user if signing else None
         form.save(update_fields=list(section_fields))
         form.log_revision(request.user, Section.OPERATOR, Action.SIGNED if signing else Action.SAVED, section_fields)
+        if on_saved:
+            on_saved(form)
         return redirect(form.operator_url), None
 
 

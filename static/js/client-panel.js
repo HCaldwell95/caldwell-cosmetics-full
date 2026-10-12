@@ -123,10 +123,10 @@ function renderProfilePanel(data) {
         return '<span class="dash-form-pill ' + cls + '">' + inner + '</span>';
     }
 
-    function archiveToggle(toggleId, contentId, archiveHtml) {
+    function archiveToggle(toggleId, contentId, archiveHtml, label) {
         if (!archiveHtml) return '';
         var chevron = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>';
-        return '<button class="dash-collapsible-toggle dash-archive-toggle" id="' + toggleId + '" style="margin-top:0.5rem;">Previous ' + chevron + '</button>'
+        return '<button class="dash-collapsible-toggle dash-archive-toggle" id="' + toggleId + '" style="margin-top:0.5rem;">' + (label || 'Previous') + ' ' + chevron + '</button>'
              + '<div id="' + contentId + '" class="dash-form-pills" style="display:none;margin-top:0.4rem;">' + archiveHtml + '</div>';
     }
 
@@ -173,13 +173,14 @@ function renderProfilePanel(data) {
     var photo   = formPills('Photography Consent', forms.photography.forms);
     var botox   = formPills('Botox Consent & Prescription', forms.botox.forms, null, mkBotoxPill);
     var prp     = formPills('PRP Consent', forms.prp.forms);
-    var laser   = formPills('Laser Re-Consent', forms.laser_reconsent.forms, 'No re-consents on file');
+    // Laser re-consents are now the client section of each record card; the
+    // old standalone ones are only shown as an archive.
+    var laserArchivePills = forms.laser_reconsent.forms.map(function (f) { return mkFormPill('Laser Re-Consent', f, true); }).join('');
 
     var consultCurrentPills = consult.current, consultArchivePills = consult.archive;
     var photoCurrentPills   = photo.current,   photoArchivePills   = photo.archive;
     var botoxCurrentPills   = botox.current,   botoxArchivePills   = botox.archive;
     var prpCurrentPills     = prp.current,     prpArchivePills     = prp.archive;
-    var laserCurrentPills   = laser.current,   laserArchivePills   = laser.archive;
 
     // Bundle pips
     function bundlePips(b) {
@@ -208,7 +209,10 @@ function renderProfilePanel(data) {
         ? data.record_cards.map(function (rc) {
             // Drafts open for editing (practitioner); completed / withdrawn cards are read-only.
             var href  = (rc.status === 'draft' && !isPrescriber) ? rc.operator_url : rc.view_url;
-            var badge = rc.status === 'draft' ? '<span class="dash-status dash-status--warning">Draft</span>'
+            var draftLabel = !rc.client_signed  ? 'Awaiting re-consent'
+                           : rc.operator_signed ? 'Ready to complete'
+                           :                      'Re-consent signed';
+            var badge = rc.status === 'draft' ? '<span class="dash-status dash-status--warning">' + draftLabel + '</span>'
                       : rc.status === 'withdrawn' ? '<span class="dash-status">Withdrawn</span>' : '';
             return '<a href="' + href + '" target="_blank" class="dash-record-row">'
                 + '<span class="dash-record-row__num">#' + rc.treatment_number + '</span>'
@@ -339,7 +343,6 @@ function renderProfilePanel(data) {
         + '<a href="' + DASHBOARD_URLS.formPhotography.replace('{id}', u.id) + '&new=1" class="dash-form-dropdown__item" target="_blank">Photography Consent</a>'
         + '<a href="' + DASHBOARD_URLS.formBotoxClient.replace('{id}', u.id) + '" class="dash-form-dropdown__item" target="_blank">Botox Consent &amp; Prescription</a>'
         + '<a href="' + DASHBOARD_URLS.formPrpClient.replace('{id}', u.id) + '" class="dash-form-dropdown__item" target="_blank">PRP Consent</a>'
-        + '<a href="' + DASHBOARD_URLS.formLaserReconsent.replace('{id}', u.id) + '" class="dash-form-dropdown__item" target="_blank">Laser Re-Consent</a>'
         + '</div></div></div>'
         )
         + '<div class="dash-form-pills">' + consultCurrentPills + photoCurrentPills + '</div>'
@@ -353,18 +356,13 @@ function renderProfilePanel(data) {
         + archiveToggle('formArchiveInjectablesToggle', 'formArchiveInjectablesContent', botoxArchivePills + prpArchivePills)
         + '</div>'
 
-        // Forms: Laser
+        // Laser record cards (each includes the client's re-consent)
         + '<div class="dash-panel-section">'
-        + '<div class="dash-panel-section__header"><h3 class="dash-panel-section__title">Laser</h3></div>'
-        + '<div class="dash-form-pills">' + laserCurrentPills + '</div>'
-        + archiveToggle('formArchiveLaserToggle', 'formArchiveLaserContent', laserArchivePills)
-        + '</div>'
-
-        // Record cards
-        + '<div class="dash-panel-section">'
-        + '<div class="dash-panel-section__header"><h3 class="dash-panel-section__title">Record Cards</h3>'
+        + '<div class="dash-panel-section__header"><h3 class="dash-panel-section__title">Laser Record Cards</h3>'
         + (isPrescriber ? '' : '<a href="' + DASHBOARD_URLS.recordCardNew.replace('{id}', u.id) + '" class="btn btn--ghost btn--sm" target="_blank">+ New Record Card</a>')
-        + '</div><div class="dash-record-list">' + cardsHtml + '</div></div>'
+        + '</div><div class="dash-record-list">' + cardsHtml + '</div>'
+        + archiveToggle('formArchiveLaserToggle', 'formArchiveLaserContent', laserArchivePills, 'Older standalone re-consents')
+        + '</div>'
 
         // Notes
         + '<div class="dash-panel-section">'
