@@ -1,0 +1,24 @@
+<!-- Practitioner's "Forms awaiting you" list. Expects `awaiting`, `unbooked`. -->
+<section class="profile-card profile-card--wide worklist">
+    <h2 class="profile-card__title">
+        Forms Awaiting You
+        <span class="dash-count-badge{% if not awaiting %} dash-count-badge--zero{% endif %}">{{ awaiting|length }}</span>
+    </h2>
+    <p class="profile-card__subtitle" style="margin-bottom:1.25rem;">
+        Forms for clients with an upcoming appointment that need your signature or are ready to complete. Soonest first.
+    </p>
+
+    {% if awaiting %}
+        {% include "dashboard/_worklist_table.html" with rows=awaiting show_form=True %}
+    {% else %}
+    <p class="dash-account-empty">Nothing waiting for clients with an appointment — you're all caught up.</p>
+    {% endif %}
+
+    {% if unbooked %}
+    <details class="dash-worklist-unbooked">
+        <summary>No appointment booked ({{ unbooked|length }})</summary>
+        <p class="dash-muted" style="margin-bottom:0.75rem;">These clients have completed their part but haven't booked. Withdraw any that won't go ahead from the form's page.</p>
+        {% include "dashboard/_worklist_table.html" with rows=unbooked show_form=True %}
+    </details>
+    {% endif %}
+</section>

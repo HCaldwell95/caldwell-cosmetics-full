@@ -1,0 +1,28 @@
+{% extends "base/base.html" %}
+{% load static %}
+{% block title %}Photography Consent — Practitioner | Caldwell Cosmetics{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/pages/forms_system.css' %}">{% endblock %}
+{% block content %}
+<div class="cform-page cform-page--wide">
+{% include "forms_system/_lifecycle/practitioner_header.html" %}
+
+{% include "forms_system/photography/_client_summary.html" %}
+
+<form id="photographyOperatorForm" class="cform" method="post" action="{{ f.operator_url }}">
+    {% csrf_token %}
+
+    <div class="cform-section cform-section--operator">
+        <h2 class="cform-section__title">Practitioner Notes <span class="cform-operator-badge">Practitioner</span></h2>
+        <div class="cform-field">
+            <label class="cform-label">Notes (optional)</label>
+            <textarea class="cform-input" name="operator_notes" rows="3">{{ f.operator_notes|default_if_none:'' }}</textarea>
+        </div>
+    </div>
+
+    {% include "forms_system/_lifecycle/practitioner_signature.html" with signature_hint="I confirm I have explained how photographs will be taken, stored and used, and that the client's choices above are recorded correctly." %}
+</form>
+
+{% include "forms_system/_lifecycle/close_actions.html" %}
+</div>
+<script src="{% static 'js/sig_pad.js' %}?v=4"></script>
+{% endblock %}

@@ -5,6 +5,7 @@
 {% block content %}
 <div class="cform-page">
 {% if on_behalf %}<div class="cform-behalf-banner">Completing on behalf of <strong>{{ target_user.full_name }}</strong>.</div>{% endif %}
+{% include "forms_system/_lifecycle/client_banner.html" %}
 
 <div class="cform-header">
     <span class="cform-header__eyebrow">Caldwell Cosmetics</span>
@@ -28,36 +29,36 @@
             <div class="cform-yn-row">
                 <span>Have there been any changes to your laser consultation or medical history since your last visit?</span>
                 <div class="cform-radio-row">
-                    <label class="cform-check"><input type="radio" name="changes_consultation_form" value="1"><span>Yes</span></label>
-                    <label class="cform-check"><input type="radio" name="changes_consultation_form" value="0" checked><span>No</span></label>
+                    <label class="cform-check"><input type="radio" name="changes_consultation_form" value="1" {% if f.changes_consultation_form %}checked{% endif %}><span>Yes</span></label>
+                    <label class="cform-check"><input type="radio" name="changes_consultation_form" value="0" {% if not f.changes_consultation_form %}checked{% endif %}><span>No</span></label>
                 </div>
             </div>
             <div class="cform-yn-row">
                 <span>Have there been any changes to your medication or medical treatments since your last visit?</span>
                 <div class="cform-radio-row">
-                    <label class="cform-check"><input type="radio" name="changes_medication" value="1"><span>Yes</span></label>
-                    <label class="cform-check"><input type="radio" name="changes_medication" value="0" checked><span>No</span></label>
+                    <label class="cform-check"><input type="radio" name="changes_medication" value="1" {% if f.changes_medication %}checked{% endif %}><span>Yes</span></label>
+                    <label class="cform-check"><input type="radio" name="changes_medication" value="0" {% if not f.changes_medication %}checked{% endif %}><span>No</span></label>
                 </div>
             </div>
             <div class="cform-yn-row">
                 <span>Have you had any recent UV exposure, sunbed use, or applied fake tan since your last visit?</span>
                 <div class="cform-radio-row">
-                    <label class="cform-check"><input type="radio" name="changes_uv_exposure" value="1"><span>Yes</span></label>
-                    <label class="cform-check"><input type="radio" name="changes_uv_exposure" value="0" checked><span>No</span></label>
+                    <label class="cform-check"><input type="radio" name="changes_uv_exposure" value="1" {% if f.changes_uv_exposure %}checked{% endif %}><span>Yes</span></label>
+                    <label class="cform-check"><input type="radio" name="changes_uv_exposure" value="0" {% if not f.changes_uv_exposure %}checked{% endif %}><span>No</span></label>
                 </div>
             </div>
             <div class="cform-yn-row">
                 <span>Do you currently have any active or fake tan in the treatment area?</span>
                 <div class="cform-radio-row">
-                    <label class="cform-check"><input type="radio" name="active_tan" value="1"><span>Yes</span></label>
-                    <label class="cform-check"><input type="radio" name="active_tan" value="0" checked><span>No</span></label>
+                    <label class="cform-check"><input type="radio" name="active_tan" value="1" {% if f.active_tan %}checked{% endif %}><span>Yes</span></label>
+                    <label class="cform-check"><input type="radio" name="active_tan" value="0" {% if not f.active_tan %}checked{% endif %}><span>No</span></label>
                 </div>
             </div>
         </div>
 
         <div class="cform-field" style="margin-top:1rem;">
             <label class="cform-label">If you answered Yes to any of the above, please provide details</label>
-            <textarea class="cform-input" name="changes_detail" rows="3"></textarea>
+            <textarea class="cform-input" name="changes_detail" rows="3">{{ f.changes_detail|default_if_none:'' }}</textarea>
         </div>
     </div>
 
@@ -66,7 +67,7 @@
         <h2 class="cform-section__title">Feedback Since Last Treatment</h2>
         <div class="cform-field">
             <label class="cform-label">How has your skin been since your last appointment? Any reactions, concerns, or changes?</label>
-            <textarea class="cform-input" name="client_feedback" rows="3" placeholder="e.g. No issues / Mild redness for 2 days / Slight bruising that resolved…"></textarea>
+            <textarea class="cform-input" name="client_feedback" rows="3" placeholder="e.g. No issues / Mild redness for 2 days / Slight bruising that resolved…">{{ f.client_feedback|default_if_none:'' }}</textarea>
         </div>
     </div>
 
@@ -75,7 +76,7 @@
         <h2 class="cform-section__title">Re-Consent Declaration</h2>
         <div class="cform-consent-list">
             <label class="cform-consent-item">
-                <input type="checkbox" name="consent_proceed" required>
+                <input type="checkbox" name="consent_proceed" required {% if editing and f.consent_proceed %}checked{% endif %}>
                 <span>I confirm that the information in my original laser consultation remains accurate and up to date. I understand the risks, side effects, and aftercare requirements associated with today's treatment. I have had the opportunity to ask any questions. I willingly consent to proceed with today's laser / IPL treatment.</span>
             </label>
         </div>
@@ -107,19 +108,19 @@
         <div class="cform-grid cform-grid--2">
             <div class="cform-field">
                 <label class="cform-label">Guardian Full Name <span class="cform-req">*</span></label>
-                <input class="cform-input" type="text" name="guardian_name" required placeholder="Full name">
+                <input class="cform-input" type="text" name="guardian_name" required placeholder="Full name" value="{{ f.guardian_name|default_if_none:'' }}">
             </div>
             <div class="cform-field">
                 <label class="cform-label">Relationship to Client <span class="cform-req">*</span></label>
-                <input class="cform-input" type="text" name="guardian_relationship" required placeholder="e.g. Mother, Father, Guardian">
+                <input class="cform-input" type="text" name="guardian_relationship" required placeholder="e.g. Mother, Father, Guardian" value="{{ f.guardian_relationship|default_if_none:'' }}">
             </div>
             <div class="cform-field">
                 <label class="cform-label">Guardian Phone <span class="cform-req">*</span></label>
-                <input class="cform-input" type="tel" name="guardian_phone" required placeholder="e.g. 07700 900000">
+                <input class="cform-input" type="tel" name="guardian_phone" required placeholder="e.g. 07700 900000" value="{{ f.guardian_phone|default_if_none:'' }}">
             </div>
             <div class="cform-field">
                 <label class="cform-label">Guardian Email</label>
-                <input class="cform-input" type="email" name="guardian_email" placeholder="Email address (optional)">
+                <input class="cform-input" type="email" name="guardian_email" placeholder="Email address (optional)" value="{{ f.guardian_email|default_if_none:'' }}">
             </div>
         </div>
         <p class="cform-label" style="margin-top:1.25rem;">Guardian Signature <span class="cform-req">*</span></p>
@@ -135,9 +136,9 @@
     {% endif %}
 
     <div class="cform-submit-row">
-        <button type="submit" class="btn btn--primary btn--lg">Submit Re-Consent</button>
+        <button type="submit" class="btn btn--primary btn--lg">{% if editing %}Update &amp; Sign{% else %}Submit Re-Consent{% endif %}</button>
     </div>
 </form>
 </div>
-<script src="{% static 'js/sig_pad.js' %}?v=3"></script>
+<script src="{% static 'js/sig_pad.js' %}?v=4"></script>
 {% endblock %}

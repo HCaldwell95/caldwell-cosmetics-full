@@ -1,0 +1,80 @@
+/* =====================================================
+   Worklists — "Forms awaiting you" tables and status
+   badges. Shared by the dashboard and the profile page.
+   ===================================================== */
+
+.dash-account-empty {
+    padding: 1rem;
+    text-align: center;
+    color: #888;
+    background: #fdfbf7;
+    border-radius: 8px;
+    margin: 0;
+}
+
+.dash-count-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.6rem;
+    padding: 0.1rem 0.5rem;
+    border-radius: 999px;
+    background: #dc2626;
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.dash-count-badge--zero { background: #16a34a; }
+
+.dash-status {
+    display: inline-block;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    background: #f3f4f6;
+    color: #374151;
+    white-space: nowrap;
+}
+
+.dash-status--new     { background: #dbeafe; color: #1e40af; }
+.dash-status--warning { background: #fef3c7; color: #92400e; }
+.dash-status--done    { background: #d1fae5; color: #065f46; }
+
+.dash-worklist-unbooked {
+    margin-top: 1.25rem;
+    border-top: 1px solid #f0ece5;
+    padding-top: 1rem;
+}
+
+.dash-worklist-unbooked > summary {
+    cursor: pointer;
+    font-weight: 600;
+    color: #666;
+    margin-bottom: 0.5rem;
+}
+
+/* Table styles for pages that don't load dashboard.css (e.g. the profile page) */
+.worklist .dash-client-table-wrap { overflow-x: auto; }
+.worklist .dash-client-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+.worklist .dash-client-table th {
+    text-align: left;
+    padding: 0.6rem 1rem;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-muted, #888);
+    border-bottom: 1px solid var(--color-border, #e8e0d5);
+    background: var(--color-bg, #f9f6f2);
+}
+.worklist .dash-client-table td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--color-border, #e8e0d5);
+    color: var(--color-heading, #1a1a2e);
+    vertical-align: middle;
+}
+.worklist .dash-client-table tbody tr:last-child td { border-bottom: none; }
+.worklist .dash-client-table tbody tr:hover td { background: var(--color-bg, #f9f6f2); }
+.worklist .dash-muted { color: var(--color-muted, #888); font-size: 0.875rem; margin: 0; }
+.worklist .dash-status + .dash-status { margin-left: 0.25rem; }

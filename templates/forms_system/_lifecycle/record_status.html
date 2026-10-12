@@ -1,0 +1,17 @@
+{# Status banner for a read-only record page. Expects `f`. #}
+{% if f.finalised %}
+<div class="cform-existing-banner">
+    <strong>Completed</strong> by {{ f.finalised_by.full_name|default:"—" }} on {{ f.finalised_at|date:"j F Y \a\t H:i" }}.
+    This is a read-only record and cannot be changed.
+</div>
+{% elif f.withdrawn %}
+<div class="cform-behalf-banner cform-minor-banner">
+    <strong>Withdrawn</strong> by {{ f.withdrawn_by.full_name|default:"—" }} on {{ f.withdrawn_at|date:"j F Y \a\t H:i" }} — {{ f.withdrawn_reason }}.
+    This form was closed without being completed. It is kept on file as a read-only record.
+</div>
+{% else %}
+<div class="cform-behalf-banner cform-minor-banner">
+    This form hasn't been completed yet, so it may still change.
+    {% if user.is_practitioner %}<a href="{{ f.operator_url }}">Continue editing</a>{% endif %}
+</div>
+{% endif %}

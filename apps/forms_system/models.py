@@ -2,7 +2,10 @@ import json
 
 from django.db import models, transaction
 from django.conf import settings
+from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
+from django.contrib.contenttypes.models import ContentType
 from django.core.serializers.json import DjangoJSONEncoder
+from django.urls import reverse
 
 
 class BaseForm(models.Model):
@@ -45,7 +48,146 @@ class BaseForm(models.Model):
         ordering = ["-completed_at"]
 
 
-class ConsultationForm(BaseForm):
+class FormRevision(models.Model):
+    """
+    Append-only history of every save to any form, so earlier answers and
+    signatures are kept as evidence even when a section is edited.
+    """
+
+    class Section(models.TextChoices):
+        CLIENT     = "client",     "Client"
+        PRESCRIBER = "prescriber", "Prescriber"
+        OPERATOR   = "operator",   "Practitioner"
+        FORM       = "form",       "Form"
+
+    class Action(models.TextChoices):
+        SUBMITTED           = "submitted",           "Submitted"
+        UPDATED             = "updated",             "Updated"
+        SAVED               = "saved",               "Saved progress"
+        SIGNED              = "signed",              "Signed"
+        SIGNATURE_WITHDRAWN = "signature_withdrawn", "Signature withdrawn — client changed their answers"
+        COMPLETED           = "completed",           "Completed — now read-only"
+        WITHDRAWN           = "withdrawn",           "Withdrawn — closed without completing"
+
+    content_type = models.ForeignKey(ContentType, on_delete=models.PROTECT)
+    object_id    = models.PositiveIntegerField()
+    form         = GenericForeignKey("content_type", "object_id")
+    user         = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+")
+    section      = models.CharField(max_length=20, choices=Section.choices)
+    action       = models.CharField(max_length=30, choices=Action.choices)
+    data         = models.JSONField(default=dict, encoder=DjangoJSONEncoder)
+    created_at   = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["created_at", "pk"]
+        indexes  = [models.Index(fields=["content_type", "object_id"])]
+
+    def __str__(self):
+        return f"{self.content_type.name} #{self.object_id} — {self.get_section_display()} {self.get_action_display()}"
+
+
+class LifecycleMixin(models.Model):
+    """
+    Shared lifecycle for every form:
+
+    1. The client (or the practitioner on their behalf) completes the client
+       section, and can keep updating it.
+    2. The practitioner saves / signs their section.
+    3. The practitioner completes the form — or withdraws it if it won't be
+       completed. Either way it becomes a read-only record, and the client's
+       next form of that type starts fresh.
+
+    Saves only ever write the saver's own section (see each form's *_FIELDS
+    lists), and every save is kept in FormRevision, so nothing is overwritten.
+    """
+
+    operator_signature = models.TextField(blank=True)
+    operator_signed    = models.BooleanField(default=False)
+    operator_signed_at = models.DateTimeField(null=True, blank=True)
+    operator_signed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+",
+    )
+
+    finalised    = models.BooleanField(default=False)
+    finalised_at = models.DateTimeField(null=True, blank=True)
+    finalised_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+",
+    )
+
+    withdrawn        = models.BooleanField(default=False)
+    withdrawn_at     = models.DateTimeField(null=True, blank=True)
+    withdrawn_by     = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+",
+    )
+    withdrawn_reason = models.CharField(max_length=300, blank=True)
+
+    revisions = GenericRelation(FormRevision)
+
+    OPERATOR_SIGNATURE_FIELDS = ["operator_signature", "operator_signed", "operator_signed_at", "operator_signed_by"]
+    FINALISE_FIELDS = ["finalised", "finalised_at", "finalised_by"]
+    WITHDRAW_FIELDS = ["withdrawn", "withdrawn_at", "withdrawn_by", "withdrawn_reason"]
+
+    # Set on each form: URL names (taking the form's pk) for its read-only
+    # record and the practitioner's page.
+    VIEW_URL_NAME     = None
+    OPERATOR_URL_NAME = None
+    FORM_TITLE        = ""
+
+    class Meta:
+        abstract = True
+
+    @property
+    def view_url(self):
+        return reverse(self.VIEW_URL_NAME, args=[self.pk])
+
+    @property
+    def operator_url(self):
+        return reverse(self.OPERATOR_URL_NAME, args=[self.pk])
+
+    @property
+    def is_closed(self):
+        """Completed or withdrawn — either way a read-only record."""
+        return self.finalised or self.withdrawn
+
+    @property
+    def is_fully_complete(self):
+        return self.finalised
+
+    @property
+    def client_section_done(self):
+        """Overridden by forms that track this explicitly."""
+        return True
+
+    @property
+    def started_at(self):
+        return getattr(self, "completed_at", None) or getattr(self, "created_at", None)
+
+    @property
+    def can_finalise(self):
+        return not self.is_closed and self.client_section_done and self.operator_signed
+
+    @property
+    def all_fields(self):
+        return [f.name for f in self._meta.concrete_fields if f.name != "id"]
+
+    def snapshot(self, fields):
+        """JSON-safe copy of `fields`, for the revision log."""
+        data = {}
+        for name in fields:
+            value = getattr(self, name)
+            if isinstance(value, models.Model):
+                value = value.pk
+            data[name] = value
+        return json.loads(json.dumps(data, cls=DjangoJSONEncoder))
+
+    def log_revision(self, user, section, action, fields=()):
+        return FormRevision.objects.create(
+            form=self, user=user, section=section, action=action,
+            data=self.snapshot(fields),
+        )
+
+
+class ConsultationForm(LifecycleMixin, BaseForm):
     """
     Dynamix Consultation Form — completed once per client.
     Split into sections matching the paper form exactly.
@@ -171,7 +313,6 @@ class ConsultationForm(BaseForm):
     pretx_cost              = models.CharField(max_length=20, blank=True)
     pretx_photo_taken       = models.BooleanField(default=False)
     pretx_comments          = models.TextField(blank=True)
-    operator_signature      = models.TextField(blank=True)
 
     # ---- Treatment assessment (practitioner only) ----
     # Hair removal
@@ -225,6 +366,30 @@ class ConsultationForm(BaseForm):
     fractional_indication       = models.CharField(max_length=200, blank=True)
     fractional_comments         = models.TextField(blank=True)
 
+    OPERATOR_BOOL_FIELDS = [
+        "pretx_how_works", "pretx_pre_post_care", "pretx_light_products", "pretx_num_treatments",
+        "pretx_clinical_outcome", "pretx_sensation", "pretx_side_effects", "pretx_photo_taken",
+    ]
+    OPERATOR_TEXT_FIELDS = [
+        "pretx_cost", "pretx_comments",
+        "hair_colour", "hair_texture", "hair_handpiece", "hair_previous_treatments",
+        "vascular_type", "vascular_previous_treatments",
+        "pigmentation_type", "pigmentation_previous_treatments",
+        "acne_type", "acne_previous_treatments",
+        "skin_assessment_type", "skin_handpiece", "skin_previous_treatments",
+        "tattoo_colour", "tattoo_previous_treatments",
+        "fractional_indication", "fractional_comments",
+    ]
+    OPERATOR_FIELDS = OPERATOR_BOOL_FIELDS + OPERATOR_TEXT_FIELDS + LifecycleMixin.OPERATOR_SIGNATURE_FIELDS
+
+    OPERATOR_URL_NAME = "forms_system:consultation_operator"
+    FORM_TITLE        = "Laser Consultation"
+
+    @property
+    def view_url(self):
+        # Consultations are viewed per client, with the history alongside.
+        return reverse("forms_system:consultation_view", args=[self.user_id]) + f"?form_pk={self.pk}"
+
     class Meta(BaseForm.Meta):
         verbose_name = "Laser Consultation"
 
@@ -232,7 +397,7 @@ class ConsultationForm(BaseForm):
         return f"Consultation — {self.user.full_name} ({self.completed_at.date()})"
 
 
-class BotoxConsentForm(BaseForm):
+class BotoxConsentForm(LifecycleMixin, BaseForm):
     """
     Botulinum Toxin Consent — two-step.
     Step 1: client section. Step 2: operator section.
@@ -367,40 +532,7 @@ class BotoxConsentForm(BaseForm):
     units_total                 = models.CharField(max_length=10, blank=True)
     treatment_cost              = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
 
-    operator_signature          = models.TextField(blank=True)
-    operator_signed             = models.BooleanField(default=False)
-    operator_signed_at          = models.DateTimeField(null=True, blank=True)
-    operator_signed_by          = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
-        null=True, blank=True,
-        related_name="botox_operator_completions",
-    )
-
-    # ---- Completion ----
-    # Set by the practitioner once every section is done. A finalised form
-    # is a read-only record: no section can be edited after this.
-    finalised                   = models.BooleanField(default=False)
-    finalised_at                = models.DateTimeField(null=True, blank=True)
-    finalised_by                = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
-        null=True, blank=True,
-        related_name="botox_forms_finalised",
-    )
-
-    # ---- Withdrawal ----
-    # Closes a form that won't be completed (e.g. the client never booked)
-    # without deleting it — signed consent forms are kept as records.
-    withdrawn                   = models.BooleanField(default=False)
-    withdrawn_at                = models.DateTimeField(null=True, blank=True)
-    withdrawn_by                = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
-        null=True, blank=True,
-        related_name="botox_forms_withdrawn",
-    )
-    withdrawn_reason            = models.CharField(max_length=300, blank=True)
+    # Operator signature, completion and withdrawal come from LifecycleMixin.
 
     # Which fields each person owns. Saves only ever write their own
     # section, so two people working on the form can't overwrite each other.
@@ -434,21 +566,15 @@ class BotoxConsentForm(BaseForm):
         "units_dao_jowls", "units_chin", "units_masseter", "units_neck_bands", "units_total",
         "operator_notes",
     ]
-    OPERATOR_FIELDS = OPERATOR_TEXT_FIELDS + [
-        "treatment_cost",
-        "operator_signature", "operator_signed", "operator_signed_at", "operator_signed_by",
-    ]
-    FINALISE_FIELDS = ["finalised", "finalised_at", "finalised_by"]
-    WITHDRAW_FIELDS = ["withdrawn", "withdrawn_at", "withdrawn_by", "withdrawn_reason"]
+    OPERATOR_FIELDS = OPERATOR_TEXT_FIELDS + ["treatment_cost"] + LifecycleMixin.OPERATOR_SIGNATURE_FIELDS
+
+    VIEW_URL_NAME     = "forms_system:botox_view"
+    OPERATOR_URL_NAME = "forms_system:botox_operator"
+    FORM_TITLE        = "Botox Consent & Prescription"
 
     @property
-    def is_fully_complete(self):
-        return self.finalised
-
-    @property
-    def is_closed(self):
-        """Completed or withdrawn — either way a read-only record."""
-        return self.finalised or self.withdrawn
+    def client_section_done(self):
+        return self.client_signed
 
     @property
     def can_finalise(self):
@@ -456,22 +582,6 @@ class BotoxConsentForm(BaseForm):
         if self.is_closed or not (self.client_signed and self.prescriber_signed):
             return False
         return self.operator_signed or not self.is_prescribed
-
-    def snapshot(self, fields):
-        """JSON-safe copy of `fields`, for the revision log."""
-        data = {}
-        for name in fields:
-            value = getattr(self, name)
-            if isinstance(value, models.Model):
-                value = value.pk
-            data[name] = value
-        return json.loads(json.dumps(data, cls=DjangoJSONEncoder))
-
-    def log_revision(self, user, section, action, fields=()):
-        return BotoxFormRevision.objects.create(
-            form=self, user=user, section=section, action=action,
-            data=self.snapshot(fields),
-        )
 
     @property
     def is_prescribed(self):
@@ -484,43 +594,12 @@ class BotoxConsentForm(BaseForm):
         return f"Botox Consent & Prescription — {self.user.full_name} ({self.completed_at.date()})"
 
 
-class BotoxFormRevision(models.Model):
+class PhotographyConsent(LifecycleMixin, BaseForm):
     """
-    Append-only history of every save to a Botox form, so earlier answers
-    and signatures are kept as evidence even when a section is edited.
+    Photography and digital image consent. The client signs; the
+    practitioner countersigns and completes it. A new consent can be
+    completed at any time — the most recent completed one is current.
     """
-
-    class Section(models.TextChoices):
-        CLIENT     = "client",     "Client"
-        PRESCRIBER = "prescriber", "Prescriber"
-        OPERATOR   = "operator",   "Practitioner"
-        FORM       = "form",       "Form"
-
-    class Action(models.TextChoices):
-        SUBMITTED          = "submitted",          "Submitted"
-        UPDATED            = "updated",            "Updated"
-        SAVED              = "saved",              "Saved progress"
-        SIGNED             = "signed",             "Signed"
-        SIGNATURE_WITHDRAWN = "signature_withdrawn", "Signature withdrawn — client changed their answers"
-        COMPLETED          = "completed",          "Completed — now read-only"
-        WITHDRAWN          = "withdrawn",          "Withdrawn — closed without completing"
-
-    form       = models.ForeignKey(BotoxConsentForm, on_delete=models.PROTECT, related_name="revisions")
-    user       = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+")
-    section    = models.CharField(max_length=20, choices=Section.choices)
-    action     = models.CharField(max_length=30, choices=Action.choices)
-    data       = models.JSONField(default=dict, encoder=DjangoJSONEncoder)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        ordering = ["created_at", "pk"]
-
-    def __str__(self):
-        return f"{self.form} — {self.get_section_display()} {self.get_action_display()}"
-
-
-class PhotographyConsent(BaseForm):
-    """Photography and digital image consent — completed once."""
 
     full_name     = models.CharField(max_length=200)
     date_of_birth = models.DateField()
@@ -547,6 +626,16 @@ class PhotographyConsent(BaseForm):
         help_text="Consent for use with identity/name in practice and advertising.",
     )
 
+    # ---- Practitioner ----
+    operator_notes = models.TextField(blank=True)
+
+    OPERATOR_TEXT_FIELDS = ["operator_notes"]
+    OPERATOR_FIELDS = OPERATOR_TEXT_FIELDS + LifecycleMixin.OPERATOR_SIGNATURE_FIELDS
+
+    VIEW_URL_NAME     = "forms_system:photography_view"
+    OPERATOR_URL_NAME = "forms_system:photography_operator"
+    FORM_TITLE        = "Photography Consent"
+
     class Meta(BaseForm.Meta):
         verbose_name = "Photography Consent"
 
@@ -554,10 +643,12 @@ class PhotographyConsent(BaseForm):
         return f"Photography Consent — {self.user.full_name} ({self.completed_at.date()})"
 
 
-class RecordCard(models.Model):
+class RecordCard(LifecycleMixin, models.Model):
     """
     Dynamix Record Card — one per treatment session.
-    Practitioner-only. Append-only (never edited after save).
+    Practitioner-only: the practitioner fills it in (taking the client's
+    re-consent signature on their device), can keep editing it as a draft,
+    then signs and completes it — after which it's read-only.
     Each card links to the previous one for the same client.
     """
     user = models.ForeignKey(
@@ -598,11 +689,12 @@ class RecordCard(models.Model):
     )
     client_feedback             = models.TextField(blank=True)
 
-    # Re-consent signature
+    # Re-consent signature (taken on the practitioner's device at the clinic)
     reconsent_signature         = models.TextField(
+        blank=True,
         help_text="Base64 PNG of client re-consent signature.",
     )
-    reconsent_signed_at         = models.DateTimeField()
+    reconsent_signed_at         = models.DateTimeField(null=True, blank=True)
 
     # Treatment areas (up to 5 rows matching the paper form)
     area_1          = models.CharField(max_length=100, blank=True)
@@ -666,6 +758,22 @@ class RecordCard(models.Model):
     guardian_email        = models.EmailField(blank=True)
     guardian_signature    = models.TextField(blank=True)
 
+    VIEW_URL_NAME     = "forms_system:record_card_view"
+    OPERATOR_URL_NAME = "forms_system:record_card_edit"
+    FORM_TITLE        = "Record Card"
+
+    # The practitioner owns the whole card, so every content field is theirs.
+    NOT_EDITABLE = {"id", "user", "treatment_number", "created_by", "created_at"}
+
+    @classmethod
+    def editable_fields(cls):
+        lifecycle = set(cls.OPERATOR_SIGNATURE_FIELDS + cls.FINALISE_FIELDS + cls.WITHDRAW_FIELDS)
+        return [f.name for f in cls._meta.concrete_fields if f.name not in cls.NOT_EDITABLE | lifecycle]
+
+    @property
+    def client_section_done(self):
+        return bool(self.reconsent_signature)
+
     class Meta:
         ordering            = ["-date", "-time"]
         unique_together     = ("user", "treatment_number")
@@ -689,7 +797,7 @@ class RecordCard(models.Model):
         super().save(*args, **kwargs)
 
 
-class PRPConsentForm(BaseForm):
+class PRPConsentForm(LifecycleMixin, BaseForm):
     """
     PRP (Platelet-Rich Plasma) Consent — two-step.
     Step 1: client section. Step 2: operator section.
@@ -753,19 +861,21 @@ class PRPConsentForm(BaseForm):
     next_appointment            = models.CharField(max_length=200, blank=True)
     treatment_cost              = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
     operator_notes              = models.TextField(blank=True)
-    operator_signature          = models.TextField(blank=True)
-    operator_signed             = models.BooleanField(default=False)
-    operator_signed_at          = models.DateTimeField(null=True, blank=True)
-    operator_signed_by          = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
-        null=True, blank=True,
-        related_name="prp_operator_completions",
-    )
+    # Operator signature, completion and withdrawal come from LifecycleMixin.
+
+    OPERATOR_TEXT_FIELDS = [
+        "product_name", "product_batch", "vials_drawn", "centrifuge_details",
+        "application_method", "treatment_areas_operator", "next_appointment", "operator_notes",
+    ]
+    OPERATOR_FIELDS = OPERATOR_TEXT_FIELDS + ["treatment_cost"] + LifecycleMixin.OPERATOR_SIGNATURE_FIELDS
+
+    VIEW_URL_NAME     = "forms_system:prp_view"
+    OPERATOR_URL_NAME = "forms_system:prp_operator"
+    FORM_TITLE        = "PRP Consent"
 
     @property
-    def is_fully_complete(self):
-        return self.client_signed and self.operator_signed
+    def client_section_done(self):
+        return self.client_signed
 
     class Meta(BaseForm.Meta):
         verbose_name = "PRP Consent Form"
@@ -774,10 +884,11 @@ class PRPConsentForm(BaseForm):
         return f"PRP Consent — {self.user.full_name} ({self.completed_at.date()})"
 
 
-class LaserReConsent(models.Model):
+class LaserReConsent(LifecycleMixin, models.Model):
     """
     Standalone laser re-consent — completed at each laser appointment.
-    Practitioner-assisted: client signs, operator countersigns.
+    The client signs (or the practitioner on their behalf); the practitioner
+    adds treatment notes, countersigns and completes it.
     """
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -805,11 +916,8 @@ class LaserReConsent(models.Model):
     client_signature            = models.TextField()
     client_signed_at            = models.DateTimeField(null=True, blank=True)
 
-    # Operator
+    # Operator (signature, completion and withdrawal come from LifecycleMixin)
     treatment_notes             = models.TextField(blank=True)
-    operator_signature          = models.TextField(blank=True)
-    operator_signed             = models.BooleanField(default=False)
-    operator_signed_at          = models.DateTimeField(null=True, blank=True)
 
     # Guardian (minors only)
     guardian_name         = models.CharField(max_length=200, blank=True)
@@ -818,9 +926,48 @@ class LaserReConsent(models.Model):
     guardian_email        = models.EmailField(blank=True)
     guardian_signature    = models.TextField(blank=True)
 
+    CLIENT_ANSWER_FIELDS = [
+        "changes_consultation_form", "changes_medication", "changes_uv_exposure", "active_tan",
+        "changes_detail", "client_feedback", "consent_proceed",
+        "guardian_name", "guardian_relationship", "guardian_phone", "guardian_email",
+    ]
+    CLIENT_FIELDS = CLIENT_ANSWER_FIELDS + ["client_signature", "client_signed_at", "guardian_signature", "practitioner"]
+    OPERATOR_TEXT_FIELDS = ["treatment_notes"]
+    OPERATOR_FIELDS = OPERATOR_TEXT_FIELDS + LifecycleMixin.OPERATOR_SIGNATURE_FIELDS
+
+    VIEW_URL_NAME     = "forms_system:laser_reconsent_view"
+    OPERATOR_URL_NAME = "forms_system:laser_operator"
+    FORM_TITLE        = "Laser Re-Consent"
+
+    @property
+    def client_section_done(self):
+        return bool(self.client_signature)
+
     class Meta:
         ordering = ["-completed_at"]
         verbose_name = "Laser Re-Consent"
 
     def __str__(self):
         return f"Laser Re-Consent — {self.user.full_name} ({self.completed_at.date()})"
+
+# ---------------------------------------------------------------------------
+# Client field lists for forms built on BaseForm, derived from the model so
+# they can't drift: everything the client fills in, i.e. every field except
+# bookkeeping, signatures and the practitioner's / prescriber's sections.
+# ---------------------------------------------------------------------------
+
+_BASEFORM_CLIENT_META = ["signature", "guardian_signature", "completed_by_practitioner", "practitioner"]
+
+
+def _client_answer_fields(model):
+    skip = {"id", "user", "completed_at", "client_signed", "client_signed_at", *_BASEFORM_CLIENT_META}
+    skip |= set(LifecycleMixin.OPERATOR_SIGNATURE_FIELDS + LifecycleMixin.FINALISE_FIELDS + LifecycleMixin.WITHDRAW_FIELDS)
+    skip |= set(model.OPERATOR_FIELDS) | set(getattr(model, "PRESCRIBER_FIELDS", []))
+    return [f.name for f in model._meta.concrete_fields if f.name not in skip]
+
+
+for _model in (ConsultationForm, PhotographyConsent, PRPConsentForm):
+    _model.CLIENT_ANSWER_FIELDS = _client_answer_fields(_model)
+    _model.CLIENT_FIELDS = _model.CLIENT_ANSWER_FIELDS + _BASEFORM_CLIENT_META + (
+        ["client_signed", "client_signed_at"] if hasattr(_model, "client_signed") else []
+    )

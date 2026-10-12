@@ -1,0 +1,17 @@
+{% extends "forms_system/_lifecycle/record_page.html" %}
+
+{% block client_section %}{% include "forms_system/prp/_client_summary.html" %}{% endblock %}
+
+{% block practitioner_section %}
+<dl class="cform-summary-dl">
+    <dt>Product / kit</dt><dd>{{ f.product_name|default:"—" }}</dd>
+    <dt>Batch / lot</dt><dd>{{ f.product_batch|default:"—" }}</dd>
+    <dt>Vials drawn</dt><dd>{{ f.vials_drawn|default:"—" }}</dd>
+    <dt>Centrifuge</dt><dd>{{ f.centrifuge_details|default:"—" }}</dd>
+    <dt>Application method</dt><dd>{{ f.application_method|default:"—" }}</dd>
+    <dt>Treatment areas</dt><dd>{{ f.treatment_areas_operator|default:"—"|linebreaksbr }}</dd>
+    <dt>Cost</dt><dd>{% if f.treatment_cost is not None %}£{{ f.treatment_cost }}{% else %}—{% endif %}</dd>
+    <dt>Next appointment</dt><dd>{{ f.next_appointment|default:"—" }}</dd>
+    <dt>Notes</dt><dd>{{ f.operator_notes|default:"—"|linebreaksbr }}</dd>
+</dl>
+{% endblock %}

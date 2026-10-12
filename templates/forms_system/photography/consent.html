@@ -18,9 +18,8 @@
     </svg>
     <h2 class="cform-complete-card__title">Consent on file</h2>
     <p class="cform-complete-card__body">
-        Your photography and digital image consent was completed on
-        <strong>{{ existing.completed_at|date:"j F Y" }}</strong>{% if existing.completed_by_practitioner %} by your practitioner{% endif %}.
-        This form only needs to be completed once.
+        {% if on_behalf %}{{ target_user.full_name }}'s{% else %}Your{% endif %} photography and digital image consent was completed on
+        <strong>{{ existing.finalised_at|date:"j F Y" }}</strong>{% if existing.completed_by_practitioner %} with the practitioner{% endif %}.
     </p>
     <dl class="cform-complete-card__summary">
         <dt>Clinical records &amp; care planning</dt>
@@ -35,9 +34,12 @@
         <dd>{% if existing.consent_5 %}Yes{% else %}No{% endif %}</dd>
     </dl>
     <p class="cform-complete-card__hint">
-        If you need to update your consent preferences, please contact the practice directly.
+        You can change these preferences at any time by completing an updated consent form. Your previous consent stays on file.
     </p>
-    <a href="{% url 'accounts:profile' %}" class="btn btn--outline">Back to my profile</a>
+    <div style="display:flex; gap:0.75rem; justify-content:center; flex-wrap:wrap;">
+        <a href="{% url 'forms_system:photography' %}?new=1{% if on_behalf %}&amp;on_behalf_of={{ target_user.pk }}{% endif %}" class="btn btn--primary">Update consent</a>
+        {% if not on_behalf %}<a href="{% url 'accounts:profile' %}" class="btn btn--outline">Back to my profile</a>{% endif %}
+    </div>
 </div>
 </div>{# end cform-page #}
 
@@ -47,6 +49,7 @@
 {% if on_behalf %}
 <div class="cform-behalf-banner">Completing on behalf of <strong>{{ target_user.full_name }}</strong>.</div>
 {% endif %}
+{% include "forms_system/_lifecycle/client_banner.html" %}
 
 <div class="cform-header">
     <span class="cform-header__eyebrow">Caldwell Cosmetics</span>
@@ -59,9 +62,9 @@
     <div class="cform-section">
         <h2 class="cform-section__title">Client Information</h2>
         <div class="cform-grid cform-grid--2">
-            <div class="cform-field"><label class="cform-label">Full Name</label><input class="cform-input" type="text" name="full_name" value="{{ target_user.full_name }}" required></div>
-            <div class="cform-field"><label class="cform-label">Date of Birth</label><input class="cform-input" type="date" name="date_of_birth" id="dobField" required></div>
-            <div class="cform-field cform-field--full"><label class="cform-label">Address</label><textarea class="cform-input" name="address" rows="2"></textarea></div>
+            <div class="cform-field"><label class="cform-label">Full Name</label><input class="cform-input" type="text" name="full_name" value="{% if f %}{{ f.full_name|default_if_none:'' }}{% else %}{{ target_user.full_name }}{% endif %}" required></div>
+            <div class="cform-field"><label class="cform-label">Date of Birth</label><input class="cform-input" type="date" name="date_of_birth" id="dobField" required value="{{ f.date_of_birth|date:'Y-m-d' }}"></div>
+            <div class="cform-field cform-field--full"><label class="cform-label">Address</label><textarea class="cform-input" name="address" rows="2">{{ f.address|default_if_none:'' }}</textarea></div>
         </div>
     </div>
 
@@ -69,11 +72,11 @@
         <h2 class="cform-section__title">Consent Questions</h2>
         <p class="cform-hint">Please answer Yes or No to each question by checking the box (checked = Yes).</p>
         <div class="cform-consent-list">
-            <label class="cform-consent-item"><input type="checkbox" name="consent_1"><span>1. I give my consent for photographs to be taken for my records as deemed appropriate and stored digitally to aid my future care and treatment planning.</span></label>
-            <label class="cform-consent-item"><input type="checkbox" name="consent_2"><span>2. I give my consent for my photographs to be shown to other professionals as deemed appropriate to aid treatment planning.</span></label>
-            <label class="cform-consent-item"><input type="checkbox" name="consent_3"><span>3. I give my consent for my photographs to be used anonymously for patient education in the practice.</span></label>
-            <label class="cform-consent-item"><input type="checkbox" name="consent_4"><span>4. I give my consent for my photographs to be used anonymously on the practice website and in future advertising materials and on social media.</span></label>
-            <label class="cform-consent-item"><input type="checkbox" name="consent_5"><span>5. I give my consent for my photographs to be used with my identity and/or name present in the practice, on the practice website, in advertising materials, and on social media.</span></label>
+            <label class="cform-consent-item"><input type="checkbox" name="consent_1" {% if editing and f.consent_1 %}checked{% endif %}><span>1. I give my consent for photographs to be taken for my records as deemed appropriate and stored digitally to aid my future care and treatment planning.</span></label>
+            <label class="cform-consent-item"><input type="checkbox" name="consent_2" {% if editing and f.consent_2 %}checked{% endif %}><span>2. I give my consent for my photographs to be shown to other professionals as deemed appropriate to aid treatment planning.</span></label>
+            <label class="cform-consent-item"><input type="checkbox" name="consent_3" {% if editing and f.consent_3 %}checked{% endif %}><span>3. I give my consent for my photographs to be used anonymously for patient education in the practice.</span></label>
+            <label class="cform-consent-item"><input type="checkbox" name="consent_4" {% if editing and f.consent_4 %}checked{% endif %}><span>4. I give my consent for my photographs to be used anonymously on the practice website and in future advertising materials and on social media.</span></label>
+            <label class="cform-consent-item"><input type="checkbox" name="consent_5" {% if editing and f.consent_5 %}checked{% endif %}><span>5. I give my consent for my photographs to be used with my identity and/or name present in the practice, on the practice website, in advertising materials, and on social media.</span></label>
         </div>
         <p class="cform-hint" style="margin-top:1rem;">I give my consent as above until further notice and can withdraw this consent at any time by informing the practice in writing.</p>
     </div>
@@ -94,19 +97,19 @@
         <div class="cform-grid cform-grid--2">
             <div class="cform-field">
                 <label class="cform-label">Guardian Full Name <span class="cform-req">*</span></label>
-                <input class="cform-input" type="text" name="guardian_name" id="guardianName" placeholder="Full name">
+                <input class="cform-input" type="text" name="guardian_name" id="guardianName" placeholder="Full name" value="{{ f.guardian_name|default_if_none:'' }}">
             </div>
             <div class="cform-field">
                 <label class="cform-label">Relationship to Client <span class="cform-req">*</span></label>
-                <input class="cform-input" type="text" name="guardian_relationship" id="guardianRelationship" placeholder="e.g. Mother, Father, Guardian">
+                <input class="cform-input" type="text" name="guardian_relationship" id="guardianRelationship" placeholder="e.g. Mother, Father, Guardian" value="{{ f.guardian_relationship|default_if_none:'' }}">
             </div>
             <div class="cform-field">
                 <label class="cform-label">Guardian Phone <span class="cform-req">*</span></label>
-                <input class="cform-input" type="tel" name="guardian_phone" id="guardianPhone" placeholder="e.g. 07700 900000">
+                <input class="cform-input" type="tel" name="guardian_phone" id="guardianPhone" placeholder="e.g. 07700 900000" value="{{ f.guardian_phone|default_if_none:'' }}">
             </div>
             <div class="cform-field">
                 <label class="cform-label">Guardian Email</label>
-                <input class="cform-input" type="email" name="guardian_email" placeholder="Email address (optional)">
+                <input class="cform-input" type="email" name="guardian_email" placeholder="Email address (optional)" value="{{ f.guardian_email|default_if_none:'' }}">
             </div>
         </div>
         <p class="cform-label" style="margin-top:1.25rem;">Guardian Signature <span class="cform-req">*</span></p>
@@ -121,11 +124,11 @@
     </div>
 
     <div class="cform-submit-row">
-        <button type="submit" class="btn btn--primary btn--lg">Submit Consent</button>
+        <button type="submit" class="btn btn--primary btn--lg">{% if editing %}Update &amp; Sign{% else %}Submit Consent{% endif %}</button>
     </div>
 </form>
 </div>
-<script src="{% static 'js/sig_pad.js' %}?v=3"></script>
+<script src="{% static 'js/sig_pad.js' %}?v=4"></script>
 <script>
 (function () {
     var dob     = document.getElementById('dobField');

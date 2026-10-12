@@ -62,11 +62,11 @@ class Notification(models.Model):
             return '/dashboard/'
         urls = {
             self.FORM_CONSULTATION:    f'/forms/consultation/{self.client_id}/view/?form_pk={self.form_id}',
-            self.FORM_PHOTOGRAPHY:     f'/forms/photography/?on_behalf_of={self.client_id}',
+            self.FORM_PHOTOGRAPHY:     f'/forms/photography/{self.form_id}/operator/',
             self.FORM_BOTOX:           f'/forms/botox/{self.form_id}/operator/',
             self.FORM_BOTOX_PRESCRIBED: f'/forms/botox/{self.form_id}/operator/',
             self.FORM_PRP:             f'/forms/prp/{self.form_id}/operator/',
-            self.FORM_LASER_RECONSENT: f'/forms/laser/{self.form_id}/view/',
+            self.FORM_LASER_RECONSENT: f'/forms/laser/{self.form_id}/operator/',
         }
         return urls.get(self.form_type, '#')
 

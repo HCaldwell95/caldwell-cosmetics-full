@@ -1,0 +1,61 @@
+<!-- Read-only PRP client section. Expects `f`. -->
+<div class="cform-section cform-section--readonly">
+    <h2 class="cform-section__title">Client Details <span class="cform-readonly-badge">Read Only</span></h2>
+    <dl class="cform-summary-dl">
+        <dt>Name</dt><dd>{{ f.full_name }}</dd>
+        <dt>DOB</dt><dd>{{ f.date_of_birth|date:"j F Y" }}</dd>
+        <dt>Phone</dt><dd>{{ f.phone_number|default:"—" }}</dd>
+        <dt>Email</dt><dd>{{ f.email }}</dd>
+        <dt>Address</dt><dd>{{ f.address|default:"—"|linebreaksbr }}</dd>
+        <dt>Emergency contact</dt><dd>{{ f.emergency_contact_name|default:"—" }}{% if f.emergency_contact_phone %} — {{ f.emergency_contact_phone }}{% endif %}</dd>
+        {% if f.guardian_name %}<dt>Parent / guardian</dt><dd>{{ f.guardian_name }} ({{ f.guardian_relationship }}){% if f.guardian_phone %} — {{ f.guardian_phone }}{% endif %}</dd>{% endif %}
+    </dl>
+</div>
+
+<div class="cform-section cform-section--readonly">
+    <h2 class="cform-section__title">Medical History <span class="cform-readonly-badge">Read Only</span></h2>
+    <dl class="cform-summary-dl">
+        <dt>Blood disorders</dt><dd>{{ f.blood_disorders|yesno:"Yes,No" }}</dd>
+        <dt>On anticoagulants</dt><dd>{{ f.on_anticoagulants|yesno:"Yes,No" }}</dd>
+        <dt>Active infection</dt><dd>{{ f.active_infection|yesno:"Yes,No" }}</dd>
+        <dt>Autoimmune disease</dt><dd>{{ f.autoimmune_disease|yesno:"Yes,No" }}</dd>
+        <dt>History of cancer</dt><dd>{{ f.history_of_cancer|yesno:"Yes,No" }}</dd>
+        <dt>Skin conditions</dt><dd>{{ f.skin_conditions|yesno:"Yes,No" }}</dd>
+        <dt>Recent vaccination</dt><dd>{{ f.recent_vaccination|yesno:"Yes,No" }}</dd>
+        <dt>Communicable diseases</dt><dd>{{ f.communicable_diseases|yesno:"Yes,No" }}</dd>
+        <dt>Keloid scarring</dt><dd>{{ f.keloid_scarring|yesno:"Yes,No" }}</dd>
+        <dt>Current medications</dt><dd>{{ f.current_medications|default:"None stated" }}</dd>
+        <dt>Other conditions</dt><dd>{{ f.other_conditions|default:"None stated" }}</dd>
+        <dt>Pregnant</dt><dd>{{ f.is_pregnant|yesno:"Yes,No" }}</dd>
+        <dt>Breastfeeding</dt><dd>{{ f.is_breastfeeding|yesno:"Yes,No" }}</dd>
+        <dt>Medical problems</dt><dd>{{ f.has_medical_problems|yesno:"Yes,No" }}</dd>
+        <dt>On medication</dt><dd>{{ f.on_medication|yesno:"Yes,No" }}</dd>
+        <dt>Allergies</dt><dd>{{ f.has_allergies|yesno:"Yes,No" }}</dd>
+        <dt>Previous PRP</dt><dd>{{ f.previous_prp|yesno:"Yes,No" }}</dd>
+        <dt>Details for "yes" answers</dt><dd>{{ f.yes_details|default:"—" }}</dd>
+    </dl>
+</div>
+
+<div class="cform-section cform-section--readonly">
+    <h2 class="cform-section__title">Treatment Goals <span class="cform-readonly-badge">Read Only</span></h2>
+    <dl class="cform-summary-dl">
+        <dt>Areas requested</dt><dd>{{ f.treatment_areas|default:"—" }}</dd>
+        <dt>Expectations</dt><dd>{{ f.expectations|default:"—" }}</dd>
+    </dl>
+</div>
+
+<div class="cform-section cform-section--readonly">
+    <h2 class="cform-section__title">Consent &amp; Signature <span class="cform-readonly-badge">Read Only</span></h2>
+    <dl class="cform-summary-dl">
+        <dt>Procedure</dt><dd>{{ f.consent_procedure|yesno:"Agreed,Not agreed" }}</dd>
+        <dt>Risks</dt><dd>{{ f.consent_risks|yesno:"Agreed,Not agreed" }}</dd>
+        <dt>Results</dt><dd>{{ f.consent_results|yesno:"Agreed,Not agreed" }}</dd>
+        <dt>Aftercare</dt><dd>{{ f.consent_aftercare|yesno:"Agreed,Not agreed" }}</dd>
+        <dt>Photographs</dt><dd>{{ f.consent_photos|yesno:"Agreed,Not agreed" }}</dd>
+        <dt>Privacy</dt><dd>{{ f.consent_privacy|yesno:"Agreed,Not agreed" }}</dd>
+        <dt>Agreement</dt><dd>{{ f.consent_agreement|yesno:"Agreed,Not agreed" }}</dd>
+        <dt>Signed</dt><dd>{{ f.client_signed_at|date:"j F Y \a\t H:i" }}{% if f.completed_by_practitioner %} (completed with the practitioner){% endif %}</dd>
+        <dt>Client signature</dt><dd>{% if f.signature %}<img src="{{ f.signature }}" alt="Client signature" class="cform-sig-preview">{% else %}—{% endif %}</dd>
+        {% if f.guardian_signature %}<dt>Guardian signature</dt><dd><img src="{{ f.guardian_signature }}" alt="Guardian signature" class="cform-sig-preview"></dd>{% endif %}
+    </dl>
+</div>

@@ -6,7 +6,8 @@
 {% block nav_closed_dates %}dash-sidenav__link--active{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/pages/dashboard.css' %}?v=2">
+<link rel="stylesheet" href="{% static 'css/pages/dashboard.css' %}?v=6">
+<link rel="stylesheet" href="{% static 'css/components/worklist.css' %}?v=1">
 {% endblock %}
 
 {% block content %}
@@ -63,6 +64,6 @@
     const CSRF_TOKEN = "{{ csrf_token }}";
 </script>
 
-<script src="{% static 'js/client-panel.js' %}?v=4"></script>
+<script src="{% static 'js/client-panel.js' %}?v=5"></script>
 <script src="{% static 'js/closed-dates.js' %}"></script>
 {% endblock %}

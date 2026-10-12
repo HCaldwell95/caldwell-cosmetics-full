@@ -1,0 +1,18 @@
+<!-- Read-only photography consent client section. Expects `f`. -->
+<div class="cform-section cform-section--readonly">
+    <h2 class="cform-section__title">Client &amp; Consent <span class="cform-readonly-badge">Read Only</span></h2>
+    <dl class="cform-summary-dl">
+        <dt>Name</dt><dd>{{ f.full_name }}</dd>
+        <dt>DOB</dt><dd>{{ f.date_of_birth|date:"j F Y" }}</dd>
+        <dt>Address</dt><dd>{{ f.address|default:"—"|linebreaksbr }}</dd>
+        <dt>Clinical records &amp; care planning</dt><dd>{{ f.consent_1|yesno:"Yes,No" }}</dd>
+        <dt>Sharing with other professionals</dt><dd>{{ f.consent_2|yesno:"Yes,No" }}</dd>
+        <dt>Anonymous use in patient education</dt><dd>{{ f.consent_3|yesno:"Yes,No" }}</dd>
+        <dt>Anonymous use on website / social media</dt><dd>{{ f.consent_4|yesno:"Yes,No" }}</dd>
+        <dt>Use with identity / name in advertising</dt><dd>{{ f.consent_5|yesno:"Yes,No" }}</dd>
+        {% if f.guardian_name %}<dt>Parent / guardian</dt><dd>{{ f.guardian_name }} ({{ f.guardian_relationship }}){% if f.guardian_phone %} — {{ f.guardian_phone }}{% endif %}</dd>{% endif %}
+        <dt>Signed</dt><dd>{{ f.completed_at|date:"j F Y \a\t H:i" }}{% if f.completed_by_practitioner %} (completed with the practitioner){% endif %}</dd>
+        <dt>Client signature</dt><dd>{% if f.signature %}<img src="{{ f.signature }}" alt="Client signature" class="cform-sig-preview">{% else %}—{% endif %}</dd>
+        {% if f.guardian_signature %}<dt>Guardian signature</dt><dd><img src="{{ f.guardian_signature }}" alt="Guardian signature" class="cform-sig-preview"></dd>{% endif %}
+    </dl>
+</div>

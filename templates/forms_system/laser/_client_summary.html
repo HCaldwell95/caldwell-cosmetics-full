@@ -1,0 +1,78 @@
+<!-- Read-only Laser Re-Consent client section. Expects `f`. -->
+    <!-- Pre-treatment checks -->
+    <div class="cform-section cform-section--readonly">
+        <h2 class="cform-section__title">Pre-Treatment Checks</h2>
+        <div class="cform-grid cform-grid--2">
+            <div>
+                <label class="cform-label">Changes to consultation / medical history?</label>
+                <p class="cform-readonly-value">{{ f.changes_consultation_form|yesno:"Yes,No" }}</p>
+            </div>
+            <div>
+                <label class="cform-label">Changes to medication?</label>
+                <p class="cform-readonly-value">{{ f.changes_medication|yesno:"Yes,No" }}</p>
+            </div>
+            <div>
+                <label class="cform-label">Changes to UV exposure?</label>
+                <p class="cform-readonly-value">{{ f.changes_uv_exposure|yesno:"Yes,No" }}</p>
+            </div>
+            <div>
+                <label class="cform-label">Active tan?</label>
+                <p class="cform-readonly-value">{{ f.active_tan|yesno:"Yes,No" }}</p>
+            </div>
+            {% if f.changes_detail %}
+            <div style="grid-column:1/-1;">
+                <label class="cform-label">Detail of changes</label>
+                <p class="cform-readonly-value">{{ f.changes_detail }}</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Client section -->
+    <div class="cform-section cform-section--readonly">
+        <h2 class="cform-section__title">Client</h2>
+        <div class="cform-grid cform-grid--2">
+            {% if f.client_feedback %}
+            <div style="grid-column:1/-1;">
+                <label class="cform-label">Client feedback / concerns</label>
+                <p class="cform-readonly-value">{{ f.client_feedback }}</p>
+            </div>
+            {% endif %}
+            <div>
+                <label class="cform-label">Consent to proceed</label>
+                <p class="cform-readonly-value">{{ f.consent_proceed|yesno:"Yes,No" }}</p>
+            </div>
+            <div>
+                <label class="cform-label">Client signed at</label>
+                <p class="cform-readonly-value">
+                    {% if f.client_signed_at %}{{ f.client_signed_at|date:"d M Y, H:i" }}{% else %}—{% endif %}
+                </p>
+            </div>
+        </div>
+        {% if f.client_signature %}
+        <div style="margin-top:1rem;">
+            <label class="cform-label">Client signature</label>
+            <img src="{{ f.client_signature }}" alt="Client signature" style="max-width:280px;border:1px solid #e0d8cc;border-radius:6px;display:block;margin-top:0.4rem;">
+        </div>
+        {% endif %}
+    </div>
+
+    {% if f.guardian_name %}
+    <!-- Guardian section (minors) -->
+    <div class="cform-section cform-section--readonly">
+        <h2 class="cform-section__title">Guardian</h2>
+        <div class="cform-grid cform-grid--2">
+            <div><label class="cform-label">Name</label><p class="cform-readonly-value">{{ f.guardian_name }}</p></div>
+            <div><label class="cform-label">Relationship</label><p class="cform-readonly-value">{{ f.guardian_relationship|default:"—" }}</p></div>
+            <div><label class="cform-label">Phone</label><p class="cform-readonly-value">{{ f.guardian_phone|default:"—" }}</p></div>
+            <div><label class="cform-label">Email</label><p class="cform-readonly-value">{{ f.guardian_email|default:"—" }}</p></div>
+        </div>
+        {% if f.guardian_signature %}
+        <div style="margin-top:1rem;">
+            <label class="cform-label">Guardian signature</label>
+            <img src="{{ f.guardian_signature }}" alt="Guardian signature" style="max-width:280px;border:1px solid #e0d8cc;border-radius:6px;display:block;margin-top:0.4rem;">
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+

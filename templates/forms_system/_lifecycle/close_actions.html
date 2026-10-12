@@ -1,0 +1,46 @@
+{# Complete / Withdraw for the practitioner page. Expects `f` (and `error`). #}
+<form class="cform-section" method="post" action="{{ f.operator_url }}">
+    {% csrf_token %}
+    <h2 class="cform-section__title">Complete Form</h2>
+    <ul class="cform-hint" style="margin:0 0 1rem 1.25rem; line-height:1.8;">
+        <li>Client section: {% if f.client_section_done %}signed ✓{% else %}not signed{% endif %}</li>
+        {% if f.PRESCRIBER_FIELDS %}
+        <li>Prescriber section: {% if f.prescriber_signed %}signed ✓ ({{ f.get_prescription_decision_display }}){% else %}not signed{% endif %}</li>
+        <li>Practitioner section: {% if f.operator_signed %}signed ✓{% elif f.prescriber_signed and not f.is_prescribed %}not needed — not prescribed{% else %}not signed{% endif %}</li>
+        {% else %}
+        <li>Practitioner section: {% if f.operator_signed %}signed ✓{% else %}not signed{% endif %}</li>
+        {% endif %}
+    </ul>
+    {% if f.can_finalise %}
+    <label class="cform-check" style="margin-bottom:1rem;">
+        <input type="checkbox" name="confirm_complete" value="1" required>
+        <span>I've checked every section. Once completed, this form becomes a <strong>read-only record</strong> and can't be changed by anyone.</span>
+    </label>
+    <div class="cform-submit-row">
+        <button type="submit" name="action" value="complete" class="btn btn--primary btn--lg">Complete Form</button>
+    </div>
+    {% else %}
+    <p class="cform-hint">The form can be completed once every section above has been signed.</p>
+    {% endif %}
+</form>
+
+<details class="cform-section"{% if error and 'withdraw' in error %} open{% endif %}>
+    <summary class="cform-section__title" style="cursor:pointer;">Withdraw Form</summary>
+    <form method="post" action="{{ f.operator_url }}">
+        {% csrf_token %}
+        <p class="cform-hint">Use this if the form won't be completed — for example the client never booked, or decided not to go ahead.
+            The form is closed and kept on file as a read-only record; it is <strong>not deleted</strong>.
+            The client's next form of this type will start fresh.</p>
+        <div class="cform-field">
+            <label class="cform-label" for="withdrawnReason">Reason</label>
+            <input class="cform-input" type="text" id="withdrawnReason" name="withdrawn_reason" maxlength="300" placeholder="e.g. No appointment booked" required>
+        </div>
+        <label class="cform-check" style="margin-bottom:1rem;">
+            <input type="checkbox" name="confirm_withdraw" value="1" required>
+            <span>I want to withdraw this form. It can't be reopened afterwards.</span>
+        </label>
+        <div class="cform-submit-row">
+            <button type="submit" name="action" value="withdraw" class="btn btn--ghost btn--lg">Withdraw Form</button>
+        </div>
+    </form>
+</details>

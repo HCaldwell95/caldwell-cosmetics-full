@@ -6,6 +6,7 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/pages/accounts.css' %}">
+{% if user.is_practitioner %}<link rel="stylesheet" href="{% static 'css/components/worklist.css' %}?v=1">{% endif %}
 {% endblock %}
 
 {% block content %}
@@ -112,6 +113,10 @@
             </address>
         </section>
 
+        {% if user.is_practitioner %}
+        {# Practitioners don't fill in forms themselves — show what's waiting on them instead. #}
+        {% include "dashboard/_practitioner_worklist.html" %}
+        {% else %}
         <section class="profile-card profile-card--wide">
             <h2 class="profile-card__title">My Forms</h2>
             <p class="profile-card__subtitle" style="margin-bottom:1.25rem;">
@@ -121,6 +126,7 @@
                 <div class="pforms-loading">Loading…</div>
             </div>
         </section>
+        {% endif %}
 
         <section class="profile-card">
             <h2 class="profile-card__title">Pre-Paid Treatments</h2>
@@ -209,6 +215,7 @@ function safeColour(c) {
 (function () {
     const grid   = document.getElementById('profileFormsBar');
     const userId = {{ request.user.pk }};
+    if (!grid) return;  // practitioners see their worklist instead
 
     fetch(`/forms/status/${userId}/`)
         .then(r => r.json())

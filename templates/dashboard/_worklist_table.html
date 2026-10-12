@@ -1,21 +1,24 @@
-<!-- Botox forms awaiting a prescriber's signature. Expects `rows`. -->
+<!-- Forms awaiting a staff member. Expects `rows`; `show_form` adds a Form column. -->
 <div class="dash-client-table-wrap">
     <table class="dash-client-table">
         <thead>
-            <tr><th>Client</th><th>Next appointment</th><th>Submitted</th><th>Status</th><th></th></tr>
+            <tr><th>Client</th>{% if show_form %}<th>Form</th>{% endif %}<th>Next appointment</th><th>Submitted</th><th>Status</th><th></th></tr>
         </thead>
         <tbody>
             {% for f in rows %}
             <tr>
                 <td><strong>{{ f.user.full_name }}</strong></td>
+                {% if show_form %}<td>{{ f.FORM_TITLE }}{% if f.treatment_number %} #{{ f.treatment_number }}{% endif %}</td>{% endif %}
                 <td>{% if f.next_appt_date %}{{ f.next_appt_date|date:"D j M Y" }} at {{ f.next_appt_time|time:"H:i" }}{% else %}<span class="dash-muted">None booked</span>{% endif %}</td>
-                <td>{{ f.client_signed_at|date:"j M Y" }}</td>
+                <td>{{ f.started_at|date:"j M Y" }}</td>
                 <td>
                     {% if f.worklist_status == "changed" %}<span class="dash-status dash-status--warning">Client changed answers — re-sign</span>
+                    {% elif f.worklist_status == "ready" %}<span class="dash-status dash-status--done">Signed — ready to complete</span>
                     {% elif f.worklist_status == "draft" %}<span class="dash-status">Draft saved</span>
                     {% else %}<span class="dash-status dash-status--new">New</span>{% endif %}
+                    {% if f.PRESCRIBER_FIELDS and not f.prescriber_signed and show_form %}<span class="dash-status">Awaiting prescriber</span>{% endif %}
                 </td>
-                <td style="text-align:right;"><a href="{% url 'forms_system:botox_prescriber' f.pk %}" class="btn btn--primary btn--sm">Review &amp; Sign</a></td>
+                <td style="text-align:right;"><a href="{{ f.worklist_url }}" class="btn btn--primary btn--sm">{% if f.worklist_status == "ready" %}Complete{% else %}Review &amp; Sign{% endif %}</a></td>
             </tr>
             {% endfor %}
         </tbody>

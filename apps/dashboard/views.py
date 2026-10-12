@@ -7,7 +7,6 @@ from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
 from django.core.mail import send_mail
 from django.db import IntegrityError, models, transaction
-from django.db.models import OuterRef, Prefetch, Subquery
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
@@ -16,12 +15,12 @@ from django.views.decorators.http import require_POST
 from apps.accounts.forms import PrescriberAccountForm, PrescriberPhotoForm
 from apps.accounts.permissions import clinical_staff_required, practitioner_required, prescriber_required
 from apps.bookings.models import Booking, ClosedDate
+from apps.forms_system import worklists
 from apps.bookings.views import BOOKING_HORIZON_DAYS
 from apps.treatments.models import Treatment, TreatmentCategory
 from apps.forms_system.models import (
     ConsultationForm,
     BotoxConsentForm,
-    BotoxFormRevision,
     PhotographyConsent,
     RecordCard,
     PRPConsentForm,
@@ -84,84 +83,45 @@ def _get_latest_form(model, user):
         return None
 
 
+def _fmt(dt):
+    return dt.strftime("%d/%m/%Y") if dt else None
+
+
+def _form_entry(form, is_latest):
+    """One form's status and links, for the client panel."""
+    entry = {
+        "id":              form.pk,
+        "date":            _fmt(getattr(form, "completed_at", None) or getattr(form, "created_at", None)),
+        "by_practitioner": getattr(form, "completed_by_practitioner", False),
+        "client_signed":   form.client_section_done,
+        "operator_signed": form.operator_signed,
+        "finalised":       form.finalised,
+        "finalised_date":  _fmt(form.finalised_at),
+        "withdrawn":       form.withdrawn,
+        "withdrawn_date":  _fmt(form.withdrawn_at),
+        "fully_complete":  form.finalised,
+        "view_url":        form.view_url,
+        "operator_url":    form.operator_url,
+        "is_latest":       is_latest,
+    }
+    if isinstance(form, BotoxConsentForm):
+        entry.update(prescriber_signed=form.prescriber_signed, prescribed=form.is_prescribed)
+    return entry
+
+
 def _client_form_status(user):
     """Returns a full archive of all consent forms for a client, ordered newest first."""
-    def fmt(dt):
-        return dt.strftime("%d/%m/%Y") if dt else None
-
-    consultations = list(ConsultationForm.objects.filter(user=user).order_by("-completed_at"))
-    photographys  = list(PhotographyConsent.objects.filter(user=user).order_by("-completed_at"))
-    botox_forms   = list(BotoxConsentForm.objects.filter(user=user).order_by("-completed_at"))
-    prp_forms     = list(PRPConsentForm.objects.filter(user=user).order_by("-completed_at"))
-    laser_forms   = list(LaserReConsent.objects.filter(user=user).order_by("-completed_at"))
+    def forms(model):
+        qs = model.objects.filter(user=user).order_by("-completed_at")
+        return {"forms": [_form_entry(f, i == 0) for i, f in enumerate(qs)]}
 
     return {
-        "consultation": {
-            "forms": [
-                {
-                    "id":               f.pk,
-                    "date":             fmt(f.completed_at),
-                    "by_practitioner":  f.completed_by_practitioner,
-                    "is_latest":        i == 0,
-                }
-                for i, f in enumerate(consultations)
-            ],
-        },
-        "photography": {
-            "forms": [
-                {
-                    "id":               f.pk,
-                    "date":             fmt(f.completed_at),
-                    "by_practitioner":  f.completed_by_practitioner,
-                    "is_latest":        i == 0,
-                }
-                for i, f in enumerate(photographys)
-            ],
-        },
-        "botox": {
-            "forms": [
-                {
-                    "id":               f.pk,
-                    "date":             fmt(f.completed_at),
-                    "client_signed":    f.client_signed,
-                    "prescriber_signed": f.prescriber_signed,
-                    "prescribed":       f.is_prescribed,
-                    "operator_signed":  f.operator_signed,
-                    "finalised":        f.finalised,
-                    "finalised_date":   fmt(f.finalised_at),
-                    "withdrawn":        f.withdrawn,
-                    "withdrawn_date":   fmt(f.withdrawn_at),
-                    "fully_complete":   f.is_fully_complete,
-                    "is_latest":        i == 0,
-                }
-                for i, f in enumerate(botox_forms)
-            ],
-        },
-        "prp": {
-            "forms": [
-                {
-                    "id":               f.pk,
-                    "date":             fmt(f.completed_at),
-                    "client_signed":    f.client_signed,
-                    "fully_complete":   f.is_fully_complete,
-                    "is_latest":        i == 0,
-                }
-                for i, f in enumerate(prp_forms)
-            ],
-        },
-        "laser_reconsent": {
-            "forms": [
-                {
-                    "id":               f.pk,
-                    "date":             fmt(f.completed_at),
-                    "client_signed":    bool(f.client_signature),
-                    "operator_signed":  f.operator_signed,
-                    "is_latest":        i == 0,
-                }
-                for i, f in enumerate(laser_forms)
-            ],
-        },
-        "record_cards": RecordCard.objects.filter(user=user).count(),
+        "consultation":    forms(ConsultationForm),
+        "photography":     forms(PhotographyConsent),
+        "botox":           forms(BotoxConsentForm),
+        "prp":             forms(PRPConsentForm),
+        "laser_reconsent": forms(LaserReConsent),
+        "record_cards":    RecordCard.objects.filter(user=user).count(),
     }
 
 
@@ -743,6 +703,9 @@ def client_profile(request, pk):
                 "treatment_number": rc.treatment_number,
                 "date":             rc.date.strftime("%d %b %Y"),
                 "treatment_for":    rc.treatment_for,
+                "status":           "completed" if rc.finalised else "withdrawn" if rc.withdrawn else "draft",
+                "view_url":         rc.view_url,
+                "operator_url":     rc.operator_url,
             }
             for rc in record_cards
         ],
@@ -1013,43 +976,6 @@ def note_view(request, pk, note_pk):
 # Prescriber — My Account
 # ---------------------------------------------------------------------------
 
-def _prescriber_worklist():
-    """
-    Botox forms the client has signed that still need a prescriber's
-    signature, soonest appointment first (then oldest submission).
-    """
-    today = timezone.now().date()
-    next_booking = (
-        Booking.objects
-        .filter(user=OuterRef("user"), status=Booking.STATUS_CONFIRMED, date__gte=today)
-        .order_by("date", "start_time")
-    )
-    forms = list(
-        BotoxConsentForm.objects
-        .filter(finalised=False, withdrawn=False, client_signed=True, prescriber_signed=False, user__is_active=True)
-        .select_related("user")
-        .annotate(
-            next_appt_date=Subquery(next_booking.values("date")[:1]),
-            next_appt_time=Subquery(next_booking.values("start_time")[:1]),
-        )
-        .prefetch_related(Prefetch(
-            "revisions",
-            queryset=BotoxFormRevision.objects.filter(section=BotoxFormRevision.Section.PRESCRIBER),
-            to_attr="prescriber_revisions",
-        ))
-    )
-    for f in forms:
-        last = f.prescriber_revisions[-1] if f.prescriber_revisions else None
-        if last and last.action == BotoxFormRevision.Action.SIGNATURE_WITHDRAWN:
-            f.worklist_status = "changed"
-        elif last:
-            f.worklist_status = "draft"
-        else:
-            f.worklist_status = "new"
-    forms.sort(key=lambda f: (f.next_appt_date is None, f.next_appt_date or today, f.client_signed_at))
-    return forms
-
-
 @prescriber_required
 def prescriber_home(request):
     user = request.user
@@ -1077,7 +1003,7 @@ def prescriber_home(request):
                 return redirect("dashboard:prescriber_home")
             open_panel = "details"
 
-    worklist = _prescriber_worklist()
+    awaiting, unbooked = worklists.split_by_appointment(worklists.prescriber_worklist())
     signed = (
         BotoxConsentForm.objects
         .filter(prescriber=user, prescriber_signed=True)
@@ -1088,8 +1014,8 @@ def prescriber_home(request):
     return render(request, "dashboard/prescriber_home.html", {
         # Clients with an appointment come first; the rest are tucked away
         # so they don't clutter the list for prescribing days.
-        "awaiting":      [f for f in worklist if f.next_appt_date],
-        "unbooked":      [f for f in worklist if not f.next_appt_date],
+        "awaiting":      awaiting,
+        "unbooked":      unbooked,
         "signed":        signed,
         "details":       getattr(user, "prescriber_details", None),
         "account_form":  account_form,

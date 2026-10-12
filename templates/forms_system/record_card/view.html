@@ -12,7 +12,7 @@
 
     <!-- HEADER -->
     <div class="cform-header">
-        <span class="cform-header__eyebrow">Completed Record Card</span>
+        <span class="cform-header__eyebrow">{% if card.finalised %}Completed Record Card{% elif card.withdrawn %}Withdrawn Record Card{% else %}Draft Record Card{% endif %}</span>
         <h1 class="cform-header__title">
             Dynamix Record Card — {{ card.user.full_name }}
         </h1>
@@ -20,6 +20,7 @@
             Treatment #{{ card.treatment_number }} • {{ card.date }} {{ card.time }}
         </p>
     </div>
+{% include "forms_system/_lifecycle/record_status.html" %}
 
     <!-- MAIN SECTION -->
     <div class="cform-section cform-section--readonly">
@@ -210,10 +211,22 @@
         {% endif %}
 
         <p class="cform-sig-name">
-            Signed at {{ card.reconsent_signed_at|date:"j F Y H:i" }}
+            {% if card.reconsent_signed_at %}Signed at {{ card.reconsent_signed_at|date:"j F Y H:i" }}{% endif %}
         </p>
 
     </div>
 
+    <!-- PRACTITIONER SIGNATURE -->
+    <div class="cform-section">
+        <h2 class="cform-section__title">Practitioner Signature</h2>
+        {% if card.operator_signed %}
+            <img class="cform-sig-preview" src="{{ card.operator_signature }}" alt="Practitioner signature">
+            <p class="cform-sig-name">Signed by {{ card.operator_signed_by.full_name|default:"—" }} on {{ card.operator_signed_at|date:"j F Y H:i" }}</p>
+        {% else %}
+            <p class="cform-readonly-value">Not signed</p>
+        {% endif %}
+    </div>
+
+    {% include "forms_system/_lifecycle/history.html" %}
 </div>
 {% endblock %}

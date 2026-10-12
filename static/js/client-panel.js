@@ -130,80 +130,56 @@ function renderProfilePanel(data) {
              + '<div id="' + contentId + '" class="dash-form-pills" style="display:none;margin-top:0.4rem;">' + archiveHtml + '</div>';
     }
 
-    // Consultation
-    function mkConsultPill(f, archived) {
-        var href  = DASHBOARD_URLS.formConsultationView.replace('{id}', u.id) + '?form_pk=' + f.id;
-        var label = f.by_practitioner ? 'Laser Consultation (Operator-assisted)' : 'Laser Consultation';
-        return pill(label, archived ? 'archived' : 'complete', href, 'Completed ' + f.date);
+    // Every form follows the same lifecycle: in progress (client and/or
+    // practitioner sections) → completed or withdrawn (read-only record).
+    // In-progress forms open the practitioner's page; closed ones the record.
+    function mkFormPill(title, f, archived) {
+        var label = title + (f.by_practitioner ? ' (with practitioner)' : '') + ' — ' + f.date;
+        if (f.finalised) return pill(label, archived ? 'archived' : 'complete', f.view_url, 'Completed ' + f.finalised_date + ' · Read only');
+        if (f.withdrawn) return pill(label, 'archived', f.view_url, 'Withdrawn ' + f.withdrawn_date + ' · Read only');
+        var href = isPrescriber ? f.view_url : f.operator_url;
+        var sub  = (f.client_signed ? 'Client ✓' : 'Awaiting client') + ' · '
+                 + (f.operator_signed ? 'Practitioner ✓ — ready to complete' : 'Awaiting practitioner');
+        return pill(label, 'incomplete', href, sub);
     }
-    var consultCurrentPills = forms.consultation.forms.length
-        ? mkConsultPill(forms.consultation.forms[0], false)
-        : pill('Laser Consultation', 'incomplete', null, 'Not completed');
-    var consultArchivePills = forms.consultation.forms.slice(1).map(function (f) { return mkConsultPill(f, true); }).join('');
 
-    // Photography
-    function mkPhotoPill(f, archived) {
-        var label = f.by_practitioner ? 'Photography (Operator-assisted)' : 'Photography';
-        var href  = isPrescriber ? null : DASHBOARD_URLS.formPhotography.replace('{id}', u.id);
-        return pill(label, archived ? 'archived' : 'complete', href, 'Completed ' + f.date);
+    function formPills(title, list, emptyText, mk) {
+        mk = mk || function (f, archived) { return mkFormPill(title, f, archived); };
+        return {
+            current: list.length ? mk(list[0], false) : pill(title, 'incomplete', null, emptyText || 'Not completed'),
+            archive: list.slice(1).map(function (f) { return mk(f, true); }).join(''),
+        };
     }
-    var photoCurrentPills = forms.photography.forms.length
-        ? mkPhotoPill(forms.photography.forms[0], false)
-        : pill('Photography Consent', 'incomplete', null, 'Not completed');
-    var photoArchivePills = forms.photography.forms.slice(1).map(function (f) { return mkPhotoPill(f, true); }).join('');
 
-    // Botox
+    // Botox adds the prescriber's section; prescribers go to their own page.
     function mkBotoxPill(f, archived) {
         var label = 'Botox Consent & Prescription — ' + f.date;
-        if (f.finalised) {
-            return pill(label, archived ? 'archived' : 'complete', DASHBOARD_URLS.botoxView.replace('{id}', f.id), 'Completed ' + f.finalised_date + ' · Read only');
-        }
-        if (f.withdrawn) {
-            return pill(label, 'archived', DASHBOARD_URLS.botoxView.replace('{id}', f.id), 'Withdrawn ' + f.withdrawn_date + ' · Read only');
-        }
+        if (f.finalised || f.withdrawn) return mkFormPill('Botox Consent & Prescription', f, archived);
         if (!f.client_signed) return pill(label, 'incomplete', null, 'Incomplete');
 
-        var href = isPrescriber
-            ? DASHBOARD_URLS.botoxPrescriber.replace('{id}', f.id)
-            : DASHBOARD_URLS.botoxOperator.replace('{id}', f.id);
+        var href = isPrescriber ? DASHBOARD_URLS.botoxPrescriber.replace('{id}', f.id) : f.operator_url;
         var prescriberStatus = !f.prescriber_signed ? 'Awaiting prescriber'
                              : f.prescribed         ? 'Prescriber ✓'
                              :                        'Not prescribed';
-        var operatorStatus   = f.operator_signed ? 'Operator ✓' : 'Awaiting operator';
+        var operatorStatus   = f.operator_signed ? 'Practitioner ✓' : 'Awaiting practitioner';
         var sub = 'Client ✓ · ' + prescriberStatus + ' · ' + operatorStatus;
 
         // For the prescriber, their part being done is what counts.
-        var done = isPrescriber ? f.prescriber_signed : f.fully_complete;
-        return pill(label, done ? (archived ? 'archived' : 'complete') : 'incomplete', href, sub);
+        var done = isPrescriber && f.prescriber_signed;
+        return pill(label, done ? 'complete' : 'incomplete', href, sub);
     }
-    var botoxCurrentPills = forms.botox.forms.length
-        ? mkBotoxPill(forms.botox.forms[0], false)
-        : pill('Botox Consent & Prescription', 'incomplete', null, 'Not completed');
-    var botoxArchivePills = forms.botox.forms.slice(1).map(function (f) { return mkBotoxPill(f, true); }).join('');
 
-    // PRP
-    function mkPrpPill(f, archived) {
-        var opHref = isPrescriber ? null : DASHBOARD_URLS.prpOperator.replace('{id}', f.id);
-        if (f.fully_complete) return pill('PRP Consent — ' + f.date, archived ? 'archived' : 'complete', opHref, 'Client ✓ · Operator ✓');
-        if (f.client_signed)  return pill('PRP Consent — ' + f.date, 'incomplete', opHref, 'Client ✓ · Awaiting operator');
-        return pill('PRP Consent — ' + f.date, 'incomplete', null, 'Incomplete');
-    }
-    var prpCurrentPills = forms.prp.forms.length
-        ? mkPrpPill(forms.prp.forms[0], false)
-        : pill('PRP Consent', 'incomplete', null, 'Not completed');
-    var prpArchivePills = forms.prp.forms.slice(1).map(function (f) { return mkPrpPill(f, true); }).join('');
+    var consult = formPills('Laser Consultation', forms.consultation.forms);
+    var photo   = formPills('Photography Consent', forms.photography.forms);
+    var botox   = formPills('Botox Consent & Prescription', forms.botox.forms, null, mkBotoxPill);
+    var prp     = formPills('PRP Consent', forms.prp.forms);
+    var laser   = formPills('Laser Re-Consent', forms.laser_reconsent.forms, 'No re-consents on file');
 
-    // Laser
-    function mkLaserPill(f, archived) {
-        var href = DASHBOARD_URLS.laserReconsentView.replace('{id}', f.id);
-        if (f.operator_signed) return pill('Laser Re-Consent — ' + f.date, archived ? 'archived' : 'complete', href, 'Client ✓ · Operator ✓');
-        if (f.client_signed)   return pill('Laser Re-Consent — ' + f.date, 'incomplete', href, 'Client ✓ · Awaiting operator');
-        return pill('Laser Re-Consent — ' + f.date, 'incomplete', null, 'Incomplete');
-    }
-    var laserCurrentPills = forms.laser_reconsent.forms.length
-        ? mkLaserPill(forms.laser_reconsent.forms[0], false)
-        : pill('Laser Re-Consent', 'incomplete', null, 'No re-consents on file');
-    var laserArchivePills = forms.laser_reconsent.forms.slice(1).map(function (f) { return mkLaserPill(f, true); }).join('');
+    var consultCurrentPills = consult.current, consultArchivePills = consult.archive;
+    var photoCurrentPills   = photo.current,   photoArchivePills   = photo.archive;
+    var botoxCurrentPills   = botox.current,   botoxArchivePills   = botox.archive;
+    var prpCurrentPills     = prp.current,     prpArchivePills     = prp.archive;
+    var laserCurrentPills   = laser.current,   laserArchivePills   = laser.archive;
 
     // Bundle pips
     function bundlePips(b) {
@@ -230,10 +206,14 @@ function renderProfilePanel(data) {
     // Record cards
     var cardsHtml = data.record_cards.length
         ? data.record_cards.map(function (rc) {
-            return '<a href="' + DASHBOARD_URLS.recordCardView.replace('{id}', rc.id) + '" target="_blank" class="dash-record-row">'
+            // Drafts open for editing (practitioner); completed / withdrawn cards are read-only.
+            var href  = (rc.status === 'draft' && !isPrescriber) ? rc.operator_url : rc.view_url;
+            var badge = rc.status === 'draft' ? '<span class="dash-status dash-status--warning">Draft</span>'
+                      : rc.status === 'withdrawn' ? '<span class="dash-status">Withdrawn</span>' : '';
+            return '<a href="' + href + '" target="_blank" class="dash-record-row">'
                 + '<span class="dash-record-row__num">#' + rc.treatment_number + '</span>'
                 + '<span class="dash-record-row__date">' + esc(rc.date) + '</span>'
-                + '<span class="dash-record-row__treatment">' + (rc.treatment_for ? esc(rc.treatment_for) : '—') + '</span>'
+                + '<span class="dash-record-row__treatment">' + (rc.treatment_for ? esc(rc.treatment_for) : '—') + ' ' + badge + '</span>'
                 + '</a>';
           }).join('')
         : '<p class="dash-muted">No record cards yet.</p>';
@@ -356,6 +336,7 @@ function renderProfilePanel(data) {
         + '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></button>'
         + '<div class="dash-form-dropdown" id="formPickerDropdown" hidden>'
         + '<a href="' + DASHBOARD_URLS.formConsultationNew.replace('{id}', u.id) + '" class="dash-form-dropdown__item" target="_blank">Laser Consultation</a>'
+        + '<a href="' + DASHBOARD_URLS.formPhotography.replace('{id}', u.id) + '&new=1" class="dash-form-dropdown__item" target="_blank">Photography Consent</a>'
         + '<a href="' + DASHBOARD_URLS.formBotoxClient.replace('{id}', u.id) + '" class="dash-form-dropdown__item" target="_blank">Botox Consent &amp; Prescription</a>'
         + '<a href="' + DASHBOARD_URLS.formPrpClient.replace('{id}', u.id) + '" class="dash-form-dropdown__item" target="_blank">PRP Consent</a>'
         + '<a href="' + DASHBOARD_URLS.formLaserReconsent.replace('{id}', u.id) + '" class="dash-form-dropdown__item" target="_blank">Laser Re-Consent</a>'

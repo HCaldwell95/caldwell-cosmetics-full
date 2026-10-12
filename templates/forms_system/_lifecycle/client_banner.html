@@ -1,0 +1,12 @@
+{# Top-of-page banners for every client form. Expects the _client_page context. #}
+{% if error %}<div class="cform-behalf-banner cform-error-banner" role="alert">{{ error }}</div>{% endif %}
+{% if editing %}
+<div class="cform-existing-banner">
+    Submitted on {{ current.completed_at|date:"j F Y" }}. You can update your answers below until the clinic completes your form — you'll need to sign again to save any changes.
+    {% if current.operator_signed %}<br><strong>Your practitioner has already signed their section.</strong> If you change your answers, they will review it again.{% endif %}
+</div>
+{% elif last_completed %}
+<div class="cform-existing-banner">
+    Your last {{ form_title }} was completed on {{ last_completed.finalised_at|date:"j F Y" }}. This is a new form{% if f %} — we've filled in your previous answers, so please check them, tick each consent again and sign{% endif %}.
+</div>
+{% endif %}

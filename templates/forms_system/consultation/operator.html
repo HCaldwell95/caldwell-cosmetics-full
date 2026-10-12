@@ -1,0 +1,173 @@
+{% extends "base/base.html" %}
+{% load static %}
+{% block title %}Laser Consultation — Practitioner | Caldwell Cosmetics{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/pages/forms_system.css' %}">{% endblock %}
+{% block content %}
+<div class="cform-page cform-page--wide">
+{% include "forms_system/_lifecycle/practitioner_header.html" %}
+
+<details class="cform-section">
+    <summary class="cform-section__title" style="cursor:pointer;">Client Section — {{ f.full_name }} (click to expand)</summary>
+    {% include "forms_system/consultation/_client_summary.html" with form=f %}
+</details>
+
+<form id="consultationOperatorForm" class="cform" method="post" action="{{ f.operator_url }}">
+    {% csrf_token %}
+
+    <!-- ===== SECTION 8: PRE-TREATMENT CHECKLIST (operator) ===== -->
+    <div class="cform-section cform-section--operator">
+        <h2 class="cform-section__title">Pre-Treatment Checklist <span class="cform-operator-badge">Operator</span></h2>
+        <p class="cform-hint">Tick to confirm each point has been discussed with the client.</p>
+        <div class="cform-check-grid cform-check-grid--2col">
+            <label class="cform-check"><input type="checkbox" name="pretx_how_works" {% if f.pretx_how_works %}checked{% endif %}><span>How treatment works</span></label>
+            <label class="cform-check"><input type="checkbox" name="pretx_pre_post_care" {% if f.pretx_pre_post_care %}checked{% endif %}><span>Pre / Post treatment care</span></label>
+            <label class="cform-check"><input type="checkbox" name="pretx_light_products" {% if f.pretx_light_products %}checked{% endif %}><span>Light Soothe / Light Protect recommended</span></label>
+            <label class="cform-check"><input type="checkbox" name="pretx_num_treatments" {% if f.pretx_num_treatments %}checked{% endif %}><span>Typical number of treatments / interval</span></label>
+            <label class="cform-check"><input type="checkbox" name="pretx_clinical_outcome" {% if f.pretx_clinical_outcome %}checked{% endif %}><span>Likely clinical outcome</span></label>
+            <label class="cform-check"><input type="checkbox" name="pretx_sensation" {% if f.pretx_sensation %}checked{% endif %}><span>Sensation during treatment</span></label>
+            <label class="cform-check"><input type="checkbox" name="pretx_side_effects" {% if f.pretx_side_effects %}checked{% endif %}><span>Possible side effects</span></label>
+            <label class="cform-check"><input type="checkbox" name="pretx_photo_taken" {% if f.pretx_photo_taken %}checked{% endif %}><span>Photograph taken</span></label>
+        </div>
+        <div class="cform-grid cform-grid--2" style="margin-top:1rem;">
+            <div class="cform-field">
+                <label class="cform-label">Cost per Treatment</label>
+                <input class="cform-input" type="text" name="pretx_cost" value="{{ f.pretx_cost|default_if_none:'' }}">
+            </div>
+        </div>
+        <div class="cform-field">
+            <label class="cform-label">Further questions / comments</label>
+            <textarea class="cform-input" name="pretx_comments" rows="3">{{ f.pretx_comments|default_if_none:'' }}</textarea>
+        </div>
+    </div>
+
+    <!-- ===== SECTION 9: TREATMENT ASSESSMENT (operator) ===== -->
+    <div class="cform-section cform-section--operator">
+        <h2 class="cform-section__title">Treatment Assessment <span class="cform-operator-badge">Operator</span></h2>
+
+        <h3 class="cform-subsection">Hair Removal</h3>
+        <div class="cform-grid cform-grid--3">
+            <div class="cform-field">
+                <label class="cform-label">Hair Colour</label>
+                <select class="cform-input" name="hair_colour">
+                    <option value="">—</option>
+                    <option value="black" {% if f.hair_colour == "black" %}selected{% endif %}>Black</option>
+                    <option value="dark_brown" {% if f.hair_colour == "dark_brown" %}selected{% endif %}>Dark Brown</option>
+                    <option value="light_brown" {% if f.hair_colour == "light_brown" %}selected{% endif %}>Light Brown</option>
+                    <option value="red" {% if f.hair_colour == "red" %}selected{% endif %}>Red</option>
+                    <option value="blonde" {% if f.hair_colour == "blonde" %}selected{% endif %}>Blonde</option>
+                    <option value="grey_white" {% if f.hair_colour == "grey_white" %}selected{% endif %}>Grey / White</option>
+                </select>
+            </div>
+            <div class="cform-field">
+                <label class="cform-label">Hair Texture</label>
+                <select class="cform-input" name="hair_texture">
+                    <option value="">—</option>
+                    <option value="coarse" {% if f.hair_texture == "coarse" %}selected{% endif %}>Coarse</option>
+                    <option value="medium" {% if f.hair_texture == "medium" %}selected{% endif %}>Medium</option>
+                    <option value="fine" {% if f.hair_texture == "fine" %}selected{% endif %}>Fine</option>
+                </select>
+            </div>
+            <div class="cform-field">
+                <label class="cform-label">Handpiece</label>
+                <input class="cform-input" type="text" name="hair_handpiece" placeholder="ReMove 650 / ReMove LP1064" value="{{ f.hair_handpiece|default_if_none:'' }}">
+            </div>
+        </div>
+        <div class="cform-field">
+            <label class="cform-label">Previous / Current Treatments</label>
+            <textarea class="cform-input" name="hair_previous_treatments" rows="2">{{ f.hair_previous_treatments|default_if_none:'' }}</textarea>
+        </div>
+
+        <h3 class="cform-subsection">Vascular</h3>
+        <div class="cform-field">
+            <label class="cform-label">Type</label>
+            <select class="cform-input" name="vascular_type">
+                <option value="">—</option>
+                <option value="rosacea" {% if f.vascular_type == "rosacea" %}selected{% endif %}>Rosacea</option>
+                <option value="thread_veins" {% if f.vascular_type == "thread_veins" %}selected{% endif %}>Thread Veins</option>
+                <option value="spider_nevi" {% if f.vascular_type == "spider_nevi" %}selected{% endif %}>Spider Nevi</option>
+                <option value="pws" {% if f.vascular_type == "pws" %}selected{% endif %}>PWS</option>
+                <option value="leg_veins" {% if f.vascular_type == "leg_veins" %}selected{% endif %}>Leg Veins</option>
+                <option value="other" {% if f.vascular_type == "other" %}selected{% endif %}>Other</option>
+            </select>
+        </div>
+        <div class="cform-field">
+            <label class="cform-label">Previous / Current Treatments</label>
+            <textarea class="cform-input" name="vascular_previous_treatments" rows="2">{{ f.vascular_previous_treatments|default_if_none:'' }}</textarea>
+        </div>
+
+        <h3 class="cform-subsection">Pigmentation</h3>
+        <div class="cform-field">
+            <label class="cform-label">Type</label>
+            <select class="cform-input" name="pigmentation_type">
+                <option value="">—</option>
+                <option value="lentigines" {% if f.pigmentation_type == "lentigines" %}selected{% endif %}>Lentigines (liver spots)</option>
+                <option value="freckles" {% if f.pigmentation_type == "freckles" %}selected{% endif %}>Freckles</option>
+                <option value="birthmark" {% if f.pigmentation_type == "birthmark" %}selected{% endif %}>Birthmark</option>
+            </select>
+        </div>
+        <div class="cform-field">
+            <label class="cform-label">Previous / Current Treatments</label>
+            <textarea class="cform-input" name="pigmentation_previous_treatments" rows="2">{{ f.pigmentation_previous_treatments|default_if_none:'' }}</textarea>
+        </div>
+
+        <h3 class="cform-subsection">Acne</h3>
+        <div class="cform-field">
+            <label class="cform-label">Type</label>
+            <select class="cform-input" name="acne_type">
+                <option value="">—</option>
+                <option value="mild" {% if f.acne_type == "mild" %}selected{% endif %}>Mild</option>
+                <option value="moderate" {% if f.acne_type == "moderate" %}selected{% endif %}>Moderate</option>
+                <option value="severe" {% if f.acne_type == "severe" %}selected{% endif %}>Severe</option>
+            </select>
+        </div>
+        <div class="cform-field">
+            <label class="cform-label">Previous / Current Treatments</label>
+            <textarea class="cform-input" name="acne_previous_treatments" rows="2">{{ f.acne_previous_treatments|default_if_none:'' }}</textarea>
+        </div>
+
+        <h3 class="cform-subsection">Skin</h3>
+        <div class="cform-grid cform-grid--2">
+            <div class="cform-field">
+                <label class="cform-label">Assessment Type</label>
+                <input class="cform-input" type="text" name="skin_assessment_type" placeholder="Laxity / Fine Lines / Sun Damage…" value="{{ f.skin_assessment_type|default_if_none:'' }}">
+            </div>
+            <div class="cform-field">
+                <label class="cform-label">Handpiece</label>
+                <input class="cform-input" type="text" name="skin_handpiece" value="{{ f.skin_handpiece|default_if_none:'' }}">
+            </div>
+        </div>
+        <div class="cform-field">
+            <label class="cform-label">Previous / Current Treatments</label>
+            <textarea class="cform-input" name="skin_previous_treatments" rows="2">{{ f.skin_previous_treatments|default_if_none:'' }}</textarea>
+        </div>
+
+        <h3 class="cform-subsection">Tattoo Removal</h3>
+        <div class="cform-field">
+            <label class="cform-label">Colours</label>
+            <input class="cform-input" type="text" name="tattoo_colour" placeholder="Black / Red / Green…" value="{{ f.tattoo_colour|default_if_none:'' }}">
+        </div>
+        <div class="cform-field">
+            <label class="cform-label">Previous / Current Treatments</label>
+            <textarea class="cform-input" name="tattoo_previous_treatments" rows="2">{{ f.tattoo_previous_treatments|default_if_none:'' }}</textarea>
+        </div>
+
+        <h3 class="cform-subsection">Fractional Laser</h3>
+        <div class="cform-grid cform-grid--2">
+            <div class="cform-field">
+                <label class="cform-label">Indication</label>
+                <input class="cform-input" type="text" name="fractional_indication" placeholder="General Aging / Acne Scarring…" value="{{ f.fractional_indication|default_if_none:'' }}">
+            </div>
+            <div class="cform-field">
+                <label class="cform-label">Comments</label>
+                <textarea class="cform-input" name="fractional_comments" rows="2">{{ f.fractional_comments|default_if_none:'' }}</textarea>
+            </div>
+        </div>
+    </div>
+
+    {% include "forms_system/_lifecycle/practitioner_signature.html" with signature_hint="I confirm I have discussed the points above with the client and that my assessment is accurate." %}
+</form>
+
+{% include "forms_system/_lifecycle/close_actions.html" %}
+</div>
+<script src="{% static 'js/sig_pad.js' %}?v=4"></script>
+{% endblock %}

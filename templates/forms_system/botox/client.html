@@ -5,15 +5,8 @@
 {% block content %}
 <div class="cform-page">
 {% if on_behalf %}<div class="cform-behalf-banner">Completing on behalf of <strong>{{ target_user.full_name }}</strong>.</div>{% endif %}
-{% if error %}<div class="cform-behalf-banner cform-error-banner" role="alert">{{ error }}</div>{% endif %}
-{% if f.pk %}
-<div class="cform-existing-banner">
-    Submitted on {{ f.client_signed_at|date:"j F Y" }}. You can update your answers below until the clinic completes your form — you'll need to sign again to save any changes.
-    {% if f.prescriber_signed %}<br><strong>Your prescriber has already reviewed this form.</strong> If you change your answers, they will need to review it again.{% endif %}
-</div>
-{% elif last_completed %}
-<div class="cform-existing-banner">Your last form was completed on {{ last_completed.finalised_at|date:"j F Y" }}. This is a new form for your next treatment.</div>
-{% endif %}
+{% include "forms_system/_lifecycle/client_banner.html" %}
+{% if current.prescriber_signed %}<div class="cform-behalf-banner cform-minor-banner"><strong>Your prescriber has already reviewed this form.</strong> If you change your answers, they will need to review it again.</div>{% endif %}
 
 <div class="cform-header">
     <span class="cform-header__eyebrow">Caldwell Cosmetics — Client Section</span>
@@ -205,11 +198,11 @@
     </div>
 
     <div class="cform-submit-row">
-        <button type="submit" class="btn btn--primary btn--lg">{% if f.pk %}Update &amp; Sign{% else %}Submit Client Section{% endif %}</button>
+        <button type="submit" class="btn btn--primary btn--lg">{% if editing %}Update &amp; Sign{% else %}Submit Client Section{% endif %}</button>
     </div>
 </form>
 </div>
-<script src="{% static 'js/sig_pad.js' %}?v=3"></script>
+<script src="{% static 'js/sig_pad.js' %}?v=4"></script>
 <script>
 (function () {
     var dob     = document.getElementById('dobField');

@@ -1,0 +1,15 @@
+{# Audit trail for a record page. Expects `revisions`. #}
+<div class="cform-section cform-section--readonly">
+    <h2 class="cform-section__title">History <span class="cform-readonly-badge">Audit Trail</span></h2>
+    {% if revisions %}
+    <dl class="cform-summary-dl">
+        {% for rev in revisions %}
+        <dt>{{ rev.created_at|date:"j M Y, H:i" }}</dt>
+        <dd>{{ rev.get_section_display }} — {{ rev.get_action_display }}{% if rev.user %} by {{ rev.user.full_name }}{% endif %}</dd>
+        {% endfor %}
+    </dl>
+    <p class="cform-hint">Every save is stored in full, including earlier answers and signatures.</p>
+    {% else %}
+    <p class="cform-hint">No history recorded — this form was completed before history tracking was added.</p>
+    {% endif %}
+</div>

@@ -1,0 +1,34 @@
+{% extends "base/base.html" %}
+{% load static %}
+{# Generic read-only record page. Child templates fill `client_section` and `practitioner_section`. #}
+{% block title %}{{ f.FORM_TITLE }} — {{ f.user.full_name }} | Caldwell Cosmetics{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/pages/forms_system.css' %}">{% endblock %}
+{% block content %}
+<div class="cform-page cform-page--wide">
+<div class="cform-header">
+    <span class="cform-header__eyebrow">Caldwell Cosmetics — {% if f.finalised %}Completed Record{% elif f.withdrawn %}Withdrawn{% else %}In Progress{% endif %}</span>
+    <h1 class="cform-header__title">{{ f.FORM_TITLE }}</h1>
+    <p class="cform-header__sub">Client: <strong>{{ f.user.full_name }}</strong> — started {{ f.started_at|date:"j F Y" }}.</p>
+</div>
+
+{% include "forms_system/_lifecycle/record_status.html" %}
+
+{% block client_section %}{% endblock %}
+
+<div class="cform-section cform-section--readonly">
+    <h2 class="cform-section__title">Practitioner Section <span class="cform-readonly-badge">Read Only</span></h2>
+    {% block practitioner_section %}{% endblock %}
+    <dl class="cform-summary-dl" style="margin-top:1rem;">
+        <dt>Signed</dt>
+        <dd>{% if f.operator_signed %}{{ f.operator_signed_by.full_name|default:"—" }} — {{ f.operator_signed_at|date:"j F Y \a\t H:i" }}{% else %}Not signed{% endif %}</dd>
+        {% if f.operator_signed %}<dt>Signature</dt><dd><img src="{{ f.operator_signature }}" alt="Practitioner signature" class="cform-sig-preview"></dd>{% endif %}
+    </dl>
+</div>
+
+{% include "forms_system/_lifecycle/history.html" %}
+
+<div class="cform-submit-row">
+    <a href="javascript:history.back()" class="btn btn--ghost">&larr; Back</a>
+</div>
+</div>
+{% endblock %}

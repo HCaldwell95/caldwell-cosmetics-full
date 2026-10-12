@@ -12,16 +12,24 @@ urlpatterns = [
     path("botox/",                     views.botox_client,         name="botox_client"),
     path("prp/",                       views.prp_client,           name="prp_client"),
     path("laser/reconsent/",           views.laser_reconsent,      name="laser_reconsent"),
-    path("laser/<int:pk>/view/",       views.laser_reconsent_view, name="laser_reconsent_view"),
 
-    # Operator step 2
+    # Practitioner sections (save / sign, then complete or withdraw)
+    path("consultation/<int:pk>/operator/", views.consultation_operator, name="consultation_operator"),
+    path("photography/<int:pk>/operator/",  views.photography_operator,  name="photography_operator"),
     path("botox/<int:pk>/operator/",   views.botox_operator,       name="botox_operator"),
     path("botox/<int:pk>/prescriber/", views.botox_prescriber,     name="botox_prescriber"),
-    path("botox/<int:pk>/view/",       views.botox_view,           name="botox_view"),
     path("prp/<int:pk>/operator/",     views.prp_operator,         name="prp_operator"),
+    path("laser/<int:pk>/operator/",   views.laser_operator,       name="laser_operator"),
+
+    # Read-only records, with their full history
+    path("photography/<int:pk>/view/", views.photography_view,     name="photography_view"),
+    path("botox/<int:pk>/view/",       views.botox_view,           name="botox_view"),
+    path("prp/<int:pk>/view/",         views.prp_view,             name="prp_view"),
+    path("laser/<int:pk>/view/",       views.laser_reconsent_view, name="laser_reconsent_view"),
 
     # Record cards (practitioner only)
     path("records/<int:user_id>/new/", views.record_card_new,      name="record_card_new"),
+    path("records/<int:pk>/edit/",     views.record_card_edit,     name="record_card_edit"),
     path("records/<int:pk>/view/",     views.record_card_view,     name="record_card_view"),
 
     # Pre / post treatment information pages

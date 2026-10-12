@@ -5,10 +5,10 @@
 {% block content %}
 <div class="cform-page">
 {% if on_behalf %}<div class="cform-behalf-banner">Completing on behalf of <strong>{{ target_user.full_name }}</strong>.</div>{% endif %}
-{% if existing and existing.client_signed %}<div class="cform-existing-banner">Client section completed on {{ existing.client_signed_at|date:"j F Y" }}. {% if not existing.operator_signed %}Awaiting operator sign-off.{% else %}Fully complete.{% endif %}</div>{% endif %}
+{% include "forms_system/_lifecycle/client_banner.html" %}
 
 <div class="cform-header">
-    <span class="cform-header__eyebrow">Caldwell Cosmetics — Step 1 of 2</span>
+    <span class="cform-header__eyebrow">Caldwell Cosmetics — Client Section</span>
     <h1 class="cform-header__title">PRP Consent &amp; Consultation</h1>
     <p class="cform-header__sub">Please read the information below and complete all sections before your appointment. The practitioner will countersign at the clinic.</p>
 </div>
@@ -37,52 +37,52 @@
     <div class="cform-section">
         <h2 class="cform-section__title">Client Information</h2>
         <div class="cform-grid cform-grid--2">
-            <div class="cform-field"><label class="cform-label">Full Name <span style="color:var(--color-primary,#d4a373);">*</span></label><input class="cform-input" type="text" name="full_name" value="{{ target_user.full_name }}" required></div>
-            <div class="cform-field"><label class="cform-label">Date of Birth <span style="color:var(--color-primary,#d4a373);">*</span></label><input class="cform-input" type="date" name="date_of_birth" id="dobField" required></div>
-            <div class="cform-field"><label class="cform-label">Phone</label><input class="cform-input" type="tel" name="phone_number"></div>
-            <div class="cform-field"><label class="cform-label">Email</label><input class="cform-input" type="email" name="email" value="{{ target_user.email }}"></div>
-            <div class="cform-field cform-field--full"><label class="cform-label">Address</label><textarea class="cform-input" name="address" rows="2"></textarea></div>
-            <div class="cform-field"><label class="cform-label">Emergency Contact Name</label><input class="cform-input" type="text" name="emergency_contact_name"></div>
-            <div class="cform-field"><label class="cform-label">Emergency Contact Phone</label><input class="cform-input" type="tel" name="emergency_contact_phone"></div>
+            <div class="cform-field"><label class="cform-label">Full Name <span style="color:var(--color-primary,#d4a373);">*</span></label><input class="cform-input" type="text" name="full_name" value="{% if f %}{{ f.full_name|default_if_none:'' }}{% else %}{{ target_user.full_name }}{% endif %}" required></div>
+            <div class="cform-field"><label class="cform-label">Date of Birth <span style="color:var(--color-primary,#d4a373);">*</span></label><input class="cform-input" type="date" name="date_of_birth" id="dobField" required value="{{ f.date_of_birth|date:'Y-m-d' }}"></div>
+            <div class="cform-field"><label class="cform-label">Phone</label><input class="cform-input" type="tel" name="phone_number" value="{{ f.phone_number|default_if_none:'' }}"></div>
+            <div class="cform-field"><label class="cform-label">Email</label><input class="cform-input" type="email" name="email" value="{% if f %}{{ f.email|default_if_none:'' }}{% else %}{{ target_user.email }}{% endif %}"></div>
+            <div class="cform-field cform-field--full"><label class="cform-label">Address</label><textarea class="cform-input" name="address" rows="2">{{ f.address|default_if_none:'' }}</textarea></div>
+            <div class="cform-field"><label class="cform-label">Emergency Contact Name</label><input class="cform-input" type="text" name="emergency_contact_name" value="{{ f.emergency_contact_name|default_if_none:'' }}"></div>
+            <div class="cform-field"><label class="cform-label">Emergency Contact Phone</label><input class="cform-input" type="tel" name="emergency_contact_phone" value="{{ f.emergency_contact_phone|default_if_none:'' }}"></div>
         </div>
     </div>
 
     <div class="cform-section">
         <h2 class="cform-section__title">Goals &amp; Expectations</h2>
-        <div class="cform-field"><label class="cform-label">Treatment area(s) of interest</label><input class="cform-input" type="text" name="treatment_areas" placeholder="e.g. Face, Under-eyes, Scalp / Hair"></div>
-        <div class="cform-field"><label class="cform-label">What are you hoping to achieve from this treatment?</label><textarea class="cform-input" name="expectations" rows="3"></textarea></div>
+        <div class="cform-field"><label class="cform-label">Treatment area(s) of interest</label><input class="cform-input" type="text" name="treatment_areas" placeholder="e.g. Face, Under-eyes, Scalp / Hair" value="{{ f.treatment_areas|default_if_none:'' }}"></div>
+        <div class="cform-field"><label class="cform-label">What are you hoping to achieve from this treatment?</label><textarea class="cform-input" name="expectations" rows="3">{{ f.expectations|default_if_none:'' }}</textarea></div>
     </div>
 
     <div class="cform-section">
         <h2 class="cform-section__title">Medical History</h2>
         <p class="cform-hint">Please tick all that apply.</p>
         <div class="cform-consent-list">
-            <label class="cform-consent-item"><input type="checkbox" name="blood_disorders"><span>Blood disorders (e.g. haemophilia, platelet dysfunction, clotting disorders)</span></label>
-            <label class="cform-consent-item"><input type="checkbox" name="on_anticoagulants"><span>Currently taking anticoagulants or blood-thinning medication (e.g. Warfarin, Clopidogrel, Aspirin)</span></label>
-            <label class="cform-consent-item"><input type="checkbox" name="active_infection"><span>Active infection, open wounds, or skin conditions in the treatment area</span></label>
-            <label class="cform-consent-item"><input type="checkbox" name="autoimmune_disease"><span>Autoimmune disease (e.g. lupus, rheumatoid arthritis, Hashimoto's)</span></label>
-            <label class="cform-consent-item"><input type="checkbox" name="history_of_cancer"><span>History of cancer (especially blood or platelet-related cancers)</span></label>
-            <label class="cform-consent-item"><input type="checkbox" name="skin_conditions"><span>Active skin conditions in the treatment area (e.g. eczema, psoriasis, active acne)</span></label>
-            <label class="cform-consent-item"><input type="checkbox" name="recent_vaccination"><span>Recent vaccination within the last 2 weeks</span></label>
-            <label class="cform-consent-item"><input type="checkbox" name="communicable_diseases"><span>Communicable diseases (e.g. HIV, Hepatitis B or C)</span></label>
-            <label class="cform-consent-item"><input type="checkbox" name="keloid_scarring"><span>History of keloid formation or abnormal scarring</span></label>
+            <label class="cform-consent-item"><input type="checkbox" name="blood_disorders" {% if f.blood_disorders %}checked{% endif %}><span>Blood disorders (e.g. haemophilia, platelet dysfunction, clotting disorders)</span></label>
+            <label class="cform-consent-item"><input type="checkbox" name="on_anticoagulants" {% if f.on_anticoagulants %}checked{% endif %}><span>Currently taking anticoagulants or blood-thinning medication (e.g. Warfarin, Clopidogrel, Aspirin)</span></label>
+            <label class="cform-consent-item"><input type="checkbox" name="active_infection" {% if f.active_infection %}checked{% endif %}><span>Active infection, open wounds, or skin conditions in the treatment area</span></label>
+            <label class="cform-consent-item"><input type="checkbox" name="autoimmune_disease" {% if f.autoimmune_disease %}checked{% endif %}><span>Autoimmune disease (e.g. lupus, rheumatoid arthritis, Hashimoto's)</span></label>
+            <label class="cform-consent-item"><input type="checkbox" name="history_of_cancer" {% if f.history_of_cancer %}checked{% endif %}><span>History of cancer (especially blood or platelet-related cancers)</span></label>
+            <label class="cform-consent-item"><input type="checkbox" name="skin_conditions" {% if f.skin_conditions %}checked{% endif %}><span>Active skin conditions in the treatment area (e.g. eczema, psoriasis, active acne)</span></label>
+            <label class="cform-consent-item"><input type="checkbox" name="recent_vaccination" {% if f.recent_vaccination %}checked{% endif %}><span>Recent vaccination within the last 2 weeks</span></label>
+            <label class="cform-consent-item"><input type="checkbox" name="communicable_diseases" {% if f.communicable_diseases %}checked{% endif %}><span>Communicable diseases (e.g. HIV, Hepatitis B or C)</span></label>
+            <label class="cform-consent-item"><input type="checkbox" name="keloid_scarring" {% if f.keloid_scarring %}checked{% endif %}><span>History of keloid formation or abnormal scarring</span></label>
         </div>
-        <div class="cform-field" style="margin-top:1rem;"><label class="cform-label">Other conditions / details</label><textarea class="cform-input" name="other_conditions" rows="2"></textarea></div>
-        <div class="cform-field"><label class="cform-label">Current medications and supplements</label><textarea class="cform-input" name="current_medications" rows="2"></textarea></div>
+        <div class="cform-field" style="margin-top:1rem;"><label class="cform-label">Other conditions / details</label><textarea class="cform-input" name="other_conditions" rows="2">{{ f.other_conditions|default_if_none:'' }}</textarea></div>
+        <div class="cform-field"><label class="cform-label">Current medications and supplements</label><textarea class="cform-input" name="current_medications" rows="2">{{ f.current_medications|default_if_none:'' }}</textarea></div>
     </div>
 
     <div class="cform-section">
         <h2 class="cform-section__title">Health Questions</h2>
         <p class="cform-hint">Please answer Yes or No. If you answer Yes to any question, provide details below.</p>
         <div class="cform-yn-table">
-            <div class="cform-yn-row"><span>Are you pregnant?</span><div class="cform-radio-row"><label class="cform-check"><input type="radio" name="is_pregnant" value="1"><span>Yes</span></label><label class="cform-check"><input type="radio" name="is_pregnant" value="0" checked><span>No</span></label></div></div>
-            <div class="cform-yn-row"><span>Are you breastfeeding?</span><div class="cform-radio-row"><label class="cform-check"><input type="radio" name="is_breastfeeding" value="1"><span>Yes</span></label><label class="cform-check"><input type="radio" name="is_breastfeeding" value="0" checked><span>No</span></label></div></div>
-            <div class="cform-yn-row"><span>Do you have any medical problems not listed above?</span><div class="cform-radio-row"><label class="cform-check"><input type="radio" name="has_medical_problems" value="1"><span>Yes</span></label><label class="cform-check"><input type="radio" name="has_medical_problems" value="0" checked><span>No</span></label></div></div>
-            <div class="cform-yn-row"><span>Are you receiving any medication or medical treatments?</span><div class="cform-radio-row"><label class="cform-check"><input type="radio" name="on_medication" value="1"><span>Yes</span></label><label class="cform-check"><input type="radio" name="on_medication" value="0" checked><span>No</span></label></div></div>
-            <div class="cform-yn-row"><span>Do you have any allergies?</span><div class="cform-radio-row"><label class="cform-check"><input type="radio" name="has_allergies" value="1"><span>Yes</span></label><label class="cform-check"><input type="radio" name="has_allergies" value="0" checked><span>No</span></label></div></div>
-            <div class="cform-yn-row"><span>Have you had PRP treatment before?</span><div class="cform-radio-row"><label class="cform-check"><input type="radio" name="previous_prp" value="1"><span>Yes</span></label><label class="cform-check"><input type="radio" name="previous_prp" value="0" checked><span>No</span></label></div></div>
+            <div class="cform-yn-row"><span>Are you pregnant?</span><div class="cform-radio-row"><label class="cform-check"><input type="radio" name="is_pregnant" value="1" {% if f.is_pregnant %}checked{% endif %}><span>Yes</span></label><label class="cform-check"><input type="radio" name="is_pregnant" value="0" {% if not f.is_pregnant %}checked{% endif %}><span>No</span></label></div></div>
+            <div class="cform-yn-row"><span>Are you breastfeeding?</span><div class="cform-radio-row"><label class="cform-check"><input type="radio" name="is_breastfeeding" value="1" {% if f.is_breastfeeding %}checked{% endif %}><span>Yes</span></label><label class="cform-check"><input type="radio" name="is_breastfeeding" value="0" {% if not f.is_breastfeeding %}checked{% endif %}><span>No</span></label></div></div>
+            <div class="cform-yn-row"><span>Do you have any medical problems not listed above?</span><div class="cform-radio-row"><label class="cform-check"><input type="radio" name="has_medical_problems" value="1" {% if f.has_medical_problems %}checked{% endif %}><span>Yes</span></label><label class="cform-check"><input type="radio" name="has_medical_problems" value="0" {% if not f.has_medical_problems %}checked{% endif %}><span>No</span></label></div></div>
+            <div class="cform-yn-row"><span>Are you receiving any medication or medical treatments?</span><div class="cform-radio-row"><label class="cform-check"><input type="radio" name="on_medication" value="1" {% if f.on_medication %}checked{% endif %}><span>Yes</span></label><label class="cform-check"><input type="radio" name="on_medication" value="0" {% if not f.on_medication %}checked{% endif %}><span>No</span></label></div></div>
+            <div class="cform-yn-row"><span>Do you have any allergies?</span><div class="cform-radio-row"><label class="cform-check"><input type="radio" name="has_allergies" value="1" {% if f.has_allergies %}checked{% endif %}><span>Yes</span></label><label class="cform-check"><input type="radio" name="has_allergies" value="0" {% if not f.has_allergies %}checked{% endif %}><span>No</span></label></div></div>
+            <div class="cform-yn-row"><span>Have you had PRP treatment before?</span><div class="cform-radio-row"><label class="cform-check"><input type="radio" name="previous_prp" value="1" {% if f.previous_prp %}checked{% endif %}><span>Yes</span></label><label class="cform-check"><input type="radio" name="previous_prp" value="0" {% if not f.previous_prp %}checked{% endif %}><span>No</span></label></div></div>
         </div>
-        <div class="cform-field" style="margin-top:1rem;"><label class="cform-label">If you answered Yes to any of the above, please provide details here</label><textarea class="cform-input" name="yes_details" rows="3"></textarea></div>
+        <div class="cform-field" style="margin-top:1rem;"><label class="cform-label">If you answered Yes to any of the above, please provide details here</label><textarea class="cform-input" name="yes_details" rows="3">{{ f.yes_details|default_if_none:'' }}</textarea></div>
     </div>
 
     <div class="cform-section cform-section--consent">
@@ -92,43 +92,43 @@
 
             <p class="cform-label" style="margin:0.5rem 0 0.25rem; padding-bottom:0.3rem; border-bottom:1px solid var(--color-border,#e8e0d5);">The Procedure</p>
             <label class="cform-consent-item">
-                <input type="checkbox" name="consent_procedure" required>
+                <input type="checkbox" name="consent_procedure" required {% if editing and f.consent_procedure %}checked{% endif %}>
                 <span>I understand that PRP treatment involves a blood draw from my arm, centrifugation to concentrate the platelets, and application or injection of the platelet-rich plasma into the treatment area. I understand this is a medical procedure and have been given the opportunity to ask questions.</span>
             </label>
 
             <p class="cform-label" style="margin:0.75rem 0 0.25rem; padding-bottom:0.3rem; border-bottom:1px solid var(--color-border,#e8e0d5);">Risks</p>
             <label class="cform-consent-item">
-                <input type="checkbox" name="consent_risks" required>
+                <input type="checkbox" name="consent_risks" required {% if editing and f.consent_risks %}checked{% endif %}>
                 <span>I understand the possible risks and side effects, including bruising, swelling, redness, discomfort, infection, and in rare cases, little or no visible improvement. I understand that individual responses to PRP vary and my experience may differ from others.</span>
             </label>
 
             <p class="cform-label" style="margin:0.75rem 0 0.25rem; padding-bottom:0.3rem; border-bottom:1px solid var(--color-border,#e8e0d5);">Results</p>
             <label class="cform-consent-item">
-                <input type="checkbox" name="consent_results" required>
+                <input type="checkbox" name="consent_results" required {% if editing and f.consent_results %}checked{% endif %}>
                 <span>I understand that results from PRP treatment are not guaranteed and cannot be predicted with certainty. Results are gradual and may take several weeks to become visible. Multiple treatments may be required. I understand that results can vary significantly between individuals.</span>
             </label>
 
             <p class="cform-label" style="margin:0.75rem 0 0.25rem; padding-bottom:0.3rem; border-bottom:1px solid var(--color-border,#e8e0d5);">Aftercare</p>
             <label class="cform-consent-item">
-                <input type="checkbox" name="consent_aftercare" required>
+                <input type="checkbox" name="consent_aftercare" required {% if editing and f.consent_aftercare %}checked{% endif %}>
                 <span>I agree to follow all pre- and post-treatment advice provided to me. I understand that failing to follow this advice may affect my results or increase the risk of complications.</span>
             </label>
 
             <p class="cform-label" style="margin:0.75rem 0 0.25rem; padding-bottom:0.3rem; border-bottom:1px solid var(--color-border,#e8e0d5);">Photographs</p>
             <label class="cform-consent-item">
-                <input type="checkbox" name="consent_photos" required>
+                <input type="checkbox" name="consent_photos" required {% if editing and f.consent_photos %}checked{% endif %}>
                 <span>I consent to clinical photographs being taken before and after treatment for the purpose of monitoring progress and maintaining accurate medical records. I understand that photographs will not be shared without my explicit written consent.</span>
             </label>
 
             <p class="cform-label" style="margin:0.75rem 0 0.25rem; padding-bottom:0.3rem; border-bottom:1px solid var(--color-border,#e8e0d5);">Privacy &amp; Records</p>
             <label class="cform-consent-item">
-                <input type="checkbox" name="consent_privacy" required>
+                <input type="checkbox" name="consent_privacy" required {% if editing and f.consent_privacy %}checked{% endif %}>
                 <span>I acknowledge that clinical photographs and records will be securely stored for 21 years as part of my medical records. <strong>No Refunds Policy:</strong> I understand that results cannot be guaranteed. If additional treatment is needed, I will be responsible for any related costs.</span>
             </label>
 
             <p class="cform-label" style="margin:0.75rem 0 0.25rem; padding-bottom:0.3rem; border-bottom:1px solid var(--color-border,#e8e0d5);">Agreement</p>
             <label class="cform-consent-item">
-                <input type="checkbox" name="consent_agreement" required>
+                <input type="checkbox" name="consent_agreement" required {% if editing and f.consent_agreement %}checked{% endif %}>
                 <span>I confirm that the information I have provided is accurate and complete to the best of my knowledge. I have been given the opportunity to ask questions and have had them answered to my satisfaction. I willingly consent to PRP treatment and accept all associated risks and conditions of the procedure.</span>
             </label>
 
@@ -151,19 +151,19 @@
         <div class="cform-grid cform-grid--2">
             <div class="cform-field">
                 <label class="cform-label">Guardian Full Name <span class="cform-req">*</span></label>
-                <input class="cform-input" type="text" name="guardian_name" id="guardianName" placeholder="Full name">
+                <input class="cform-input" type="text" name="guardian_name" id="guardianName" placeholder="Full name" value="{{ f.guardian_name|default_if_none:'' }}">
             </div>
             <div class="cform-field">
                 <label class="cform-label">Relationship to Client <span class="cform-req">*</span></label>
-                <input class="cform-input" type="text" name="guardian_relationship" id="guardianRelationship" placeholder="e.g. Mother, Father, Guardian">
+                <input class="cform-input" type="text" name="guardian_relationship" id="guardianRelationship" placeholder="e.g. Mother, Father, Guardian" value="{{ f.guardian_relationship|default_if_none:'' }}">
             </div>
             <div class="cform-field">
                 <label class="cform-label">Guardian Phone <span class="cform-req">*</span></label>
-                <input class="cform-input" type="tel" name="guardian_phone" id="guardianPhone" placeholder="e.g. 07700 900000">
+                <input class="cform-input" type="tel" name="guardian_phone" id="guardianPhone" placeholder="e.g. 07700 900000" value="{{ f.guardian_phone|default_if_none:'' }}">
             </div>
             <div class="cform-field">
                 <label class="cform-label">Guardian Email</label>
-                <input class="cform-input" type="email" name="guardian_email" placeholder="Email address (optional)">
+                <input class="cform-input" type="email" name="guardian_email" placeholder="Email address (optional)" value="{{ f.guardian_email|default_if_none:'' }}">
             </div>
         </div>
         <p class="cform-label" style="margin-top:1.25rem;">Guardian Signature <span class="cform-req">*</span></p>
@@ -178,11 +178,11 @@
     </div>
 
     <div class="cform-submit-row">
-        <button type="submit" class="btn btn--primary btn--lg">Submit Client Section</button>
+        <button type="submit" class="btn btn--primary btn--lg">{% if editing %}Update &amp; Sign{% else %}Submit Client Section{% endif %}</button>
     </div>
 </form>
 </div>
-<script src="{% static 'js/sig_pad.js' %}?v=3"></script>
+<script src="{% static 'js/sig_pad.js' %}?v=4"></script>
 <script>
 (function () {
     var dob     = document.getElementById('dobField');

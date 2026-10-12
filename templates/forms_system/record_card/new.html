@@ -6,9 +6,11 @@
 {% block content %}
 <div class="cform-page cform-page--wide">
 <div class="cform-header">
-    <span class="cform-header__eyebrow">Operator Only</span>
-    <h1 class="cform-header__title">Dynamix Record Card — {{ target_user.full_name }}</h1>
+    <span class="cform-header__eyebrow">Practitioner Only{% if f %} — Draft, not yet completed{% endif %}</span>
+    <h1 class="cform-header__title">Dynamix Record Card{% if f %} #{{ f.treatment_number }}{% endif %} — {{ target_user.full_name }}</h1>
+    {% if f %}<p class="cform-header__sub"><a href="{{ f.view_url }}">View record &amp; history</a></p>{% endif %}
 </div>
+{% if error %}<div class="cform-behalf-banner cform-error-banner" role="alert">{{ error }}</div>{% endif %}
 
 <div class="record-card-layout">
 
@@ -55,37 +57,37 @@
 
     <!-- New card form (right column) -->
     <div class="record-card-new">
-        <form id="recordCardForm" class="cform" method="post" action="{% url 'forms_system:record_card_new' target_user.pk %}">
+        <form id="recordCardForm" class="cform" method="post" action="{% if f %}{{ f.operator_url }}{% else %}{% url 'forms_system:record_card_new' target_user.pk %}{% endif %}">
             {% csrf_token %}
 
             <div class="cform-section cform-section--operator">
-                <h2 class="cform-section__title">New Record Card</h2>
+                <h2 class="cform-section__title">{% if f %}Record Card #{{ f.treatment_number }}{% else %}New Record Card{% endif %}</h2>
                 <div class="cform-grid cform-grid--3">
-                    <div class="cform-field"><label class="cform-label">Date</label><input class="cform-input" type="date" name="date" required></div>
-                    <div class="cform-field"><label class="cform-label">Time</label><input class="cform-input" type="time" name="time" required></div>
-                    <div class="cform-field"><label class="cform-label">Treatment for</label><input class="cform-input" type="text" name="treatment_for"></div>
+                    <div class="cform-field"><label class="cform-label">Date</label><input class="cform-input" type="date" name="date" required value="{{ f.date|date:'Y-m-d' }}"></div>
+                    <div class="cform-field"><label class="cform-label">Time</label><input class="cform-input" type="time" name="time" required value="{{ f.time|time:'H:i' }}"></div>
+                    <div class="cform-field"><label class="cform-label">Treatment for</label><input class="cform-input" type="text" name="treatment_for" value="{{ f.treatment_for|default_if_none:'' }}"></div>
                 </div>
 
                 <p class="cform-hint" style="margin-top:1rem;">Device selection:</p>
                 <div class="cform-check-grid">
-                    <label class="cform-check"><input type="checkbox" name="device_remove_650"><span>ReMove 650</span></label>
-                    <label class="cform-check"><input type="checkbox" name="device_rebright_585"><span>ReBright 585</span></label>
-                    <label class="cform-check"><input type="checkbox" name="device_remove_lp1064"><span>ReMove LP1064</span></label>
-                    <label class="cform-check"><input type="checkbox" name="device_resurface"><span>ResurFACE</span></label>
-                    <label class="cform-check"><input type="checkbox" name="device_remodel"><span>ReModel</span></label>
-                    <label class="cform-check"><input type="checkbox" name="device_illumifacial"><span>illumiFacial</span></label>
-                    <label class="cform-check"><input type="checkbox" name="device_remove_q1064"><span>ReMove Q1064</span></label>
-                    <label class="cform-check"><input type="checkbox" name="device_remove_q532"><span>ReMove Q532</span></label>
+                    <label class="cform-check"><input type="checkbox" name="device_remove_650" {% if f.device_remove_650 %}checked{% endif %}><span>ReMove 650</span></label>
+                    <label class="cform-check"><input type="checkbox" name="device_rebright_585" {% if f.device_rebright_585 %}checked{% endif %}><span>ReBright 585</span></label>
+                    <label class="cform-check"><input type="checkbox" name="device_remove_lp1064" {% if f.device_remove_lp1064 %}checked{% endif %}><span>ReMove LP1064</span></label>
+                    <label class="cform-check"><input type="checkbox" name="device_resurface" {% if f.device_resurface %}checked{% endif %}><span>ResurFACE</span></label>
+                    <label class="cform-check"><input type="checkbox" name="device_remodel" {% if f.device_remodel %}checked{% endif %}><span>ReModel</span></label>
+                    <label class="cform-check"><input type="checkbox" name="device_illumifacial" {% if f.device_illumifacial %}checked{% endif %}><span>illumiFacial</span></label>
+                    <label class="cform-check"><input type="checkbox" name="device_remove_q1064" {% if f.device_remove_q1064 %}checked{% endif %}><span>ReMove Q1064</span></label>
+                    <label class="cform-check"><input type="checkbox" name="device_remove_q532" {% if f.device_remove_q532 %}checked{% endif %}><span>ReMove Q532</span></label>
                 </div>
 
                 <div class="cform-yn-table" style="margin-top:1rem;">
-                    <div class="cform-yn-row"><span>Changes to laser consultation?</span><div class="cform-radio-row"><label class="cform-check"><input type="radio" name="changes_consultation_form" value="1"><span>Yes</span></label><label class="cform-check"><input type="radio" name="changes_consultation_form" value="0" checked><span>No</span></label></div></div>
-                    <div class="cform-yn-row"><span>Changes to medication / medical history?</span><div class="cform-radio-row"><label class="cform-check"><input type="radio" name="changes_medication" value="1"><span>Yes</span></label><label class="cform-check"><input type="radio" name="changes_medication" value="0" checked><span>No</span></label></div></div>
-                    <div class="cform-yn-row"><span>Recent UV exposure / fake tan?</span><div class="cform-radio-row"><label class="cform-check"><input type="radio" name="changes_uv_exposure" value="1"><span>Yes</span></label><label class="cform-check"><input type="radio" name="changes_uv_exposure" value="0" checked><span>No</span></label></div></div>
-                    <div class="cform-yn-row"><span>Client consents to settings being changed?</span><div class="cform-radio-row"><label class="cform-check"><input type="radio" name="consent_settings_change" value="1"><span>Yes</span></label><label class="cform-check"><input type="radio" name="consent_settings_change" value="0" checked><span>No</span></label></div></div>
+                    <div class="cform-yn-row"><span>Changes to laser consultation?</span><div class="cform-radio-row"><label class="cform-check"><input type="radio" name="changes_consultation_form" value="1" {% if f.changes_consultation_form %}checked{% endif %}><span>Yes</span></label><label class="cform-check"><input type="radio" name="changes_consultation_form" value="0" {% if not f.changes_consultation_form %}checked{% endif %}><span>No</span></label></div></div>
+                    <div class="cform-yn-row"><span>Changes to medication / medical history?</span><div class="cform-radio-row"><label class="cform-check"><input type="radio" name="changes_medication" value="1" {% if f.changes_medication %}checked{% endif %}><span>Yes</span></label><label class="cform-check"><input type="radio" name="changes_medication" value="0" {% if not f.changes_medication %}checked{% endif %}><span>No</span></label></div></div>
+                    <div class="cform-yn-row"><span>Recent UV exposure / fake tan?</span><div class="cform-radio-row"><label class="cform-check"><input type="radio" name="changes_uv_exposure" value="1" {% if f.changes_uv_exposure %}checked{% endif %}><span>Yes</span></label><label class="cform-check"><input type="radio" name="changes_uv_exposure" value="0" {% if not f.changes_uv_exposure %}checked{% endif %}><span>No</span></label></div></div>
+                    <div class="cform-yn-row"><span>Client consents to settings being changed?</span><div class="cform-radio-row"><label class="cform-check"><input type="radio" name="consent_settings_change" value="1" {% if f.consent_settings_change %}checked{% endif %}><span>Yes</span></label><label class="cform-check"><input type="radio" name="consent_settings_change" value="0" {% if not f.consent_settings_change %}checked{% endif %}><span>No</span></label></div></div>
                 </div>
 
-                <div class="cform-field" style="margin-top:1rem;"><label class="cform-label">Client Feedback</label><textarea class="cform-input" name="client_feedback" rows="2"></textarea></div>
+                <div class="cform-field" style="margin-top:1rem;"><label class="cform-label">Client Feedback</label><textarea class="cform-input" name="client_feedback" rows="2">{{ f.client_feedback|default_if_none:'' }}</textarea></div>
             </div>
 
             <!-- Treatment areas table -->
@@ -101,21 +103,21 @@
                     {% for i in "12345" %}
                     <tr class="record-card-table__row">
                         <td class="record-card-table__num">{{ i }}</td>
-                        <td><input class="cform-input" type="text" name="area_{{ i }}"></td>
-                        <td><input class="cform-input" type="text" name="skin_type_{{ i }}"></td>
-                        <td><input class="cform-input" type="text" name="spot_size_{{ i }}"></td>
-                        <td><input class="cform-input" type="text" name="fluence_{{ i }}"></td>
-                        <td><input class="cform-input" type="text" name="pulses_{{ i }}"></td>
-                        <td><input class="cform-input" type="text" name="delay_{{ i }}"></td>
-                        <td><input class="cform-input" type="text" name="shots_{{ i }}"></td>
-                        <td><input class="cform-input" type="number" step="0.01" name="cost_{{ i }}"></td>
+                        <td><input class="cform-input" type="text" name="area_{{ i }}" value="{{ f|rc_area:i|default_if_none:'' }}"></td>
+                        <td><input class="cform-input" type="text" name="skin_type_{{ i }}" value="{{ f|rc_skin_type:i|default_if_none:'' }}"></td>
+                        <td><input class="cform-input" type="text" name="spot_size_{{ i }}" value="{{ f|rc_spot:i|default_if_none:'' }}"></td>
+                        <td><input class="cform-input" type="text" name="fluence_{{ i }}" value="{{ f|rc_fluence:i|default_if_none:'' }}"></td>
+                        <td><input class="cform-input" type="text" name="pulses_{{ i }}" value="{{ f|rc_pulses:i|default_if_none:'' }}"></td>
+                        <td><input class="cform-input" type="text" name="delay_{{ i }}" value="{{ f|rc_delay:i|default_if_none:'' }}"></td>
+                        <td><input class="cform-input" type="text" name="shots_{{ i }}" value="{{ f|rc_shots:i|default_if_none:'' }}"></td>
+                        <td><input class="cform-input" type="number" step="0.01" name="cost_{{ i }}" value="{{ f|rc_cost:i|default_if_none:'' }}"></td>
                     </tr>
                     {% endfor %}
                     </tbody>
                     </table>
                   </div>
                 </div>
-                <div class="cform-field" style="margin-top:1rem;"><label class="cform-label">Operator Comments</label><textarea class="cform-input" name="operator_comments" rows="3"></textarea></div>
+                <div class="cform-field" style="margin-top:1rem;"><label class="cform-label">Operator Comments</label><textarea class="cform-input" name="operator_comments" rows="3">{{ f.operator_comments|default_if_none:'' }}</textarea></div>
             </div>
 
             <!-- Re-consent -->
@@ -124,14 +126,17 @@
                 <div class="cform-consent-list" style="margin-bottom:1rem;">
                     <p class="cform-hint">The information I have given is correct to the best of my knowledge. I understand that results vary and multiple treatments may be necessary. I understand the possible side effects and must avoid sun exposure on the treated area. I have discussed relevant details and re-consent to further Dynamix treatment.</p>
                 </div>
-                <div class="cform-sig-wrap"><canvas id="sigCanvas" class="cform-sig-canvas"></canvas><div class="cform-sig-actions"><button type="button" class="btn btn--ghost btn--sm" id="sigClear">Clear</button></div></div>
-                <input type="hidden" name="reconsent_signature" id="sigData">
+                <div class="cform-sig-wrap"><canvas id="reconsentSigCanvas" class="cform-sig-canvas"></canvas><div class="cform-sig-actions"><button type="button" class="btn btn--ghost btn--sm" id="reconsentSigClear">Clear</button></div></div>
+                <input type="hidden" name="reconsent_signature" id="reconsentSigData">
                 <p class="cform-sig-name">{{ target_user.full_name }}</p>
+                {% if f.reconsent_signature %}
+                <p class="cform-hint">Client signed {{ f.reconsent_signed_at|date:"j F Y \a\t H:i" }}: <img src="{{ f.reconsent_signature }}" alt="Current re-consent signature" class="cform-sig-preview"><br>Only sign again above if the client needs to re-sign.</p>
+                {% endif %}
             </div>
 
             {% if is_minor %}
             <!-- ===== MINOR / GUARDIAN SECTION ===== -->
-            <div class="cform-section" id="guardianSection">
+            <div class="cform-section" id="guardianSection"{% if f.guardian_signature %} data-has-signature="1"{% endif %}>
                 <h2 class="cform-section__title">Parent / Guardian Consent</h2>
                 <div class="cform-behalf-banner cform-minor-banner">
                     This client is under 18. A parent or guardian must provide their details and countersign below.
@@ -139,19 +144,19 @@
                 <div class="cform-grid cform-grid--2">
                     <div class="cform-field">
                         <label class="cform-label">Guardian Full Name <span class="cform-req">*</span></label>
-                        <input class="cform-input" type="text" name="guardian_name" required placeholder="Full name">
+                        <input class="cform-input" type="text" name="guardian_name" required placeholder="Full name" value="{{ f.guardian_name|default_if_none:'' }}">
                     </div>
                     <div class="cform-field">
                         <label class="cform-label">Relationship to Client <span class="cform-req">*</span></label>
-                        <input class="cform-input" type="text" name="guardian_relationship" required placeholder="e.g. Mother, Father, Guardian">
+                        <input class="cform-input" type="text" name="guardian_relationship" required placeholder="e.g. Mother, Father, Guardian" value="{{ f.guardian_relationship|default_if_none:'' }}">
                     </div>
                     <div class="cform-field">
                         <label class="cform-label">Guardian Phone <span class="cform-req">*</span></label>
-                        <input class="cform-input" type="tel" name="guardian_phone" required placeholder="e.g. 07700 900000">
+                        <input class="cform-input" type="tel" name="guardian_phone" required placeholder="e.g. 07700 900000" value="{{ f.guardian_phone|default_if_none:'' }}">
                     </div>
                     <div class="cform-field">
                         <label class="cform-label">Guardian Email</label>
-                        <input class="cform-input" type="email" name="guardian_email" placeholder="Email address (optional)">
+                        <input class="cform-input" type="email" name="guardian_email" placeholder="Email address (optional)" value="{{ f.guardian_email|default_if_none:'' }}">
                     </div>
                 </div>
                 <p class="cform-label" style="margin-top:1.25rem;">Guardian Signature <span class="cform-req">*</span></p>
@@ -162,16 +167,17 @@
                     </div>
                 </div>
                 <input type="hidden" name="guardian_signature" id="guardianSigData">
+                {% if f.guardian_signature %}<p class="cform-hint">Current guardian signature: <img src="{{ f.guardian_signature }}" alt="Current guardian signature" class="cform-sig-preview"></p>{% endif %}
                 <p class="cform-hint" style="margin-top:0.5rem;">By signing, the parent / guardian confirms they consent to today's treatment being carried out on the client named above.</p>
             </div>
             {% endif %}
 
-            <div class="cform-submit-row">
-                <button type="submit" class="btn btn--primary btn--lg">Save Record Card</button>
-            </div>
+            {% include "forms_system/_lifecycle/practitioner_signature.html" with signature_hint="I confirm the treatment details above are accurate." %}
         </form>
+
+        {% if f %}{% include "forms_system/_lifecycle/close_actions.html" %}{% endif %}
     </div>
 </div>
 </div>
-<script src="{% static 'js/sig_pad.js' %}?v=3"></script>
+<script src="{% static 'js/sig_pad.js' %}?v=4"></script>
 {% endblock %}

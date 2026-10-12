@@ -1,0 +1,8 @@
+{# Header + banners for a practitioner page. Expects `f`, `error`. #}
+<div class="cform-header">
+    <span class="cform-header__eyebrow">Caldwell Cosmetics — Practitioner Section</span>
+    <h1 class="cform-header__title">{{ f.FORM_TITLE }}</h1>
+    <p class="cform-header__sub">Client: <strong>{{ f.user.full_name }}</strong> — submitted {{ f.started_at|date:"j F Y \a\t H:i" }}.
+        <a href="{{ f.view_url }}">View record &amp; history</a></p>
+</div>
+{% if error %}<div class="cform-behalf-banner cform-error-banner" role="alert">{{ error }}</div>{% endif %}

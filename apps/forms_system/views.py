@@ -1,21 +1,19 @@
-import base64
-import json
 from datetime import datetime
-from decimal import Decimal, InvalidOperation
 
 from django.contrib import messages
+from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils import timezone
-from django.views.decorators.http import require_POST
-from django.contrib.auth import get_user_model
-from apps.accounts.permissions import clinical_staff_required, practitioner_required
-from .utils import bool_from_post
 
+from apps.accounts.permissions import clinical_staff_required, practitioner_required
+from . import lifecycle
+from .lifecycle import Action, Section
 from .models import (
-    ConsultationForm, BotoxConsentForm, BotoxFormRevision, PhotographyConsent,
+    ConsultationForm, BotoxConsentForm, PhotographyConsent,
     RecordCard, PRPConsentForm, LaserReConsent,
 )
 
@@ -28,13 +26,6 @@ staff_required = practitioner_required
 # ---------------------------------------------------------------------------
 # Shared helpers
 # ---------------------------------------------------------------------------
-
-def _get_or_none(model, **kwargs):
-    try:
-        return model.objects.filter(**kwargs).latest("completed_at")
-    except Exception:
-        return None
-
 
 def _dob_is_minor(dob_str):
     from datetime import date as date_type
@@ -55,37 +46,16 @@ def _profile_is_minor(user):
         return False
 
 
-def _extract_guardian(data):
-    return {
-        "guardian_name":         data.get("guardian_name", ""),
-        "guardian_relationship": data.get("guardian_relationship", ""),
-        "guardian_phone":        data.get("guardian_phone", ""),
-        "guardian_email":        data.get("guardian_email", ""),
-        "guardian_signature":    data.get("guardian_signature", ""),
-    }
+GUARDIAN_FIELDS = ["guardian_name", "guardian_relationship", "guardian_phone", "guardian_email"]
+
+_validate_sig = lifecycle.is_valid_signature
 
 
-def _validate_sig(sig):
-    """Return True only if sig is a valid base64-encoded PNG data URL."""
-    if not sig or not sig.startswith("data:image/png;base64,"):
-        return False
-    try:
-        decoded = base64.b64decode(sig.split(",", 1)[1])
-        return decoded[:8] == b"\x89PNG\r\n\x1a\n"
-    except Exception:
-        return False
-
-
-def _validate_guardian(data, is_minor):
+def _guardian_error(data, is_minor):
     if not is_minor:
         return None
-    g = _extract_guardian(data)
-    if not g["guardian_name"]:
-        return JsonResponse({"ok": False, "error": "Guardian name is required for clients under 18."}, status=400)
-    if not g["guardian_phone"]:
-        return JsonResponse({"ok": False, "error": "Guardian phone is required for clients under 18."}, status=400)
-    if not g["guardian_signature"]:
-        return JsonResponse({"ok": False, "error": "Guardian signature is required for clients under 18."}, status=400)
+    if not (data.get("guardian_name") and data.get("guardian_phone") and _validate_sig(data.get("guardian_signature", ""))):
+        return "Clients under 18 need a parent or guardian's name, phone number and signature."
     return None
 
 
@@ -94,117 +64,6 @@ def _post_submit_redirect(request):
     if request.user.is_staff:
         return redirect("dashboard:dashboard")
     return redirect("accounts:profile")
-
-
-def _build_consultation_kwargs(data):
-    """Map all ConsultationForm fields from POST data to a dict."""
-    return dict(
-        full_name=data.get("full_name", ""),
-        date_of_birth=data.get("date_of_birth"),
-        phone_number=data.get("phone_number", ""),
-        email=data.get("email", ""),
-        address=data.get("address", ""),
-        emergency_contact_name=data.get("emergency_contact_name", ""),
-        emergency_contact_phone=data.get("emergency_contact_phone", ""),
-        ethnic_origin=data.get("ethnic_origin", ""),
-        occupation=data.get("occupation", ""),
-        treatment_requested=data.get("treatment_requested", ""),
-        treatment_other=data.get("treatment_other", ""),
-        body_areas=data.get("body_areas", ""),
-
-        pregnant=bool(data.get("pregnant")),
-        pcos_hormonal=bool(data.get("pcos_hormonal")),
-        sun_tanned=bool(data.get("sun_tanned")),
-        thyroid_condition=bool(data.get("thyroid_condition")),
-        skin_pigmentation=bool(data.get("skin_pigmentation")),
-        regular_smoker=bool(data.get("regular_smoker")),
-        history_of_cancer=bool(data.get("history_of_cancer")),
-        psoriasis_eczema=bool(data.get("psoriasis_eczema")),
-        diabetes=bool(data.get("diabetes")),
-        depression_anxiety=bool(data.get("depression_anxiety")),
-        epilepsy=bool(data.get("epilepsy")),
-        herpes=bool(data.get("herpes")),
-        lymphatic_immune=bool(data.get("lymphatic_immune")),
-        high_blood_pressure=bool(data.get("high_blood_pressure")),
-        keloid_scarring=bool(data.get("keloid_scarring")),
-        photosensitive=bool(data.get("photosensitive")),
-        lupus=bool(data.get("lupus")),
-        allergies=bool(data.get("allergies")),
-        communicable_diseases=bool(data.get("communicable_diseases")),
-        alcohol_units_per_week=data.get("alcohol_units_per_week", ""),
-        medical_comments=data.get("medical_comments", ""),
-
-        current_medications=data.get("current_medications", ""),
-        st_johns_wart=bool(data.get("st_johns_wart")),
-        amiodarone=bool(data.get("amiodarone")),
-        minocycline=bool(data.get("minocycline")),
-        anticoagulants=bool(data.get("anticoagulants")),
-        gold_medications=bool(data.get("gold_medications")),
-        retinoids=bool(data.get("retinoids")),
-        steroids=bool(data.get("steroids")),
-        medication_comments=data.get("medication_comments", ""),
-        recent_major_treatment=data.get("recent_major_treatment", ""),
-
-        area_has_moles=bool(data.get("area_has_moles")),
-        area_has_birthmarks=bool(data.get("area_has_birthmarks")),
-        area_has_tattoos=bool(data.get("area_has_tattoos")),
-        area_has_permanent_makeup=bool(data.get("area_has_permanent_makeup")),
-        area_has_chemical_peel=bool(data.get("area_has_chemical_peel")),
-        area_has_botox=bool(data.get("area_has_botox")),
-        area_has_fillers=bool(data.get("area_has_fillers")),
-        area_has_tanning=bool(data.get("area_has_tanning")),
-        skin_disorder=data.get("skin_disorder", ""),
-        previous_laser_ipl=data.get("previous_laser_ipl", ""),
-
-        skin_products=data.get("skin_products", ""),
-        skin_type=data.get("skin_type", ""),
-        current_tan=data.get("current_tan") == "yes",
-        last_uv_exposure=data.get("last_uv_exposure", ""),
-        tanning_injections=data.get("tanning_injections") == "yes",
-        treatment_goals=data.get("treatment_goals", ""),
-        referral_source=data.get("referral_source", ""),
-
-        consent_info_correct=bool(data.get("consent_info_correct")),
-        consent_results_vary=bool(data.get("consent_results_vary")),
-        consent_multiple_treatments=bool(data.get("consent_multiple_treatments")),
-        consent_no_guarantee=bool(data.get("consent_no_guarantee")),
-        consent_sun_exposure=bool(data.get("consent_sun_exposure")),
-        consent_side_effects=bool(data.get("consent_side_effects")),
-        consent_pigmentation=bool(data.get("consent_pigmentation")),
-        consent_goggles=bool(data.get("consent_goggles")),
-        consent_contact_details=bool(data.get("consent_contact_details")),
-        consent_certified=bool(data.get("consent_certified")),
-
-        pretx_how_works=bool(data.get("pretx_how_works")),
-        pretx_pre_post_care=bool(data.get("pretx_pre_post_care")),
-        pretx_light_products=bool(data.get("pretx_light_products")),
-        pretx_num_treatments=bool(data.get("pretx_num_treatments")),
-        pretx_clinical_outcome=bool(data.get("pretx_clinical_outcome")),
-        pretx_sensation=bool(data.get("pretx_sensation")),
-        pretx_side_effects=bool(data.get("pretx_side_effects")),
-        pretx_cost=data.get("pretx_cost", ""),
-        pretx_photo_taken=bool(data.get("pretx_photo_taken")),
-        pretx_comments=data.get("pretx_comments", ""),
-        operator_signature=data.get("operator_signature", ""),
-
-        hair_colour=data.get("hair_colour", ""),
-        hair_texture=data.get("hair_texture", ""),
-        hair_handpiece=data.get("hair_handpiece", ""),
-        hair_previous_treatments=data.get("hair_previous_treatments", ""),
-        vascular_type=data.get("vascular_type", ""),
-        vascular_previous_treatments=data.get("vascular_previous_treatments", ""),
-        pigmentation_type=data.get("pigmentation_type", ""),
-        pigmentation_previous_treatments=data.get("pigmentation_previous_treatments", ""),
-        acne_type=data.get("acne_type", ""),
-        acne_previous_treatments=data.get("acne_previous_treatments", ""),
-        skin_assessment_type=data.get("skin_assessment_type", ""),
-        skin_handpiece=data.get("skin_handpiece", ""),
-        skin_previous_treatments=data.get("skin_previous_treatments", ""),
-        tattoo_colour=data.get("tattoo_colour", ""),
-        tattoo_previous_treatments=data.get("tattoo_previous_treatments", ""),
-        fractional_indication=data.get("fractional_indication", ""),
-        fractional_comments=data.get("fractional_comments", ""),
-    )
 
 
 def _is_practitioner_mode(request):
@@ -223,9 +82,31 @@ def _get_target_user(request):
     return request.user
 
 
+def _is_xhr(request):
+    return request.headers.get("X-Requested-With") == "XMLHttpRequest"
+
+
 # ---------------------------------------------------------------------------
 # Form status endpoint (AJAX — used by profile page and dashboard)
 # ---------------------------------------------------------------------------
+
+def _latest(model, user):
+    """The client's most recent form of this type that hasn't been withdrawn."""
+    return model.objects.filter(user=user, withdrawn=False).order_by("-pk").first()
+
+
+def _status(form):
+    if form is None:
+        return {"completed": False, "client_signed": False, "fully_complete": False, "date": None, "id": None}
+    return {
+        "completed":       form.client_section_done,   # client has done their part
+        "client_signed":   form.client_section_done,
+        "fully_complete":  form.finalised,
+        "date":            form.completed_at.strftime("%d %b %Y"),
+        "by_practitioner": getattr(form, "completed_by_practitioner", False),
+        "id":              form.pk,
+    }
+
 
 @login_required
 def form_status(request, user_id):
@@ -238,166 +119,198 @@ def form_status(request, user_id):
 
     user = get_object_or_404(User, pk=user_id)
 
-    consultation  = _get_or_none(ConsultationForm, user=user)
-    photography   = _get_or_none(PhotographyConsent, user=user)
-    botox         = _get_or_none(BotoxConsentForm, user=user, withdrawn=False)
-    prp           = _get_or_none(PRPConsentForm, user=user)
-    record_count  = RecordCard.objects.filter(user=user).count()
-    record_latest = RecordCard.objects.filter(user=user).order_by("-date").first()
-
-    try:
-        laser_latest = LaserReConsent.objects.filter(user=user).latest("completed_at")
-        laser_count  = LaserReConsent.objects.filter(user=user).count()
-    except Exception:
-        laser_latest = None
-        laser_count  = 0
+    laser_forms   = LaserReConsent.objects.filter(user=user, withdrawn=False)
+    laser_latest  = laser_forms.order_by("-completed_at").first()
+    record_cards  = RecordCard.objects.filter(user=user, withdrawn=False)
+    record_latest = record_cards.order_by("-date").first()
 
     return JsonResponse({
-        "consultation": {
-            "completed": consultation is not None,
-            "date": consultation.completed_at.strftime("%d %b %Y") if consultation else None,
-            "by_practitioner": consultation.completed_by_practitioner if consultation else False,
-        },
-        "photography": {
-            "completed": photography is not None,
-            "date": photography.completed_at.strftime("%d %b %Y") if photography else None,
-            "by_practitioner": photography.completed_by_practitioner if photography else False,
-        },
-        "botox": {
-            "client_signed": botox.client_signed if botox else False,
-            "fully_complete": botox.is_fully_complete if botox else False,
-            "date": botox.completed_at.strftime("%d %b %Y") if botox else None,
-            "id": botox.pk if botox else None,
-        },
-        "prp": {
-            "client_signed": prp.client_signed if prp else False,
-            "fully_complete": prp.is_fully_complete if prp else False,
-            "date": prp.completed_at.strftime("%d %b %Y") if prp else None,
-            "id": prp.pk if prp else None,
-        },
+        "consultation": _status(_latest(ConsultationForm, user)),
+        "photography":  _status(_latest(PhotographyConsent, user)),
+        "botox":        _status(_latest(BotoxConsentForm, user)),
+        "prp":          _status(_latest(PRPConsentForm, user)),
         "laser_reconsent": {
-            "count": laser_count,
+            "count":     laser_forms.count(),
             "last_date": laser_latest.completed_at.strftime("%d %b %Y") if laser_latest else None,
         },
         "record_cards": {
-            "count":      record_count,
-            "latest_id":  record_latest.pk if record_latest else None,
-            "last_date":  record_latest.date.strftime("%d %b %Y") if record_latest else None,
+            "count":     record_cards.count(),
+            "latest_id": record_latest.pk if record_latest else None,
+            "last_date": record_latest.date.strftime("%d %b %Y") if record_latest else None,
         },
     })
 
 
 # ---------------------------------------------------------------------------
-# Consultation Form
+# Shared view builders
+#
+# Every form follows the same lifecycle (see lifecycle.py):
+#   client page        — the client (or practitioner on their behalf) fills in
+#                        and updates their section of their in-progress form
+#   practitioner page  — the practitioner saves / signs their section, then
+#                        completes or withdraws the form
+#   record page        — read-only view of the form and its full history
+# ---------------------------------------------------------------------------
+
+def _client_page(request, model, template, *, signature_field="signature",
+                 prefill_from_last=False, on_answers_changed=None, context=None):
+    """
+    Shows / saves the client's section of their in-progress form of `model`,
+    starting a new one if they don't have one.
+
+    Template context:
+      f              — values to show (in-progress form, entered values after
+                       an error, or the last completed form if prefill_from_last)
+      editing        — True if updating an in-progress form
+      current        — the in-progress form, if any
+      last_completed — their most recent completed form of this type
+    """
+    target_user = _get_target_user(request)
+    on_behalf   = _is_practitioner_mode(request)
+    current     = lifecycle.open_form(model, target_user)
+    error       = None
+    shown       = current
+
+    if request.method == "POST":
+        data     = request.POST
+        sig      = data.get(signature_field, "")
+        is_minor = _dob_is_minor(data.get("date_of_birth", "")) if hasattr(model, "date_of_birth") \
+            else _profile_is_minor(target_user)
+
+        answers, error = lifecycle.values_from_post(model, model.CLIENT_ANSWER_FIELDS, data)
+        if not is_minor:
+            answers.update({name: "" for name in GUARDIAN_FIELDS if name in answers})
+
+        if not _validate_sig(sig):
+            error = "Your signature didn't come through. Please sign in the box again and resubmit."
+        error = error or _guardian_error(data, is_minor)
+
+        if error:
+            if _is_xhr(request):
+                return JsonResponse({"ok": False, "error": error}, status=400)
+            # Re-show the form with what they entered, rather than a bare error.
+            shown = model(user=target_user, **answers)
+        else:
+            values = dict(answers)
+            values[signature_field]      = sig
+            values["guardian_signature"] = data.get("guardian_signature", "") if is_minor else ""
+            if hasattr(model, "client_signed"):
+                values["client_signed"] = True
+            if hasattr(model, "client_signed_at"):
+                values["client_signed_at"] = timezone.now()
+            if on_behalf:
+                values["practitioner"] = request.user
+                if hasattr(model, "completed_by_practitioner"):
+                    values["completed_by_practitioner"] = True
+
+            form = lifecycle.save_client_section(
+                request, model, target_user, values,
+                model.CLIENT_ANSWER_FIELDS, model.CLIENT_FIELDS, on_answers_changed,
+            )
+
+            if _is_xhr(request):
+                return JsonResponse({"ok": True, "id": form.pk})
+            if on_behalf:
+                # Straight on to the practitioner's section.
+                return redirect(form.operator_url)
+            messages.success(request, f"Your {model.FORM_TITLE} has been saved.")
+            return _post_submit_redirect(request)
+
+    last_completed = lifecycle.latest_completed(model, target_user)
+    if shown is None and prefill_from_last:
+        shown = last_completed
+
+    return render(request, template, {
+        "f":                shown,
+        "editing":          current is not None,
+        "current":          current,
+        "last_completed":   last_completed,
+        "error":            error,
+        "form_title":       model.FORM_TITLE,
+        "target_user":      target_user,
+        "on_behalf":        on_behalf,
+        "profile_is_minor": _profile_is_minor(target_user),
+        **(context or {}),
+    }, status=400 if error else 200)
+
+
+def _practitioner_page(request, model, pk, template, *, apply_section=None, section_fields=None, context=None, as_name=None):
+    """
+    The practitioner's page for one form: their section (save / sign) plus
+    Complete and Withdraw. Closed forms redirect to the read-only record.
+    """
+    form = get_object_or_404(model, pk=pk)
+    if form.is_closed:
+        return redirect(form.view_url)
+
+    error = None
+    if request.method == "POST":
+        apply_section = apply_section or lifecycle.apply_values(model, lifecycle.practitioner_input_fields(model))
+        response, error = lifecycle.handle_practitioner_post(request, model, pk, apply_section, section_fields)
+        if response:
+            return response
+        form.refresh_from_db()
+
+    return render(request, template, {
+        "f":     form,
+        **({as_name: form} if as_name else {}),
+        "error": error,
+        "signature_withdrawn": lifecycle.last_revision_was_withdrawn(form, Section.OPERATOR),
+        **(context or {}),
+    })
+
+
+def _record_page(request, model, pk, template, context=None, as_name=None):
+    form = get_object_or_404(model, pk=pk)
+    return render(request, template, {
+        "f":         form,
+        **({as_name: form} if as_name else {}),
+        "revisions": form.revisions.select_related("user"),
+        **(context or {}),
+    })
+
+
+# ---------------------------------------------------------------------------
+# Laser Consultation
 # ---------------------------------------------------------------------------
 
 @login_required
 def consultation_form(request):
-    target_user     = _get_target_user(request)
-    on_behalf       = _is_practitioner_mode(request)
-    existing        = _get_or_none(ConsultationForm, user=target_user)
-
-    if request.method == "POST":
-        data     = request.POST
-        sig      = data.get("signature", "")
-        is_minor = _dob_is_minor(data.get("date_of_birth", ""))
-
-        if not _validate_sig(sig):
-            return JsonResponse({"ok": False, "error": "A valid signature is required."}, status=400)
-
-        err = _validate_guardian(data, is_minor)
-        if err:
-            return err
-
-        g = _extract_guardian(data) if is_minor else {}
-
-        ConsultationForm.objects.create(
-            user=target_user,
-            completed_by_practitioner=on_behalf,
-            practitioner=request.user if on_behalf else None,
-            signature=sig,
-            **g,
-            **_build_consultation_kwargs(data),
-        )
-
-        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
-            return JsonResponse({"ok": True})
-        return _post_submit_redirect(request)
-
-    return render(request, "forms_system/consultation/form.html", {
-        "existing": existing,
-        "target_user": target_user,
-        "on_behalf": on_behalf,
-        "is_practitioner": request.user.is_superuser,
-        "profile_is_minor": _profile_is_minor(target_user),
+    # A new consultation starts from the client's last one, as most details
+    # carry over — consents and the signature must be given afresh.
+    return _client_page(request, ConsultationForm, "forms_system/consultation/form.html", prefill_from_last=True, context={
         "form_treatment_choices": ConsultationForm.TREATMENT_CHOICES,
     })
 
 
-# ---------------------------------------------------------------------------
-# Consultation Form — operator view / history
-# ---------------------------------------------------------------------------
+@staff_required
+def consultation_operator(request, pk):
+    return _practitioner_page(request, ConsultationForm, pk, "forms_system/consultation/operator.html")
+
 
 @clinical_staff_required
 def consultation_view(request, user_id):
-    """Read-only view of a consultation form; ?form_pk=<pk> selects a specific historical entry."""
+    """Read-only view of a consultation; ?form_pk=<pk> selects a specific historical entry."""
     target_user = get_object_or_404(User, pk=user_id)
     all_forms   = list(ConsultationForm.objects.filter(user=target_user).order_by("-completed_at"))
 
     form_pk = request.GET.get("form_pk")
-    if form_pk:
-        selected = next((f for f in all_forms if str(f.pk) == str(form_pk)), None)
-        form = selected or (all_forms[0] if all_forms else None)
-    else:
-        form = all_forms[0] if all_forms else None
+    form = next((f for f in all_forms if str(f.pk) == str(form_pk)), None) if form_pk else None
+    form = form or (all_forms[0] if all_forms else None)
 
     return render(request, "forms_system/consultation/view.html", {
         "target_user": target_user,
         "form":        form,
+        "f":           form,
         "all_forms":   all_forms,
+        "revisions":   form.revisions.select_related("user") if form else [],
     })
 
 
 @staff_required
 def consultation_new(request, user_id):
-    """Operator creates a new consultation form; the most recent previous is shown for reference."""
-    target_user = get_object_or_404(User, pk=user_id)
-    is_minor    = _profile_is_minor(target_user)
-    previous    = ConsultationForm.objects.filter(user=target_user).order_by("-completed_at").first()
-
-    if request.method == "POST":
-        data     = request.POST
-        sig      = data.get("signature", "")
-        is_minor_dob = _dob_is_minor(data.get("date_of_birth", ""))
-
-        if not _validate_sig(sig):
-            return JsonResponse({"ok": False, "error": "A valid signature is required."}, status=400)
-
-        err = _validate_guardian(data, is_minor_dob)
-        if err:
-            return err
-
-        g = _extract_guardian(data) if is_minor_dob else {}
-
-        ConsultationForm.objects.create(
-            user=target_user,
-            completed_by_practitioner=True,
-            practitioner=request.user,
-            signature=sig,
-            **g,
-            **_build_consultation_kwargs(data),
-        )
-
-        return redirect("forms_system:consultation_view", user_id=user_id)
-
-    return render(request, "forms_system/consultation/new.html", {
-        "target_user":            target_user,
-        "previous":               previous,
-        "on_behalf":              True,
-        "is_practitioner":        True,
-        "profile_is_minor":       is_minor,
-        "form_treatment_choices": ConsultationForm.TREATMENT_CHOICES,
-    })
+    """Start (or continue) a consultation on the client's behalf."""
+    return redirect(f"{reverse('forms_system:consultation')}?on_behalf_of={user_id}")
 
 
 # ---------------------------------------------------------------------------
@@ -406,247 +319,48 @@ def consultation_new(request, user_id):
 
 @login_required
 def photography_consent(request):
+    # With a consent on file and nothing in progress, show it — with the
+    # option to complete an updated consent (?new=1).
     target_user = _get_target_user(request)
-    on_behalf   = _is_practitioner_mode(request)
-    existing    = _get_or_none(PhotographyConsent, user=target_user)
+    on_file     = lifecycle.latest_completed(PhotographyConsent, target_user)
+    in_progress = lifecycle.open_form(PhotographyConsent, target_user)
+    show_on_file = on_file and not in_progress and request.method == "GET" and not request.GET.get("new")
 
-    if request.method == "POST":
-        # One-time form — block resubmission even if the client bypasses the UI
-        if existing:
-            if request.headers.get("X-Requested-With") == "XMLHttpRequest":
-                return JsonResponse({"ok": False, "error": "Photography consent already completed."}, status=409)
-            return redirect("forms_system:photography")
-
-        data     = request.POST
-        sig      = data.get("signature", "")
-        is_minor = _dob_is_minor(data.get("date_of_birth", ""))
-
-        if not _validate_sig(sig):
-            return JsonResponse({"ok": False, "error": "A valid signature is required."}, status=400)
-
-        err = _validate_guardian(data, is_minor)
-        if err:
-            return err
-
-        g = _extract_guardian(data) if is_minor else {}
-
-        PhotographyConsent.objects.create(
-            user=target_user,
-            completed_by_practitioner=on_behalf,
-            practitioner=request.user if on_behalf else None,
-            signature=sig,
-            full_name=data.get("full_name", ""),
-            date_of_birth=data.get("date_of_birth"),
-            address=data.get("address", ""),
-            consent_1=bool(data.get("consent_1")),
-            consent_2=bool(data.get("consent_2")),
-            consent_3=bool(data.get("consent_3")),
-            consent_4=bool(data.get("consent_4")),
-            consent_5=bool(data.get("consent_5")),
-            **g,
-        )
-
-        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
-            return JsonResponse({"ok": True})
-        return _post_submit_redirect(request)
-
-    return render(request, "forms_system/photography/consent.html", {
-        "existing": existing,
-        "target_user": target_user,
-        "on_behalf": on_behalf,
-        "profile_is_minor": _profile_is_minor(target_user),
+    return _client_page(request, PhotographyConsent, "forms_system/photography/consent.html", prefill_from_last=True, context={
+        "existing": on_file if show_on_file else None,
     })
+
+
+@staff_required
+def photography_operator(request, pk):
+    return _practitioner_page(request, PhotographyConsent, pk, "forms_system/photography/operator.html")
+
+
+@clinical_staff_required
+def photography_view(request, pk):
+    return _record_page(request, PhotographyConsent, pk, "forms_system/photography/view.html")
 
 
 # ---------------------------------------------------------------------------
 # Botox Consent & Prescription
 #
-# One form moves through three sections: client → prescriber → practitioner.
-# Until the practitioner completes it, each person can keep editing their own
-# section (saves only ever write that section's fields). Every save is kept
-# in BotoxFormRevision. Once completed the form is a read-only record, and
-# the client's next visit starts a new form.
+# Like every form, plus a prescriber section between the client's and the
+# practitioner's. If the client changes their answers after the prescriber
+# has signed, the prescriber's signature is withdrawn.
 # ---------------------------------------------------------------------------
 
-Section = BotoxFormRevision.Section
-Action  = BotoxFormRevision.Action
-
-
-def _open_botox_form(user):
-    """The client's in-progress (not yet completed) Botox form, if any."""
-    return (
-        BotoxConsentForm.objects
-        .filter(user=user, finalised=False, withdrawn=False)
-        .order_by("-completed_at")
-        .first()
-    )
-
-
-def _botox_client_answers(data, is_minor):
-    answers = dict(
-        full_name=data.get("full_name", ""),
-        phone_number=data.get("phone_number", ""),
-        email=data.get("email", ""),
-        address=data.get("address", ""),
-        emergency_contact_name=data.get("emergency_contact_name", ""),
-        emergency_contact_phone=data.get("emergency_contact_phone", ""),
-
-        has_allergies=bool(data.get("has_allergies")),
-        allergy_details=data.get("allergy_details", ""),
-        neuromuscular_disorders=bool(data.get("neuromuscular_disorders")),
-        skin_conditions=bool(data.get("skin_conditions")),
-        blood_disorders=bool(data.get("blood_disorders")),
-        history_of_fainting=bool(data.get("history_of_fainting")),
-        other_conditions=data.get("other_conditions", ""),
-        current_medications=data.get("current_medications", ""),
-        previous_cosmetic_procedures=data.get("previous_cosmetic_procedures", ""),
-        botox_allergies=data.get("botox_allergies", ""),
-
-        area_forehead=bool(data.get("area_forehead")),
-        area_frown_lines=bool(data.get("area_frown_lines")),
-        area_crows_feet=bool(data.get("area_crows_feet")),
-        area_other=data.get("area_other", ""),
-        expectations=data.get("expectations", ""),
-
-        is_pregnant=bool_from_post(data.get("is_pregnant")),
-        is_breastfeeding=bool_from_post(data.get("is_breastfeeding")),
-        has_cold_sores=bool_from_post(data.get("has_cold_sores")),
-        has_medical_problems=bool_from_post(data.get("has_medical_problems")),
-        medical_problems_details=data.get("medical_problems_details", ""),
-        on_medication=bool_from_post(data.get("on_medication")),
-        medication_details=data.get("medication_details", ""),
-        has_allergies_q2=bool_from_post(data.get("has_allergies_q2")),
-        allergy_details_q2=data.get("allergy_details_q2", ""),
-        previous_procedures=bool_from_post(data.get("previous_procedures")),
-        previous_procedures_details=data.get("previous_procedures_details", ""),
-        yes_details=data.get("yes_details", ""),
-
-        consent_interactions=bool(data.get("consent_interactions")),
-        consent_appearance=bool(data.get("consent_appearance")),
-        consent_limitations=bool(data.get("consent_limitations")),
-        consent_alternatives=bool(data.get("consent_alternatives")),
-        consent_followup=bool(data.get("consent_followup")),
-        consent_dissatisfaction=bool(data.get("consent_dissatisfaction")),
-        consent_agreement=bool(data.get("consent_agreement")),
-        consent_privacy_policy=bool(data.get("consent_privacy_policy")),
-    )
-    # Clear guardian details if the client is (now) an adult.
-    guardian = _extract_guardian(data if is_minor else {})
-    return answers, guardian
+def _withdraw_prescriber_signature(request):
+    def withdraw(form):
+        if form.prescriber_signed:
+            lifecycle.withdraw_signature(request.user, form, Section.PRESCRIBER)
+    return withdraw
 
 
 @login_required
 def botox_client(request):
-    target_user = _get_target_user(request)
-    on_behalf   = _is_practitioner_mode(request)
+    return _client_page(request, BotoxConsentForm, "forms_system/botox/client.html",
+                        on_answers_changed=_withdraw_prescriber_signature(request))
 
-    if request.method == "POST":
-        data     = request.POST
-        sig      = data.get("signature", "")
-        is_minor = _dob_is_minor(data.get("date_of_birth", ""))
-
-        answers, guardian = _botox_client_answers(data, is_minor)
-        try:
-            dob = datetime.strptime(data.get("date_of_birth", ""), "%Y-%m-%d").date()
-        except ValueError:
-            dob = None
-        answers.update(guardian, date_of_birth=dob)
-
-        def rejected(message):
-            # Re-show the form with what they entered, rather than a bare error.
-            if request.headers.get("X-Requested-With") == "XMLHttpRequest":
-                return JsonResponse({"ok": False, "error": message}, status=400)
-            open_form = _open_botox_form(target_user)
-            entered   = BotoxConsentForm(user=target_user, **answers)
-            if open_form:
-                entered.pk               = open_form.pk
-                entered.client_signed_at = open_form.client_signed_at
-                entered.prescriber_signed = open_form.prescriber_signed
-            return render(request, "forms_system/botox/client.html", {
-                "f": entered,
-                "error": message,
-                "target_user": target_user,
-                "on_behalf": on_behalf,
-                "profile_is_minor": _profile_is_minor(target_user),
-            }, status=400)
-
-        if not _validate_sig(sig):
-            return rejected("Your signature didn't come through. Please sign in the box again and resubmit.")
-        if _validate_guardian(data, is_minor):
-            return rejected("Clients under 18 need a parent or guardian's name, relationship, phone number and signature.")
-        if dob is None:
-            return rejected("Please enter a valid date of birth.")
-
-        now = timezone.now()
-
-        with transaction.atomic():
-            botox = (
-                BotoxConsentForm.objects
-                .select_for_update()
-                .filter(user=target_user, finalised=False, withdrawn=False)
-                .order_by("-completed_at")
-                .first()
-            )
-
-            if botox is None:
-                botox = BotoxConsentForm.objects.create(
-                    user=target_user,
-                    completed_by_practitioner=on_behalf,
-                    practitioner=request.user if on_behalf else None,
-                    signature=sig,
-                    client_signed=True,
-                    client_signed_at=now,
-                    **answers,
-                )
-                botox.log_revision(request.user, Section.CLIENT, Action.SUBMITTED, BotoxConsentForm.CLIENT_FIELDS)
-            else:
-                before = botox.snapshot(BotoxConsentForm.CLIENT_ANSWER_FIELDS)
-                for field, value in answers.items():
-                    setattr(botox, field, value)
-                botox.signature        = sig
-                botox.client_signed    = True
-                botox.client_signed_at = now
-                if on_behalf:
-                    botox.completed_by_practitioner = True
-                    botox.practitioner              = request.user
-                botox.save(update_fields=BotoxConsentForm.CLIENT_FIELDS)
-                botox.log_revision(request.user, Section.CLIENT, Action.UPDATED, BotoxConsentForm.CLIENT_FIELDS)
-
-                # The prescriber signed off the old answers — they need to review the new ones.
-                answers_changed = botox.snapshot(BotoxConsentForm.CLIENT_ANSWER_FIELDS) != before
-                if answers_changed and botox.prescriber_signed:
-                    botox.prescriber_signature = ""
-                    botox.prescriber_signed    = False
-                    botox.prescriber_signed_at = None
-                    botox.save(update_fields=["prescriber_signature", "prescriber_signed", "prescriber_signed_at"])
-                    botox.log_revision(request.user, Section.PRESCRIBER, Action.SIGNATURE_WITHDRAWN, BotoxConsentForm.PRESCRIBER_FIELDS)
-
-        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
-            return JsonResponse({"ok": True, "botox_id": botox.pk})
-        return _post_submit_redirect(request)
-
-    open_form = _open_botox_form(target_user)
-    last_completed = None
-    if open_form is None:
-        last_completed = (
-            BotoxConsentForm.objects
-            .filter(user=target_user, finalised=True)
-            .order_by("-finalised_at")
-            .first()
-        )
-
-    return render(request, "forms_system/botox/client.html", {
-        "f": open_form,
-        "last_completed": last_completed,
-        "target_user": target_user,
-        "on_behalf": on_behalf,
-        "profile_is_minor": _profile_is_minor(target_user),
-    })
-
-
-# ---------------------------------------------------------------------------
-# Botox — Prescriber section
-# ---------------------------------------------------------------------------
 
 def _prescriber_block_reason(user, botox):
     """Why `user` can't edit the prescriber section, or None if they can."""
@@ -748,14 +462,13 @@ def botox_prescriber(request, pk):
                 messages.success(request, "Progress saved — not yet signed.")
                 return redirect("forms_system:botox_prescriber", pk=pk)
 
-    last_prescriber_rev = botox.revisions.filter(section=Section.PRESCRIBER).last()
     block_reason = _prescriber_block_reason(request.user, botox)
 
     return render(request, "forms_system/botox/prescriber.html", {
         "botox":     botox,
         "can_edit":  block_reason is None,
         "block_reason": block_reason if request.user.is_prescriber else None,
-        "signature_withdrawn": bool(last_prescriber_rev and last_prescriber_rev.action == Action.SIGNATURE_WITHDRAWN),
+        "signature_withdrawn": lifecycle.last_revision_was_withdrawn(botox, Section.PRESCRIBER),
         "error":     error,
         "values":    values,
         "decisions": BotoxConsentForm.PrescriptionDecision.choices,
@@ -763,214 +476,132 @@ def botox_prescriber(request, pk):
     })
 
 
-# ---------------------------------------------------------------------------
-# Botox — Practitioner section and completion
-# ---------------------------------------------------------------------------
-
 @staff_required
 def botox_operator(request, pk):
-    botox = get_object_or_404(BotoxConsentForm, pk=pk)
-    if botox.is_closed:
-        return redirect("forms_system:botox_view", pk=pk)
-
-    error = None
-
-    if request.method == "POST":
-        data   = request.POST
-        action = data.get("action")
-
-        with transaction.atomic():
-            botox = BotoxConsentForm.objects.select_for_update().get(pk=pk)
-            if botox.is_closed:
-                return redirect("forms_system:botox_view", pk=pk)
-
-            if action == "complete":
-                if not data.get("confirm_complete"):
-                    error = "Please tick the box to confirm the form is complete."
-                elif not botox.can_finalise:
-                    error = "This form can't be completed yet — check every section has been signed."
-                else:
-                    botox.finalised    = True
-                    botox.finalised_at = timezone.now()
-                    botox.finalised_by = request.user
-                    botox.save(update_fields=BotoxConsentForm.FINALISE_FIELDS)
-                    botox.log_revision(
-                        request.user, Section.FORM, Action.COMPLETED,
-                        BotoxConsentForm.CLIENT_FIELDS + BotoxConsentForm.PRESCRIBER_FIELDS
-                        + BotoxConsentForm.OPERATOR_FIELDS + BotoxConsentForm.FINALISE_FIELDS,
-                    )
-                    return redirect("forms_system:botox_view", pk=pk)
-            elif action == "withdraw":
-                reason = data.get("withdrawn_reason", "").strip()
-                if not reason:
-                    error = "Please give a reason for withdrawing this form."
-                elif not data.get("confirm_withdraw"):
-                    error = "Please tick the box to confirm you want to withdraw this form."
-                else:
-                    botox.withdrawn        = True
-                    botox.withdrawn_at     = timezone.now()
-                    botox.withdrawn_by     = request.user
-                    botox.withdrawn_reason = reason[:300]
-                    botox.save(update_fields=BotoxConsentForm.WITHDRAW_FIELDS)
-                    botox.log_revision(
-                        request.user, Section.FORM, Action.WITHDRAWN,
-                        BotoxConsentForm.CLIENT_FIELDS + BotoxConsentForm.PRESCRIBER_FIELDS
-                        + BotoxConsentForm.OPERATOR_FIELDS + BotoxConsentForm.WITHDRAW_FIELDS,
-                    )
-                    return redirect("forms_system:botox_view", pk=pk)
-            else:
-                signing = action == "sign"
-                sig     = data.get("operator_signature", "")
-                cost    = None
-
-                raw_cost = data.get("treatment_cost") or ""
-                if raw_cost:
-                    try:
-                        cost = Decimal(str(raw_cost))
-                        if cost < 0 or cost > 10000:
-                            error = "Invalid treatment cost."
-                    except (InvalidOperation, ValueError):
-                        error = "Invalid treatment cost."
-
-                if not error and signing and not _validate_sig(sig):
-                    error = "A valid operator signature is required."
-
-                if not error:
-                    for field in BotoxConsentForm.OPERATOR_TEXT_FIELDS:
-                        setattr(botox, field, data.get(field, ""))
-                    botox.treatment_cost     = cost
-                    botox.operator_signature = sig if signing else ""
-                    botox.operator_signed    = signing
-                    botox.operator_signed_at = timezone.now() if signing else None
-                    botox.operator_signed_by = request.user if signing else None
-                    botox.save(update_fields=BotoxConsentForm.OPERATOR_FIELDS)
-                    botox.log_revision(
-                        request.user, Section.OPERATOR,
-                        Action.SIGNED if signing else Action.SAVED,
-                        BotoxConsentForm.OPERATOR_FIELDS,
-                    )
-                    return redirect("forms_system:botox_operator", pk=pk)
-
-    return render(request, "forms_system/botox/operator.html", {
-        "botox": botox,
-        "error": error,
-    })
+    return _practitioner_page(request, BotoxConsentForm, pk, "forms_system/botox/operator.html", as_name="botox")
 
 
 @clinical_staff_required
 def botox_view(request, pk):
-    """Read-only record of a Botox form, with its full save history."""
-    botox = get_object_or_404(BotoxConsentForm.objects.select_related("user", "finalised_by"), pk=pk)
-    return render(request, "forms_system/botox/view.html", {
-        "botox":     botox,
-        "revisions": botox.revisions.select_related("user"),
-    })
+    return _record_page(request, BotoxConsentForm, pk, "forms_system/botox/view.html", as_name="botox")
 
 
 # ---------------------------------------------------------------------------
-# Record Card — new
+# PRP Consent
 # ---------------------------------------------------------------------------
+
+@login_required
+def prp_client(request):
+    return _client_page(request, PRPConsentForm, "forms_system/prp/client.html")
+
+
+@staff_required
+def prp_operator(request, pk):
+    return _practitioner_page(request, PRPConsentForm, pk, "forms_system/prp/operator.html", as_name="prp")
+
+
+@clinical_staff_required
+def prp_view(request, pk):
+    return _record_page(request, PRPConsentForm, pk, "forms_system/prp/view.html")
+
+
+# ---------------------------------------------------------------------------
+# Laser Re-Consent
+# ---------------------------------------------------------------------------
+
+@login_required
+def laser_reconsent(request):
+    return _client_page(request, LaserReConsent, "forms_system/laser/reconsent.html", signature_field="client_signature")
+
+
+@staff_required
+def laser_operator(request, pk):
+    return _practitioner_page(request, LaserReConsent, pk, "forms_system/laser/operator.html")
+
+
+@clinical_staff_required
+def laser_reconsent_view(request, pk):
+    return _record_page(request, LaserReConsent, pk, "forms_system/laser/reconsent_view.html", as_name="reconsent")
+
+
+# ---------------------------------------------------------------------------
+# Record Cards
+#
+# Practitioner-led: the practitioner fills in the card, taking the client's
+# re-consent signature on their device. It stays an editable draft until
+# they sign and complete it.
+# ---------------------------------------------------------------------------
+
+def _apply_record_card(card, data):
+    """Sets the card's fields from POST; signatures are only replaced when re-drawn."""
+    fields = [n for n in RecordCard.editable_fields()
+              if n not in ("reconsent_signature", "reconsent_signed_at", "guardian_signature")]
+    values, error = lifecycle.values_from_post(RecordCard, fields, data)
+    if error:
+        return error
+    for name, value in values.items():
+        setattr(card, name, value)
+
+    reconsent = data.get("reconsent_signature", "")
+    if reconsent and _validate_sig(reconsent):
+        card.reconsent_signature = reconsent
+        card.reconsent_signed_at = timezone.now()
+    guardian = data.get("guardian_signature", "")
+    if guardian and _validate_sig(guardian):
+        card.guardian_signature = guardian
+    return None
+
+
+def _record_card_section_fields():
+    return RecordCard.editable_fields() + RecordCard.OPERATOR_SIGNATURE_FIELDS
+
+
+def _previous_card(user, exclude_pk=None):
+    cards = RecordCard.objects.filter(user=user, withdrawn=False).order_by("-treatment_number")
+    if exclude_pk:
+        cards = cards.exclude(pk=exclude_pk)
+    return cards.first()
+
 
 @staff_required
 def record_card_new(request, user_id):
     target_user = get_object_or_404(User, pk=user_id)
-    is_minor    = _profile_is_minor(target_user)
-    previous    = (
-        RecordCard.objects
-        .filter(user=target_user)
-        .order_by("-treatment_number")
-        .first()
-    )
+    error = None
 
     if request.method == "POST":
-        data = request.POST
-        sig  = data.get("reconsent_signature", "")
-
-        if not sig:
-            return JsonResponse(
-                {"ok": False, "error": "Re-consent signature is required."}, status=400
-            )
-
-        err = _validate_guardian(data, is_minor)
-        if err:
-            return err
-
-        g = _extract_guardian(data) if is_minor else {}
-
-        def decimal_or_none(val):
-            try:
-                return float(val) if val else None
-            except ValueError:
-                return None
-
-        RecordCard.objects.create(
-            user=target_user,
-            date=data.get("date"),
-            time=data.get("time"),
-            treatment_for=data.get("treatment_for", ""),
-
-            device_remove_650=bool(data.get("device_remove_650")),
-            device_rebright_585=bool(data.get("device_rebright_585")),
-            device_remove_lp1064=bool(data.get("device_remove_lp1064")),
-            device_resurface=bool(data.get("device_resurface")),
-            device_remodel=bool(data.get("device_remodel")),
-            device_illumifacial=bool(data.get("device_illumifacial")),
-            device_remove_q1064=bool(data.get("device_remove_q1064")),
-            device_remove_q532=bool(data.get("device_remove_q532")),
-
-            changes_consultation_form=bool_from_post(data.get("changes_consultation_form")),
-            changes_medication=bool_from_post(data.get("changes_medication")),
-            changes_uv_exposure=bool_from_post(data.get("changes_uv_exposure")),
-            consent_settings_change=bool_from_post(data.get("consent_settings_change")),
-            client_feedback=data.get("client_feedback", ""),
-
-            reconsent_signature=sig,
-            reconsent_signed_at=timezone.now(),
-
-            area_1=data.get("area_1",""), skin_type_1=data.get("skin_type_1",""),
-            spot_size_1=data.get("spot_size_1",""), fluence_1=data.get("fluence_1",""),
-            pulses_1=data.get("pulses_1",""), delay_1=data.get("delay_1",""),
-            shots_1=data.get("shots_1",""), cost_1=decimal_or_none(data.get("cost_1")),
-
-            area_2=data.get("area_2",""), skin_type_2=data.get("skin_type_2",""),
-            spot_size_2=data.get("spot_size_2",""), fluence_2=data.get("fluence_2",""),
-            pulses_2=data.get("pulses_2",""), delay_2=data.get("delay_2",""),
-            shots_2=data.get("shots_2",""), cost_2=decimal_or_none(data.get("cost_2")),
-
-            area_3=data.get("area_3",""), skin_type_3=data.get("skin_type_3",""),
-            spot_size_3=data.get("spot_size_3",""), fluence_3=data.get("fluence_3",""),
-            pulses_3=data.get("pulses_3",""), delay_3=data.get("delay_3",""),
-            shots_3=data.get("shots_3",""), cost_3=decimal_or_none(data.get("cost_3")),
-
-            area_4=data.get("area_4",""), skin_type_4=data.get("skin_type_4",""),
-            spot_size_4=data.get("spot_size_4",""), fluence_4=data.get("fluence_4",""),
-            pulses_4=data.get("pulses_4",""), delay_4=data.get("delay_4",""),
-            shots_4=data.get("shots_4",""), cost_4=decimal_or_none(data.get("cost_4")),
-
-            area_5=data.get("area_5",""), skin_type_5=data.get("skin_type_5",""),
-            spot_size_5=data.get("spot_size_5",""), fluence_5=data.get("fluence_5",""),
-            pulses_5=data.get("pulses_5",""), delay_5=data.get("delay_5",""),
-            shots_5=data.get("shots_5",""), cost_5=decimal_or_none(data.get("cost_5")),
-
-            operator_comments=data.get("operator_comments", ""),
-            created_by=request.user,
-            **g,
-        )
-
-        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
-            return JsonResponse({"ok": True})
-        return _post_submit_redirect(request)
+        card  = RecordCard(user=target_user, created_by=request.user)
+        error = _apply_record_card(card, request.POST)
+        if not error:
+            card.save()
+            card.log_revision(request.user, Section.OPERATOR, Action.SAVED, _record_card_section_fields())
+            # Signing / completing happens on the card's own page.
+            if request.POST.get("action") in ("sign", "complete"):
+                return record_card_edit(request, card.pk)
+            return redirect(card.operator_url)
 
     return render(request, "forms_system/record_card/new.html", {
         "target_user": target_user,
-        "previous": previous,
-        "is_minor": is_minor,
+        "previous":    _previous_card(target_user),
+        "is_minor":    _profile_is_minor(target_user),
+        "f":           None,
+        "error":       error,
     })
 
 
-# ---------------------------------------------------------------------------
-# Record Card — view existing
-# ---------------------------------------------------------------------------
+@staff_required
+def record_card_edit(request, pk):
+    card = get_object_or_404(RecordCard, pk=pk)
+    return _practitioner_page(
+        request, RecordCard, pk, "forms_system/record_card/new.html",
+        apply_section=_apply_record_card,
+        section_fields=_record_card_section_fields(),
+        context={
+            "target_user": card.user,
+            "previous":    _previous_card(card.user, exclude_pk=card.pk),
+            "is_minor":    _profile_is_minor(card.user),
+        },
+    )
+
 
 @login_required
 def record_card_view(request, pk):
@@ -980,198 +611,7 @@ def record_card_view(request, pk):
     if not request.user.is_clinical_staff and card.user != request.user:
         return _post_submit_redirect(request)
 
-    return render(request, "forms_system/record_card/view.html", {"card": card})
-
-
-# ---------------------------------------------------------------------------
-# PRP — Step 1 (client)
-# ---------------------------------------------------------------------------
-
-@login_required
-def prp_client(request):
-    target_user = _get_target_user(request)
-    on_behalf   = _is_practitioner_mode(request)
-    existing    = _get_or_none(PRPConsentForm, user=target_user)
-
-    if request.method == "POST":
-        data     = request.POST
-        sig      = data.get("signature", "")
-        is_minor = _dob_is_minor(data.get("date_of_birth", ""))
-
-        if not _validate_sig(sig):
-            return JsonResponse({"ok": False, "error": "A valid signature is required."}, status=400)
-
-        err = _validate_guardian(data, is_minor)
-        if err:
-            return err
-
-        g = _extract_guardian(data) if is_minor else {}
-
-        prp = PRPConsentForm.objects.create(
-            user=target_user,
-            completed_by_practitioner=on_behalf,
-            practitioner=request.user if on_behalf else None,
-            signature=sig,
-            **g,
-
-            full_name=data.get("full_name", ""),
-            date_of_birth=data.get("date_of_birth"),
-            phone_number=data.get("phone_number", ""),
-            email=data.get("email", ""),
-            address=data.get("address", ""),
-            emergency_contact_name=data.get("emergency_contact_name", ""),
-            emergency_contact_phone=data.get("emergency_contact_phone", ""),
-
-            blood_disorders=bool(data.get("blood_disorders")),
-            on_anticoagulants=bool(data.get("on_anticoagulants")),
-            active_infection=bool(data.get("active_infection")),
-            autoimmune_disease=bool(data.get("autoimmune_disease")),
-            history_of_cancer=bool(data.get("history_of_cancer")),
-            skin_conditions=bool(data.get("skin_conditions")),
-            recent_vaccination=bool(data.get("recent_vaccination")),
-            communicable_diseases=bool(data.get("communicable_diseases")),
-            keloid_scarring=bool(data.get("keloid_scarring")),
-            current_medications=data.get("current_medications", ""),
-            other_conditions=data.get("other_conditions", ""),
-
-            treatment_areas=data.get("treatment_areas", ""),
-            expectations=data.get("expectations", ""),
-
-            is_pregnant=bool_from_post(data.get("is_pregnant")),
-            is_breastfeeding=bool_from_post(data.get("is_breastfeeding")),
-            has_medical_problems=bool_from_post(data.get("has_medical_problems")),
-            on_medication=bool_from_post(data.get("on_medication")),
-            has_allergies=bool_from_post(data.get("has_allergies")),
-            previous_prp=bool_from_post(data.get("previous_prp")),
-            yes_details=data.get("yes_details", ""),
-
-            consent_procedure=bool(data.get("consent_procedure")),
-            consent_risks=bool(data.get("consent_risks")),
-            consent_results=bool(data.get("consent_results")),
-            consent_aftercare=bool(data.get("consent_aftercare")),
-            consent_photos=bool(data.get("consent_photos")),
-            consent_privacy=bool(data.get("consent_privacy")),
-            consent_agreement=bool(data.get("consent_agreement")),
-
-            client_signed=True,
-            client_signed_at=timezone.now(),
-        )
-
-        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
-            return JsonResponse({"ok": True, "prp_id": prp.pk})
-        return _post_submit_redirect(request)
-
-    return render(request, "forms_system/prp/client.html", {
-        "existing": existing,
-        "target_user": target_user,
-        "on_behalf": on_behalf,
-        "profile_is_minor": _profile_is_minor(target_user),
-    })
-
-
-# ---------------------------------------------------------------------------
-# PRP — Step 2 (operator)
-# ---------------------------------------------------------------------------
-
-@staff_required
-def prp_operator(request, pk):
-    prp = get_object_or_404(PRPConsentForm, pk=pk)
-
-    if request.method == "POST":
-        data = request.POST
-        sig  = data.get("operator_signature", "")
-
-        if not sig:
-            return JsonResponse({"ok": False, "error": "Operator signature is required."}, status=400)
-
-        prp.product_name             = data.get("product_name", "")
-        prp.product_batch            = data.get("product_batch", "")
-        prp.vials_drawn              = data.get("vials_drawn", "")
-        prp.centrifuge_details       = data.get("centrifuge_details", "")
-        prp.application_method       = data.get("application_method", "")
-        prp.treatment_areas_operator = data.get("treatment_areas_operator", "")
-        prp.next_appointment         = data.get("next_appointment", "")
-        raw_cost = data.get("treatment_cost") or ""
-        if raw_cost:
-            try:
-                from decimal import Decimal, InvalidOperation
-                cost_val = Decimal(str(raw_cost))
-                if cost_val < 0 or cost_val > 10000:
-                    return JsonResponse({"ok": False, "error": "Invalid treatment cost."}, status=400)
-                prp.treatment_cost = cost_val
-            except (InvalidOperation, ValueError):
-                return JsonResponse({"ok": False, "error": "Invalid treatment cost."}, status=400)
-        else:
-            prp.treatment_cost = None
-        prp.operator_notes           = data.get("operator_notes", "")
-        prp.operator_signature       = sig
-        prp.operator_signed          = True
-        prp.operator_signed_at       = timezone.now()
-        prp.operator_signed_by       = request.user
-        prp.save()
-
-        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
-            return JsonResponse({"ok": True})
-        return _post_submit_redirect(request)
-
-    return render(request, "forms_system/prp/operator.html", {"prp": prp})
-
-
-# ---------------------------------------------------------------------------
-# Laser Re-Consent
-# ---------------------------------------------------------------------------
-
-@login_required
-def laser_reconsent(request):
-    target_user = _get_target_user(request)
-    on_behalf   = _is_practitioner_mode(request)
-    is_minor    = _profile_is_minor(target_user)
-
-    if request.method == "POST":
-        data = request.POST
-        sig  = data.get("client_signature", "")
-
-        if not _validate_sig(sig):
-            return JsonResponse({"ok": False, "error": "A valid signature is required."}, status=400)
-
-        err = _validate_guardian(data, is_minor)
-        if err:
-            return err
-
-        g = _extract_guardian(data) if is_minor else {}
-
-        LaserReConsent.objects.create(
-            user=target_user,
-            practitioner=request.user if on_behalf else None,
-            changes_consultation_form=bool_from_post(data.get("changes_consultation_form")),
-            changes_medication=bool_from_post(data.get("changes_medication")),
-            changes_uv_exposure=bool_from_post(data.get("changes_uv_exposure")),
-            active_tan=bool_from_post(data.get("active_tan")),
-            changes_detail=data.get("changes_detail", ""),
-            client_feedback=data.get("client_feedback", ""),
-            consent_proceed=bool(data.get("consent_proceed")),
-            client_signature=sig,
-            client_signed_at=timezone.now(),
-            treatment_notes=data.get("treatment_notes", ""),
-            **g,
-        )
-
-        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
-            return JsonResponse({"ok": True})
-        return _post_submit_redirect(request)
-
-    return render(request, "forms_system/laser/reconsent.html", {
-        "target_user": target_user,
-        "on_behalf": on_behalf,
-        "is_minor": is_minor,
-    })
-
-
-@clinical_staff_required
-def laser_reconsent_view(request, pk):
-    """Read-only view of a single historical laser re-consent record."""
-    reconsent = get_object_or_404(LaserReConsent, pk=pk)
-    return render(request, "forms_system/laser/reconsent_view.html", {"reconsent": reconsent})
+    return _record_page(request, RecordCard, pk, "forms_system/record_card/view.html", context={"card": card})
 
 
 # ---------------------------------------------------------------------------

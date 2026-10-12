@@ -66,18 +66,21 @@
         return { hasData: () => hasSig, save: save };
     }
 
-    const main     = initPad('sigCanvas',         'sigClear',         'sigData');
-    const guardian = initPad('guardianSigCanvas', 'guardianSigClear', 'guardianSigData');
+    const main      = initPad('sigCanvas',          'sigClear',          'sigData');
+    const guardian  = initPad('guardianSigCanvas',  'guardianSigClear',  'guardianSigData');
+    // Record cards: the client's re-consent, taken alongside the practitioner's signature.
+    const reconsent = initPad('reconsentSigCanvas', 'reconsentSigClear', 'reconsentSigData');
 
     const form = document.querySelector('form.cform');
     if (form) {
         form.addEventListener('submit', function (e) {
-            // "Save progress" buttons don't need a signature.
-            if (e.submitter && e.submitter.hasAttribute('data-no-signature')) return;
-            // Always copy the drawn signature into the form on submit, in
+            // Always copy the drawn signatures into the form on submit, in
             // case a stroke ended somewhere that didn't trigger a save.
             main.save();
             guardian.save();
+            reconsent.save();
+            // "Save progress" buttons don't need a signature.
+            if (e.submitter && e.submitter.hasAttribute('data-no-signature')) return;
             if (!main.hasData()) {
                 e.preventDefault();
                 alert('Please provide your signature before submitting.');
@@ -85,7 +88,8 @@
             }
             const guardianSection = document.getElementById('guardianSection');
             const guardianVisible = guardianSection && !guardianSection.hidden;
-            if (guardianVisible && !guardian.hasData()) {
+            const guardianOnFile  = guardianSection && guardianSection.dataset.hasSignature;
+            if (guardianVisible && !guardian.hasData() && !guardianOnFile) {
                 e.preventDefault();
                 alert('A parent or guardian signature is required for clients under 18.');
             }

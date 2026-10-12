@@ -1,0 +1,18 @@
+{# Practitioner signature + Save progress / Save & sign. Goes inside the practitioner's <form class="cform">. Expects `f`. #}
+<div class="cform-section">
+    <h2 class="cform-section__title">Practitioner Signature</h2>
+    {% if signature_withdrawn %}
+    <div class="cform-behalf-banner cform-minor-banner" role="alert"><strong>The client changed their answers after you signed</strong>, so your signature was removed. Please review their section and sign again.</div>
+    {% elif f.operator_signed %}
+    <div class="cform-existing-banner">Signed by {{ f.operator_signed_by.full_name|default:"you" }} on {{ f.operator_signed_at|date:"j F Y \a\t H:i" }}. You can still make changes until the form is completed — saving again will need a new signature.</div>
+    {% endif %}
+    <p class="cform-hint">{{ signature_hint|default:"I confirm the information in my section is accurate and that I have verified the client's understanding." }}</p>
+    <div class="cform-sig-wrap"><canvas id="sigCanvas" class="cform-sig-canvas"></canvas><div class="cform-sig-actions"><button type="button" class="btn btn--ghost btn--sm" id="sigClear">Clear</button></div></div>
+    <input type="hidden" name="operator_signature" id="sigData">
+</div>
+
+<div class="cform-submit-row" style="gap:1rem; flex-wrap:wrap;">
+    <button type="submit" name="action" value="save" class="btn btn--ghost btn--lg" data-no-signature>Save Progress</button>
+    <button type="submit" name="action" value="sign" class="btn btn--primary btn--lg">Save &amp; Sign</button>
+</div>
+<p class="cform-hint" style="text-align:right;">Saving progress without signing will remove any existing signature on this section.</p>

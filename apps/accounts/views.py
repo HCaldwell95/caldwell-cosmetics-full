@@ -66,7 +66,11 @@ def profile(request):
     if request.user.is_prescriber:
         return redirect("dashboard:prescriber_home")
     profile = get_object_or_404(Profile, user=request.user)
-    return render(request, "accounts/profile.html", {"profile": profile})
+    context = {"profile": profile}
+    if request.user.is_practitioner:
+        from apps.forms_system import worklists
+        context["awaiting"], context["unbooked"] = worklists.split_by_appointment(worklists.practitioner_worklist())
+    return render(request, "accounts/profile.html", context)
 
 
 @login_required

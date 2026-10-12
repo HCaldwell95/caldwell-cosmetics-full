@@ -1982,44 +1982,6 @@ a.dash-form-pill:hover {
 
 .dash-account-grid .dash-account-section { margin-bottom: 0; }
 
-.dash-account-empty {
-    padding: 1rem;
-    text-align: center;
-    color: #888;
-    background: #fdfbf7;
-    border-radius: 8px;
-    margin: 0;
-}
-
-.dash-count-badge {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 1.6rem;
-    padding: 0.1rem 0.5rem;
-    border-radius: 999px;
-    background: #dc2626;
-    color: #fff;
-    font-size: 0.75rem;
-    font-weight: 600;
-}
-
-.dash-count-badge--zero { background: #16a34a; }
-
-.dash-status {
-    display: inline-block;
-    padding: 0.2rem 0.6rem;
-    border-radius: 999px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    background: #f3f4f6;
-    color: #374151;
-    white-space: nowrap;
-}
-
-.dash-status--new     { background: #dbeafe; color: #1e40af; }
-.dash-status--warning { background: #fef3c7; color: #92400e; }
-.dash-status--done    { background: #d1fae5; color: #065f46; }
 
 .dash-flash {
     padding: 0.75rem 1rem;
@@ -2034,18 +1996,6 @@ a.dash-form-pill:hover {
 .dash-flash--warning { border-color: #f59e0b; background: #fffbeb; color: #92400e; }
 .dash-flash--error   { border-color: #dc2626; background: #fef2f2; color: #991b1b; }
 
-.dash-worklist-unbooked {
-    margin-top: 1.25rem;
-    border-top: 1px solid #f0ece5;
-    padding-top: 1rem;
-}
-
-.dash-worklist-unbooked > summary {
-    cursor: pointer;
-    font-weight: 600;
-    color: #666;
-    margin-bottom: 0.5rem;
-}
 
 /* ---- Prescriber profile card ---- */
 
