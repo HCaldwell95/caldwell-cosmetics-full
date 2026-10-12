@@ -214,6 +214,56 @@ class BotoxLifecycleTests(TestCase):
         self.complete()
         self.assertFalse(self.form().finalised)
 
+    def withdraw(self, user=None, **overrides):
+        self.client.force_login(user or self.practitioner)
+        data = {"action": "withdraw", "withdrawn_reason": "No appointment booked", "confirm_withdraw": "1"}
+        data.update(overrides)
+        return self.client.post(reverse("forms_system:botox_operator", args=[self.form().pk]), data)
+
+    def test_withdraw_closes_form_but_keeps_it(self):
+        self.client_submits()
+        r = self.withdraw()
+        f = self.form()
+        self.assertRedirects(r, reverse("forms_system:botox_view", args=[f.pk]))
+        self.assertTrue(f.withdrawn)
+        self.assertTrue(f.is_closed)
+        self.assertEqual(f.withdrawn_reason, "No appointment booked")
+        self.assertEqual(f.withdrawn_by, self.practitioner)
+        self.assertEqual(f.revisions.last().action, Action.WITHDRAWN)
+        self.assertEqual(f.current_medications, "None")  # answers kept on file
+
+        # Read-only from then on, for everyone.
+        self.prescriber_saves()
+        self.practitioner_saves()
+        f.refresh_from_db()
+        self.assertFalse(f.prescriber_signed)
+        self.assertFalse(f.operator_signed)
+
+        page = self.client.get(reverse("forms_system:botox_view", args=[f.pk]))
+        self.assertContains(page, "Withdrawn")
+        self.assertContains(page, "No appointment booked")
+
+    def test_withdraw_needs_reason_and_confirmation(self):
+        self.client_submits()
+        self.withdraw(withdrawn_reason="")
+        self.withdraw(confirm_withdraw="")
+        self.assertFalse(self.form().withdrawn)
+
+    def test_only_practitioner_can_withdraw(self):
+        self.client_submits()
+        self.withdraw(user=self.prescriber)
+        self.assertFalse(self.form().withdrawn)
+
+    def test_client_starts_fresh_after_withdrawal(self):
+        self.client_submits()
+        self.withdraw()
+        self.client_submits(current_medications="New answer")
+        forms = BotoxConsentForm.objects.filter(user=self.client_user).order_by("completed_at")
+        self.assertEqual(forms.count(), 2)
+        self.assertTrue(forms[0].withdrawn)
+        self.assertEqual(forms[0].current_medications, "None")
+        self.assertFalse(forms[1].is_closed)
+
     def test_prescriber_cannot_complete(self):
         self.client_submits()
         self.prescriber_saves()

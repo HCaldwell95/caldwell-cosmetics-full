@@ -198,37 +198,52 @@ class PrescriberAccountTests(TestCase):
         self.client.force_login(self.practitioner)
         self.assertEqual(self.client.get(url).status_code, 302)
 
+    def book(self, user, when):
+        from apps.bookings.models import Booking
+        from apps.treatments.models import Treatment, TreatmentCategory
+        cat, _ = TreatmentCategory.objects.get_or_create(name="Injectables")
+        tx, _  = Treatment.objects.get_or_create(name="Botox", category=cat, defaults={"duration_minutes": 30, "price": 100})
+        Booking.objects.create(user=user, treatment=tx, date=when, start_time="23:00")
+
+    def worklists(self):
+        ctx = self.client.get(reverse("dashboard:prescriber_home")).context
+        return [f.pk for f in ctx["awaiting"]], [f.pk for f in ctx["unbooked"]]
+
     def test_worklist_shows_only_forms_awaiting_signature(self):
         waiting  = self.make_form("Waiting")
         self.make_form("Signed", prescriber_signed=True, prescriber=self.prescriber)
         self.make_form("Done", prescriber_signed=True, finalised=True)
+        self.make_form("Withdrawn", withdrawn=True)
         self.make_form("Unsigned", client_signed=False)
 
-        awaiting = self.client.get(reverse("dashboard:prescriber_home")).context["awaiting"]
-        self.assertEqual([f.pk for f in awaiting], [waiting.pk])
+        awaiting, unbooked = self.worklists()
+        self.assertEqual(awaiting + unbooked, [waiting.pk])
 
-    def test_worklist_orders_by_next_appointment(self):
-        from apps.bookings.models import Booking
-        from apps.treatments.models import Treatment, TreatmentCategory
-
+    def test_worklist_splits_by_appointment_soonest_first(self):
         later  = self.make_form("Later")
         sooner = self.make_form("Sooner")
         none   = self.make_form("NoBooking")
-        cat = TreatmentCategory.objects.create(name="Injectables")
-        tx  = Treatment.objects.create(name="Botox", category=cat, duration_minutes=30, price=100)
         today = date.today()
-        Booking.objects.create(user=later.user, treatment=tx, date=today.replace(year=today.year + 1), start_time="10:00")
-        Booking.objects.create(user=sooner.user, treatment=tx, date=today, start_time="23:00")
+        self.book(later.user, today.replace(year=today.year + 1))
+        self.book(sooner.user, today)
 
-        awaiting = self.client.get(reverse("dashboard:prescriber_home")).context["awaiting"]
-        self.assertEqual([f.pk for f in awaiting], [sooner.pk, later.pk, none.pk])
+        awaiting, unbooked = self.worklists()
+        self.assertEqual(awaiting, [sooner.pk, later.pk])
+        self.assertEqual(unbooked, [none.pk])
+
+    def test_badge_counts_only_booked_clients(self):
+        self.book(self.make_form("Booked").user, date.today())
+        self.make_form("NotBooked")
+        page = self.client.get(reverse("dashboard:prescriber_home"))
+        self.assertContains(page, '<span class="dash-count-badge">1</span>', html=True)
+        self.assertContains(page, "No appointment booked (1)")
 
     def test_worklist_flags_changed_answers(self):
         f = self.make_form("Changed")
         f.log_revision(self.prescriber, "prescriber", "signed")
         f.log_revision(f.user, "prescriber", "signature_withdrawn")
         page = self.client.get(reverse("dashboard:prescriber_home"))
-        self.assertEqual(page.context["awaiting"][0].worklist_status, "changed")
+        self.assertEqual(page.context["unbooked"][0].worklist_status, "changed")
         self.assertContains(page, "Client changed answers")
 
     def test_signing_returns_to_worklist(self):
@@ -238,9 +253,9 @@ class PrescriberAccountTests(TestCase):
             "prescribed_product": "Botox 100u", "prescribed_dose": "Up to 64 units", "prescriber_signature": PNG_SIG,
         })
         self.assertRedirects(r, reverse("dashboard:prescriber_home"))
-        page = self.client.get(reverse("dashboard:prescriber_home"))
-        self.assertEqual(page.context["awaiting"], [])
-        self.assertEqual([s.pk for s in page.context["signed"]], [f.pk])
+        self.assertEqual(self.worklists(), ([], []))
+        signed = self.client.get(reverse("dashboard:prescriber_home")).context["signed"]
+        self.assertEqual([s.pk for s in signed], [f.pk])
 
     def test_signed_history_is_only_their_own(self):
         self.make_form("Mine", prescriber_signed=True, prescriber=self.prescriber)

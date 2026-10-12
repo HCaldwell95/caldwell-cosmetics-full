@@ -158,6 +158,9 @@ function renderProfilePanel(data) {
         if (f.finalised) {
             return pill(label, archived ? 'archived' : 'complete', DASHBOARD_URLS.botoxView.replace('{id}', f.id), 'Completed ' + f.finalised_date + ' · Read only');
         }
+        if (f.withdrawn) {
+            return pill(label, 'archived', DASHBOARD_URLS.botoxView.replace('{id}', f.id), 'Withdrawn ' + f.withdrawn_date + ' · Read only');
+        }
         if (!f.client_signed) return pill(label, 'incomplete', null, 'Incomplete');
 
         var href = isPrescriber

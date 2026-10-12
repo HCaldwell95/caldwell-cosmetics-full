@@ -5,7 +5,7 @@
 {% block content %}
 <div class="cform-page cform-page--wide">
 <div class="cform-header">
-    <span class="cform-header__eyebrow">Caldwell Cosmetics — {% if botox.finalised %}Completed Record{% else %}In Progress{% endif %}</span>
+    <span class="cform-header__eyebrow">Caldwell Cosmetics — {% if botox.finalised %}Completed Record{% elif botox.withdrawn %}Withdrawn{% else %}In Progress{% endif %}</span>
     <h1 class="cform-header__title">Botox Consent &amp; Prescription</h1>
     <p class="cform-header__sub">Client: <strong>{{ botox.user.full_name }}</strong> — started {{ botox.completed_at|date:"j F Y" }}.</p>
 </div>
@@ -14,6 +14,11 @@
 <div class="cform-existing-banner">
     <strong>Completed</strong> by {{ botox.finalised_by.full_name|default:"—" }} on {{ botox.finalised_at|date:"j F Y \a\t H:i" }}.
     This is a read-only record and cannot be changed.
+</div>
+{% elif botox.withdrawn %}
+<div class="cform-behalf-banner cform-minor-banner">
+    <strong>Withdrawn</strong> by {{ botox.withdrawn_by.full_name|default:"—" }} on {{ botox.withdrawn_at|date:"j F Y \a\t H:i" }} — {{ botox.withdrawn_reason }}.
+    This form was closed without being completed. It is kept on file as a read-only record.
 </div>
 {% else %}
 <div class="cform-behalf-banner cform-minor-banner">This form hasn't been completed yet, so it may still change.</div>
@@ -71,7 +76,7 @@
 </div>
 
 <div class="cform-submit-row">
-    {% if not botox.finalised and user.is_practitioner %}<a href="{% url 'forms_system:botox_operator' botox.pk %}" class="btn btn--primary">Continue Editing</a>{% endif %}
+    {% if not botox.is_closed and user.is_practitioner %}<a href="{% url 'forms_system:botox_operator' botox.pk %}" class="btn btn--primary">Continue Editing</a>{% endif %}
     <a href="javascript:history.back()" class="btn btn--ghost">&larr; Back</a>
 </div>
 </div>

@@ -6,7 +6,7 @@
 {% block nav_prescriber_home %}dash-sidenav__link--active{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/pages/dashboard.css' %}?v=3">
+<link rel="stylesheet" href="{% static 'css/pages/dashboard.css' %}?v=4">
 {% endblock %}
 
 {% block content %}
@@ -34,33 +34,20 @@
             Awaiting Your Signature
             <span class="dash-count-badge{% if not awaiting %} dash-count-badge--zero{% endif %}">{{ awaiting|length }}</span>
         </h2>
-        <p class="dash-muted">Botox Consent &amp; Prescription forms the client has completed. Soonest appointment first.</p>
+        <p class="dash-muted">Botox Consent &amp; Prescription forms for clients with an upcoming appointment. Soonest first.</p>
 
         {% if awaiting %}
-        <div class="dash-client-table-wrap">
-            <table class="dash-client-table">
-                <thead>
-                    <tr><th>Client</th><th>Next appointment</th><th>Submitted</th><th>Status</th><th></th></tr>
-                </thead>
-                <tbody>
-                    {% for f in awaiting %}
-                    <tr>
-                        <td><strong>{{ f.user.full_name }}</strong></td>
-                        <td>{% if f.next_appt_date %}{{ f.next_appt_date|date:"D j M Y" }} at {{ f.next_appt_time|time:"H:i" }}{% else %}<span class="dash-muted">None booked</span>{% endif %}</td>
-                        <td>{{ f.client_signed_at|date:"j M Y" }}</td>
-                        <td>
-                            {% if f.worklist_status == "changed" %}<span class="dash-status dash-status--warning">Client changed answers — re-sign</span>
-                            {% elif f.worklist_status == "draft" %}<span class="dash-status">Draft saved</span>
-                            {% else %}<span class="dash-status dash-status--new">New</span>{% endif %}
-                        </td>
-                        <td style="text-align:right;"><a href="{% url 'forms_system:botox_prescriber' f.pk %}" class="btn btn--primary btn--sm">Review &amp; Sign</a></td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+            {% include "dashboard/_worklist_table.html" with rows=awaiting %}
         {% else %}
-        <p class="dash-account-empty">Nothing waiting — you're all caught up.</p>
+        <p class="dash-account-empty">Nothing waiting for clients with an appointment — you're all caught up.</p>
+        {% endif %}
+
+        {% if unbooked %}
+        <details class="dash-worklist-unbooked">
+            <summary>No appointment booked ({{ unbooked|length }})</summary>
+            <p class="dash-muted">These clients completed their section but haven't booked yet. You can still sign them if you're seeing them.</p>
+            {% include "dashboard/_worklist_table.html" with rows=unbooked %}
+        </details>
         {% endif %}
     </section>
 
@@ -128,8 +115,8 @@
                         <td>{{ f.prescriber_signed_at|date:"j M Y" }}</td>
                         <td>{{ f.get_prescription_decision_display }}</td>
                         <td>{% if f.is_prescribed %}{{ f.prescribed_product }} — {{ f.prescribed_dose }}{% else %}—{% endif %}</td>
-                        <td>{% if f.finalised %}<span class="dash-status dash-status--done">Completed</span>{% else %}<span class="dash-status">In progress</span>{% endif %}</td>
-                        <td style="text-align:right;"><a href="{% if f.finalised %}{% url 'forms_system:botox_view' f.pk %}{% else %}{% url 'forms_system:botox_prescriber' f.pk %}{% endif %}" class="btn btn--ghost btn--sm">View</a></td>
+                        <td>{% if f.finalised %}<span class="dash-status dash-status--done">Completed</span>{% elif f.withdrawn %}<span class="dash-status">Withdrawn</span>{% else %}<span class="dash-status">In progress</span>{% endif %}</td>
+                        <td style="text-align:right;"><a href="{% if f.is_closed %}{% url 'forms_system:botox_view' f.pk %}{% else %}{% url 'forms_system:botox_prescriber' f.pk %}{% endif %}" class="btn btn--ghost btn--sm">View</a></td>
                     </tr>
                     {% endfor %}
                 </tbody>

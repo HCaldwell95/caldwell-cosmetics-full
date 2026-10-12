@@ -2033,3 +2033,16 @@ a.dash-form-pill:hover {
 
 .dash-flash--warning { border-color: #f59e0b; background: #fffbeb; color: #92400e; }
 .dash-flash--error   { border-color: #dc2626; background: #fef2f2; color: #991b1b; }
+
+.dash-worklist-unbooked {
+    margin-top: 1.25rem;
+    border-top: 1px solid #f0ece5;
+    padding-top: 1rem;
+}
+
+.dash-worklist-unbooked > summary {
+    cursor: pointer;
+    font-weight: 600;
+    color: #666;
+    margin-bottom: 0.5rem;
+}

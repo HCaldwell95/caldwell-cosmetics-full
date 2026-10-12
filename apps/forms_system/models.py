@@ -389,6 +389,19 @@ class BotoxConsentForm(BaseForm):
         related_name="botox_forms_finalised",
     )
 
+    # ---- Withdrawal ----
+    # Closes a form that won't be completed (e.g. the client never booked)
+    # without deleting it — signed consent forms are kept as records.
+    withdrawn                   = models.BooleanField(default=False)
+    withdrawn_at                = models.DateTimeField(null=True, blank=True)
+    withdrawn_by                = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name="botox_forms_withdrawn",
+    )
+    withdrawn_reason            = models.CharField(max_length=300, blank=True)
+
     # Which fields each person owns. Saves only ever write their own
     # section, so two people working on the form can't overwrite each other.
     CLIENT_ANSWER_FIELDS = [
@@ -426,15 +439,21 @@ class BotoxConsentForm(BaseForm):
         "operator_signature", "operator_signed", "operator_signed_at", "operator_signed_by",
     ]
     FINALISE_FIELDS = ["finalised", "finalised_at", "finalised_by"]
+    WITHDRAW_FIELDS = ["withdrawn", "withdrawn_at", "withdrawn_by", "withdrawn_reason"]
 
     @property
     def is_fully_complete(self):
         return self.finalised
 
     @property
+    def is_closed(self):
+        """Completed or withdrawn — either way a read-only record."""
+        return self.finalised or self.withdrawn
+
+    @property
     def can_finalise(self):
         """Client and prescriber have signed, and the operator has too (unless not prescribed)."""
-        if self.finalised or not (self.client_signed and self.prescriber_signed):
+        if self.is_closed or not (self.client_signed and self.prescriber_signed):
             return False
         return self.operator_signed or not self.is_prescribed
 
@@ -484,6 +503,7 @@ class BotoxFormRevision(models.Model):
         SIGNED             = "signed",             "Signed"
         SIGNATURE_WITHDRAWN = "signature_withdrawn", "Signature withdrawn — client changed their answers"
         COMPLETED          = "completed",          "Completed — now read-only"
+        WITHDRAWN          = "withdrawn",          "Withdrawn — closed without completing"
 
     form       = models.ForeignKey(BotoxConsentForm, on_delete=models.PROTECT, related_name="revisions")
     user       = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+")

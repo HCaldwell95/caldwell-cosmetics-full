@@ -129,6 +129,8 @@ def _client_form_status(user):
                     "operator_signed":  f.operator_signed,
                     "finalised":        f.finalised,
                     "finalised_date":   fmt(f.finalised_at),
+                    "withdrawn":        f.withdrawn,
+                    "withdrawn_date":   fmt(f.withdrawn_at),
                     "fully_complete":   f.is_fully_complete,
                     "is_latest":        i == 0,
                 }
@@ -1024,7 +1026,7 @@ def _prescriber_worklist():
     )
     forms = list(
         BotoxConsentForm.objects
-        .filter(finalised=False, client_signed=True, prescriber_signed=False, user__is_active=True)
+        .filter(finalised=False, withdrawn=False, client_signed=True, prescriber_signed=False, user__is_active=True)
         .select_related("user")
         .annotate(
             next_appt_date=Subquery(next_booking.values("date")[:1]),
@@ -1069,6 +1071,7 @@ def prescriber_home(request):
                 messages.success(request, "Your details have been updated.")
                 return redirect("dashboard:prescriber_home")
 
+    worklist = _prescriber_worklist()
     signed = (
         BotoxConsentForm.objects
         .filter(prescriber=user, prescriber_signed=True)
@@ -1077,7 +1080,10 @@ def prescriber_home(request):
     )
 
     return render(request, "dashboard/prescriber_home.html", {
-        "awaiting":      _prescriber_worklist(),
+        # Clients with an appointment come first; the rest are tucked away
+        # so they don't clutter the list for prescribing days.
+        "awaiting":      [f for f in worklist if f.next_appt_date],
+        "unbooked":      [f for f in worklist if not f.next_appt_date],
         "signed":        signed,
         "details":       getattr(user, "prescriber_details", None),
         "account_form":  account_form,

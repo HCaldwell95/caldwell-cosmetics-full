@@ -240,7 +240,7 @@ def form_status(request, user_id):
 
     consultation  = _get_or_none(ConsultationForm, user=user)
     photography   = _get_or_none(PhotographyConsent, user=user)
-    botox         = _get_or_none(BotoxConsentForm, user=user)
+    botox         = _get_or_none(BotoxConsentForm, user=user, withdrawn=False)
     prp           = _get_or_none(PRPConsentForm, user=user)
     record_count  = RecordCard.objects.filter(user=user).count()
     record_latest = RecordCard.objects.filter(user=user).order_by("-date").first()
@@ -476,7 +476,7 @@ def _open_botox_form(user):
     """The client's in-progress (not yet completed) Botox form, if any."""
     return (
         BotoxConsentForm.objects
-        .filter(user=user, finalised=False)
+        .filter(user=user, finalised=False, withdrawn=False)
         .order_by("-completed_at")
         .first()
     )
@@ -583,7 +583,7 @@ def botox_client(request):
             botox = (
                 BotoxConsentForm.objects
                 .select_for_update()
-                .filter(user=target_user, finalised=False)
+                .filter(user=target_user, finalised=False, withdrawn=False)
                 .order_by("-completed_at")
                 .first()
             )
@@ -650,8 +650,8 @@ def botox_client(request):
 
 def _prescriber_block_reason(user, botox):
     """Why `user` can't edit the prescriber section, or None if they can."""
-    if botox.finalised:
-        return "This form has been completed and is now read-only."
+    if botox.is_closed:
+        return "This form has been closed (completed or withdrawn) and is now read-only."
     if not user.is_prescriber:
         return "Only a prescriber can complete this section."
     if not hasattr(user, "prescriber_details"):
@@ -680,7 +680,7 @@ def botox_prescriber(request, pk):
     completes the form. The practitioner can view this page but not sign it.
     """
     botox = get_object_or_404(BotoxConsentForm, pk=pk)
-    if botox.finalised:
+    if botox.is_closed:
         return redirect("forms_system:botox_view", pk=pk)
 
     error  = None
@@ -770,7 +770,7 @@ def botox_prescriber(request, pk):
 @staff_required
 def botox_operator(request, pk):
     botox = get_object_or_404(BotoxConsentForm, pk=pk)
-    if botox.finalised:
+    if botox.is_closed:
         return redirect("forms_system:botox_view", pk=pk)
 
     error = None
@@ -781,7 +781,7 @@ def botox_operator(request, pk):
 
         with transaction.atomic():
             botox = BotoxConsentForm.objects.select_for_update().get(pk=pk)
-            if botox.finalised:
+            if botox.is_closed:
                 return redirect("forms_system:botox_view", pk=pk)
 
             if action == "complete":
@@ -798,6 +798,24 @@ def botox_operator(request, pk):
                         request.user, Section.FORM, Action.COMPLETED,
                         BotoxConsentForm.CLIENT_FIELDS + BotoxConsentForm.PRESCRIBER_FIELDS
                         + BotoxConsentForm.OPERATOR_FIELDS + BotoxConsentForm.FINALISE_FIELDS,
+                    )
+                    return redirect("forms_system:botox_view", pk=pk)
+            elif action == "withdraw":
+                reason = data.get("withdrawn_reason", "").strip()
+                if not reason:
+                    error = "Please give a reason for withdrawing this form."
+                elif not data.get("confirm_withdraw"):
+                    error = "Please tick the box to confirm you want to withdraw this form."
+                else:
+                    botox.withdrawn        = True
+                    botox.withdrawn_at     = timezone.now()
+                    botox.withdrawn_by     = request.user
+                    botox.withdrawn_reason = reason[:300]
+                    botox.save(update_fields=BotoxConsentForm.WITHDRAW_FIELDS)
+                    botox.log_revision(
+                        request.user, Section.FORM, Action.WITHDRAWN,
+                        BotoxConsentForm.CLIENT_FIELDS + BotoxConsentForm.PRESCRIBER_FIELDS
+                        + BotoxConsentForm.OPERATOR_FIELDS + BotoxConsentForm.WITHDRAW_FIELDS,
                     )
                     return redirect("forms_system:botox_view", pk=pk)
             else:
