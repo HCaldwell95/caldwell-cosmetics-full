@@ -1,0 +1,33 @@
+{% extends "forms_system/_lifecycle/record_page.html" %}
+
+{% block title %}Botox Treatment Card #{{ f.treatment_number }} — {{ f.user.full_name }} | Caldwell Cosmetics{% endblock %}
+
+{% block client_section %}
+<div class="cform-section cform-section--readonly">
+    <h2 class="cform-section__title">Prescription <span class="cform-readonly-badge">Read Only</span></h2>
+    {% if f.prescription %}
+    <dl class="cform-summary-dl">
+        <dt>Prescriber</dt><dd>{{ f.prescription.prescriber_name }} ({{ f.prescription.prescriber_registration|default:"—" }})</dd>
+        <dt>Prescribed</dt><dd>{{ f.prescription.prescribed_product }} — {{ f.prescription.prescribed_dose }}</dd>
+        <dt>Signed</dt><dd>{{ f.prescription.prescriber_signed_at|date:"j F Y" }}{% if f.prescription.prescription_valid_until %} · valid until {{ f.prescription.prescription_valid_until|date:"j F Y" }}{% endif %}</dd>
+        <dt>Form</dt><dd><a href="{{ f.prescription.view_url }}">Botox Consent &amp; Prescription</a></dd>
+    </dl>
+    {% else %}
+    <p class="cform-hint">No prescription linked to this card.</p>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block practitioner_section %}
+<dl class="cform-summary-dl">
+    <dt>Treatment</dt><dd>#{{ f.treatment_number }} — {{ f.date|date:"j F Y" }} at {{ f.time|time:"H:i" }}</dd>
+    <dt>Product / lot no.</dt><dd>{{ f.treatment_product_lot|default:"—" }}</dd>
+    <dt>Units per area</dt>
+    <dd>{% for label, units in f.area_units %}{{ label }}: {{ units }}<br>{% empty %}—{% endfor %}</dd>
+    <dt>Total units</dt><dd>{{ f.units_total|default:"—" }}</dd>
+    <dt>Cost</dt><dd>{% if f.treatment_cost is not None %}£{{ f.treatment_cost }}{% else %}—{% endif %}</dd>
+    <dt>Next appointment</dt><dd>{{ f.next_appointment|default:"—" }}</dd>
+    <dt>Agreed treatment</dt><dd>{{ f.treatment_notes|default:"—"|linebreaksbr }}</dd>
+    <dt>Practitioner notes</dt><dd>{{ f.operator_notes|default:"—"|linebreaksbr }}</dd>
+</dl>
+{% endblock %}

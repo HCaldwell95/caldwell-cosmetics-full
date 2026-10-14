@@ -1,0 +1,112 @@
+{% extends "base/base.html" %}
+{% load static %}
+{% load forms_extras %}
+{% block title %}Botox Treatment Card — {{ target_user.full_name }} | Caldwell Cosmetics{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/pages/forms_system.css' %}">{% endblock %}
+{% block content %}
+<div class="cform-page cform-page--wide">
+<div class="cform-header">
+    <span class="cform-header__eyebrow">Practitioner Only{% if f %} — Draft, not yet completed{% endif %}</span>
+    <h1 class="cform-header__title">Botox Treatment Card{% if f %} #{{ f.treatment_number }}{% endif %} — {{ target_user.full_name }}</h1>
+    <p class="cform-header__sub">Not visible to the client. The prescriber can view it.{% if f %} <a href="{{ f.view_url }}">View record &amp; history</a>{% endif %}</p>
+</div>
+{% if error %}<div class="cform-behalf-banner cform-error-banner" role="alert">{{ error }}</div>{% endif %}
+
+{% if not prescriptions %}
+<div class="cform-behalf-banner cform-error-banner" role="alert"><strong>No prescription on file.</strong> {{ target_user.full_name }} has no signed Botox prescription. Do not treat until the prescriber has prescribed.</div>
+{% elif chosen_prescription and not prescription_valid %}
+<div class="cform-behalf-banner cform-error-banner" role="alert"><strong>Prescription expired.</strong> The selected prescription was valid until {{ chosen_prescription.prescription_valid_until|date:"j F Y" }}.</div>
+{% endif %}
+
+<form id="botoxCardForm" class="cform" method="post" action="{% if f %}{{ f.operator_url }}{% else %}{% url 'forms_system:botox_card_new' target_user.pk %}{% endif %}">
+    {% csrf_token %}
+
+    <div class="cform-section cform-section--operator">
+        <h2 class="cform-section__title">Treatment Record <span class="cform-operator-badge">Practitioner</span></h2>
+
+        <div class="cform-field">
+            <label class="cform-label" for="cardPrescription">Prescription</label>
+            <select class="cform-input" id="cardPrescription" name="prescription">
+                <option value="">No prescription</option>
+                {% for p in prescriptions %}
+                <option value="{{ p.pk }}"{% if chosen_prescription.pk == p.pk %} selected{% endif %}>
+                    {{ p.prescriber_name }} — {{ p.prescriber_signed_at|date:"j M Y" }} — {{ p.prescribed_product }}, {{ p.prescribed_dose }}{% if p.prescription_valid_until %} (valid until {{ p.prescription_valid_until|date:"j M Y" }}){% endif %}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="cform-grid cform-grid--3" style="margin-bottom:1.5rem;">
+            <div class="cform-field">
+                <label class="cform-label">Date</label>
+                <input class="cform-input" type="date" name="date" required value="{% if f %}{{ f.date|date:'Y-m-d' }}{% else %}{% now 'Y-m-d' %}{% endif %}">
+            </div>
+            <div class="cform-field">
+                <label class="cform-label">Time</label>
+                <input class="cform-input" type="time" name="time" required value="{% if f %}{{ f.time|time:'H:i' }}{% else %}{% now 'H:i' %}{% endif %}">
+            </div>
+            <div class="cform-field">
+                <label class="cform-label">Product / Lot No.</label>
+                <input class="cform-input" type="text" name="treatment_product_lot" value="{{ f.treatment_product_lot|default_if_none:'' }}">
+            </div>
+        </div>
+
+        <div style="display:flex; gap:2rem; align-items:flex-start; flex-wrap:wrap;">
+            <div style="flex-shrink:0; width:200px;">{% include "forms_system/botox/_face_diagram.html" %}</div>
+
+            <div style="flex:1; min-width:260px;">
+                <p class="cform-hint" style="margin-bottom:0.75rem;">Enter units per area. Leave blank if not treated.</p>
+                <div class="cform-yn-table">
+                    <div class="cform-yn-row" style="background-color:#f5f1eb; font-size:0.7rem; font-weight:600; text-transform:uppercase; letter-spacing:0.09em; color:var(--color-text-light,#888);">
+                        <span>Area</span><span style="flex-shrink:0; width:80px; text-align:center;">Units</span>
+                    </div>
+                    {% for name, label in areas %}
+                    <div class="cform-yn-row"><span>{{ label }}</span><input class="cform-input" type="text" name="{{ name }}" value="{{ f|field_value:name }}" placeholder="—" style="max-width:80px; text-align:center; padding:0.4rem 0.5rem;"></div>
+                    {% endfor %}
+                    <div class="cform-yn-row" style="background-color:#f5f1eb;">
+                        <span><strong>Total Units</strong></span>
+                        <input class="cform-input" type="text" name="units_total" value="{{ f.units_total|default_if_none:'' }}" placeholder="0" style="max-width:80px; text-align:center; padding:0.4rem 0.5rem; font-weight:600;">
+                    </div>
+                </div>
+
+                <div class="cform-grid cform-grid--2" style="margin-top:1rem;">
+                    <div class="cform-field">
+                        <label class="cform-label">Cost (£)</label>
+                        <input class="cform-input" type="number" step="0.01" name="treatment_cost" placeholder="0.00" value="{{ f.treatment_cost|default_if_none:'' }}">
+                    </div>
+                    <div class="cform-field">
+                        <label class="cform-label">Book next appointment for</label>
+                        <input class="cform-input" type="text" name="next_appointment" value="{{ f.next_appointment|default_if_none:'' }}">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="cform-section cform-section--operator">
+        <h2 class="cform-section__title">Notes <span class="cform-operator-badge">Practitioner</span></h2>
+        <div class="cform-field"><label class="cform-label">Notes of agreed treatment</label><textarea class="cform-input" name="treatment_notes" rows="3">{{ f.treatment_notes|default_if_none:'' }}</textarea></div>
+        <div class="cform-field"><label class="cform-label">Practitioner notes</label><textarea class="cform-input" name="operator_notes" rows="3">{{ f.operator_notes|default_if_none:'' }}</textarea></div>
+    </div>
+
+    {% include "forms_system/_lifecycle/practitioner_signature.html" with signature_hint="I confirm the treatment details above are accurate." %}
+</form>
+
+{% if f %}{% include "forms_system/_lifecycle/close_actions.html" %}{% endif %}
+</div>
+<script src="{% static 'js/sig_pad.js' %}?v=4"></script>
+<script>
+(function () {
+    // Total units: add up the areas as they're typed (still editable).
+    var form  = document.getElementById('botoxCardForm');
+    var total = form.querySelector('[name="units_total"]');
+    var areas = Array.prototype.slice.call(form.querySelectorAll('{% for name, label in areas %}[name="{{ name }}"]{% if not forloop.last %}, {% endif %}{% endfor %}'));
+    areas.forEach(function (input) {
+        input.addEventListener('input', function () {
+            var sum = areas.reduce(function (acc, el) { var n = parseFloat(el.value); return acc + (isNaN(n) ? 0 : n); }, 0);
+            total.value = sum ? String(Math.round(sum * 100) / 100) : '';
+        });
+    });
+})();
+</script>
+{% endblock %}

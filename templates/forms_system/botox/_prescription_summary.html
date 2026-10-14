@@ -1,20 +1,23 @@
 <!-- Read-only prescriber section. Expects `botox`. -->
 <div class="cform-section cform-section--readonly">
-    <h2 class="cform-section__title">Prescription <span class="cform-readonly-badge">Read Only</span></h2>
-    {% if botox.prescriber_signed %}
+    <h2 class="cform-section__title">Prescription <span class="cform-readonly-badge">{% if botox.prescriber_signed %}Signed{% else %}Not signed{% endif %}</span></h2>
+    {% if botox.prescriber_signed or botox.prescription_decision or botox.prescriber_notes or botox.prescribed_product %}
+    {% if not botox.prescriber_signed %}<p class="cform-hint">Draft — awaiting the prescriber's signature.</p>{% endif %}
     <dl class="cform-summary-dl">
-        <dt>Prescriber</dt><dd>{{ botox.prescriber_name }}</dd>
+        <dt>Prescriber</dt><dd>{{ botox.prescriber_name|default:"—" }}</dd>
         <dt>Registration</dt><dd>{{ botox.prescriber_registration|default:"—" }}</dd>
         <dt>Face-to-face assessment</dt><dd>{% if botox.prescriber_face_to_face %}Confirmed{% else %}Not confirmed{% endif %}</dd>
-        <dt>Decision</dt><dd><strong>{{ botox.get_prescription_decision_display }}</strong></dd>
-        {% if botox.is_prescribed %}
-        <dt>Product</dt><dd>{{ botox.prescribed_product }}</dd>
-        <dt>Dose / areas</dt><dd>{{ botox.prescribed_dose }}</dd>
+        <dt>Decision</dt><dd><strong>{{ botox.get_prescription_decision_display|default:"—" }}</strong></dd>
+        {% if botox.prescription_decision == "prescribed" %}
+        <dt>Product</dt><dd>{{ botox.prescribed_product|default:"—" }}</dd>
+        <dt>Dose / areas</dt><dd>{{ botox.prescribed_dose|default:"—" }}</dd>
         <dt>Valid until</dt><dd>{{ botox.prescription_valid_until|date:"j F Y"|default:"—" }}</dd>
         {% endif %}
         <dt>Notes</dt><dd>{{ botox.prescriber_notes|default:"—"|linebreaksbr }}</dd>
+        {% if botox.prescriber_signed %}
         <dt>Signed</dt><dd>{{ botox.prescriber_signed_at|date:"j F Y \a\t H:i" }}</dd>
         <dt>Signature</dt><dd><img src="{{ botox.prescriber_signature }}" alt="Prescriber signature" class="cform-sig-preview"></dd>
+        {% endif %}
     </dl>
     {% else %}
     <p class="cform-hint">Not yet prescribed — awaiting the prescriber's face-to-face assessment.</p>

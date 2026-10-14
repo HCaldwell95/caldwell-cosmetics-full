@@ -27,3 +27,8 @@ def attr_row(obj, n):
     Example: checks if row n exists (custom logic needed)
     """
     return bool(getattr(obj, f"area_{n}", None))
+
+@register.filter
+def field_value(obj, name):
+    """`obj.<name>`, or "" if obj is None — for looping over field names."""
+    return getattr(obj, name, "") if obj is not None else ""

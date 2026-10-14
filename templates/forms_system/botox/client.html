@@ -4,9 +4,14 @@
 {% block extra_css %}<link rel="stylesheet" href="{% static 'css/pages/forms_system.css' %}">{% endblock %}
 {% block content %}
 <div class="cform-page">
+{% if staff_edit %}
+<div class="cform-behalf-banner">Editing <strong>{{ target_user.full_name }}</strong>'s answers. Their signature from {{ current.client_signed_at|date:"j F Y" }} stays on file, and your changes are recorded under your name. Existing signatures stay in place.</div>
+{% if error %}<div class="cform-behalf-banner cform-error-banner" role="alert">{{ error }}</div>{% endif %}
+{% else %}
 {% if on_behalf %}<div class="cform-behalf-banner">Completing on behalf of <strong>{{ target_user.full_name }}</strong>.</div>{% endif %}
 {% include "forms_system/_lifecycle/client_banner.html" %}
-{% if current.prescriber_signed %}<div class="cform-behalf-banner cform-minor-banner"><strong>Your prescriber has already reviewed this form.</strong> If you change your answers, they will need to review it again.</div>{% endif %}
+{% endif %}
+{% if current.prescriber_signed and not staff_edit %}<div class="cform-behalf-banner cform-minor-banner"><strong>Your prescriber has already reviewed this form.</strong> If you change your answers, they will need to review it again.</div>{% endif %}
 
 <div class="cform-header">
     <span class="cform-header__eyebrow">Caldwell Cosmetics — Client Section</span>
@@ -41,7 +46,7 @@
     <p class="cform-hint" style="color:var(--color-text,#2d2d2d); margin-bottom:0;">Every individual responds differently to treatment, and although very rare, there may be unknown risks specific to your body or medical history.</p>
 </div>
 
-<form id="botoxClientForm" class="cform" method="post" action="{% url 'forms_system:botox_client' %}{% if on_behalf %}?on_behalf_of={{ target_user.pk }}{% endif %}">
+<form id="botoxClientForm" class="cform" method="post" action="{% if staff_edit %}{% url 'forms_system:botox_client_edit' current.pk %}{% else %}{% url 'forms_system:botox_client' %}{% if on_behalf %}?on_behalf_of={{ target_user.pk }}{% endif %}{% endif %}">
     {% csrf_token %}
 
     <div class="cform-section">
@@ -157,9 +162,14 @@
 
     <div class="cform-section">
         <h2 class="cform-section__title">Client Signature</h2>
+        {% if staff_edit %}
+        <p class="cform-hint">Signed by {{ target_user.full_name }} on {{ current.client_signed_at|date:"j F Y \a\t H:i" }}:</p>
+        <img src="{{ current.signature }}" alt="Client signature" class="cform-sig-preview">
+        {% else %}
         <div class="cform-sig-wrap"><canvas id="sigCanvas" class="cform-sig-canvas"></canvas><div class="cform-sig-actions"><button type="button" class="btn btn--ghost btn--sm" id="sigClear">Clear</button></div></div>
         <input type="hidden" name="signature" id="sigData">
         <p class="cform-sig-name">{{ target_user.full_name }}</p>
+        {% endif %}
     </div>
 
     <!-- ===== MINOR / GUARDIAN SECTION ===== -->
@@ -186,6 +196,9 @@
                 <input class="cform-input" type="email" name="guardian_email" placeholder="Email address (optional)" value="{{ f.guardian_email|default:'' }}">
             </div>
         </div>
+        {% if staff_edit %}
+        {% if current.guardian_signature %}<p class="cform-label" style="margin-top:1.25rem;">Guardian Signature</p><img src="{{ current.guardian_signature }}" alt="Guardian signature" class="cform-sig-preview">{% endif %}
+        {% else %}
         <p class="cform-label" style="margin-top:1.25rem;">Guardian Signature <span class="cform-req">*</span></p>
         <div class="cform-sig-wrap">
             <canvas id="guardianSigCanvas" class="cform-sig-canvas"></canvas>
@@ -195,10 +208,16 @@
         </div>
         <input type="hidden" name="guardian_signature" id="guardianSigData">
         <p class="cform-hint" style="margin-top:0.5rem;">By signing, the parent / guardian confirms they give consent for the Botulinum Toxin treatment described in this form.</p>
+        {% endif %}
     </div>
 
     <div class="cform-submit-row">
+        {% if staff_edit %}
+        <a href="{{ back_url }}" class="btn btn--ghost btn--lg">Cancel</a>
+        <button type="submit" class="btn btn--primary btn--lg" data-no-signature>Save Changes</button>
+        {% else %}
         <button type="submit" class="btn btn--primary btn--lg">{% if editing %}Update &amp; Sign{% else %}Submit Client Section{% endif %}</button>
+        {% endif %}
     </div>
 </form>
 </div>

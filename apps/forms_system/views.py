@@ -13,7 +13,7 @@ from apps.accounts.permissions import clinical_staff_required, practitioner_requ
 from . import lifecycle
 from .lifecycle import Action, Section
 from .models import (
-    ConsultationForm, BotoxConsentForm, PhotographyConsent,
+    ConsultationForm, BotoxConsentForm, BotoxTreatmentCard, PhotographyConsent,
     RecordCard, PRPConsentForm, LaserReConsent,
 )
 
@@ -376,12 +376,12 @@ def botox_client(request):
 
 
 def _prescriber_block_reason(user, botox):
-    """Why `user` can't edit the prescriber section, or None if they can."""
+    """Why `user` can't edit the prescription section, or None if they can."""
     if botox.is_closed:
         return "This form has been closed (completed or withdrawn) and is now read-only."
-    if not user.is_prescriber:
-        return "Only a prescriber can complete this section."
-    if not hasattr(user, "prescriber_details"):
+    if not (user.is_prescriber or user.is_practitioner):
+        return "Only the prescriber or practitioner can edit this section."
+    if user.is_prescriber and not hasattr(user, "prescriber_details"):
         return "Your prescriber registration details haven't been set up yet. Please ask the clinic to add them."
     if not botox.client_signed:
         return "The client hasn't completed their section of this form yet."
@@ -402,9 +402,13 @@ def _prescriber_values(botox):
 @clinical_staff_required
 def botox_prescriber(request, pk):
     """
-    Prescriber reviews the client's section and records their decision.
-    They can save progress or sign, and keep editing until the practitioner
-    completes the form. The practitioner can view this page but not sign it.
+    The prescription section. The prescriber reviews the client's section
+    and records their decision; the practitioner can also edit it. Both can
+    save progress until the practitioner completes the form, but only the
+    prescriber can sign. The practitioner's changes keep the prescriber's
+    signature (they work through the consultation together); the prescriber
+    saving without signing removes their own, so a signature always matches
+    what they last approved.
     """
     botox = get_object_or_404(BotoxConsentForm, pk=pk)
     if botox.is_closed:
@@ -421,6 +425,8 @@ def botox_prescriber(request, pk):
         with transaction.atomic():
             botox = BotoxConsentForm.objects.select_for_update().get(pk=pk)
             error = _prescriber_block_reason(request.user, botox)
+            if not error and signing and not request.user.is_prescriber:
+                error = "Only the prescriber can sign this section."
 
             decision = data.get("prescription_decision", "")
             if decision not in BotoxConsentForm.PrescriptionDecision.values:
@@ -447,21 +453,27 @@ def botox_prescriber(request, pk):
                     error = "A valid prescriber signature is required."
 
             if not error:
-                details = request.user.prescriber_details
-                botox.prescriber               = request.user
-                botox.prescriber_name          = details.display_name
-                botox.prescriber_registration  = details.registration_display
                 botox.prescriber_face_to_face  = bool(data.get("prescriber_face_to_face"))
                 botox.prescription_decision    = decision
                 botox.prescribed_product       = product
                 botox.prescribed_dose          = dose
                 botox.prescription_valid_until = valid_until
                 botox.prescriber_notes         = data.get("prescriber_notes", "")
-                # Saving progress after signing withdraws the signature — it
-                # must always match what's on the form.
-                botox.prescriber_signature     = sig if signing else ""
-                botox.prescriber_signed        = signing
-                botox.prescriber_signed_at     = timezone.now() if signing else None
+
+                # The practitioner's changes keep the prescriber's signature:
+                # they work through the consultation together, and every
+                # change is recorded under whoever made it.
+                if request.user.is_prescriber:
+                    details = request.user.prescriber_details
+                    botox.prescriber              = request.user
+                    botox.prescriber_name         = details.display_name
+                    botox.prescriber_registration = details.registration_display
+                    # The prescriber saving progress after signing withdraws
+                    # their signature — it must always match the form.
+                    botox.prescriber_signature    = sig if signing else ""
+                    botox.prescriber_signed       = signing
+                    botox.prescriber_signed_at    = timezone.now() if signing else None
+
                 botox.save(update_fields=BotoxConsentForm.PRESCRIBER_FIELDS)
                 botox.log_revision(
                     request.user, Section.PRESCRIBER,
@@ -472,6 +484,9 @@ def botox_prescriber(request, pk):
                     # Back to the worklist so they can move on to the next client.
                     messages.success(request, f"Signed for {botox.user.full_name}.")
                     return redirect("dashboard:prescriber_home")
+                if request.user.is_practitioner:
+                    messages.success(request, "Prescription details saved.")
+                    return redirect("forms_system:botox_operator", pk=pk)
                 messages.success(request, "Progress saved — not yet signed.")
                 return redirect("forms_system:botox_prescriber", pk=pk)
 
@@ -480,6 +495,7 @@ def botox_prescriber(request, pk):
     return render(request, "forms_system/botox/prescriber.html", {
         "botox":     botox,
         "can_edit":  block_reason is None,
+        "can_sign":  block_reason is None and request.user.is_prescriber,
         "block_reason": block_reason if request.user.is_prescriber else None,
         "signature_withdrawn": lifecycle.last_revision_was_withdrawn(botox, Section.PRESCRIBER),
         "error":     error,
@@ -487,6 +503,57 @@ def botox_prescriber(request, pk):
         "decisions": BotoxConsentForm.PrescriptionDecision.choices,
         "prescriber_details": getattr(request.user, "prescriber_details", None),
     })
+
+
+@clinical_staff_required
+def botox_client_edit(request, pk):
+    """
+    The practitioner or prescriber edits the client's answers on a submitted
+    form, e.g. during the consultation. Every signature stays in place — they
+    work through it together — and the change is recorded under the staff
+    member's name.
+    """
+    botox = get_object_or_404(BotoxConsentForm, pk=pk)
+    back  = botox.operator_url if request.user.is_practitioner else reverse("forms_system:botox_prescriber", args=[pk])
+    if botox.is_closed:
+        return redirect(botox.view_url)
+    if not botox.client_signed:
+        messages.error(request, "The client hasn't submitted their section yet.")
+        return redirect(back)
+
+    error, shown = None, botox
+    if request.method == "POST":
+        is_minor = _dob_is_minor(request.POST.get("date_of_birth", ""))
+        answers, error = lifecycle.values_from_post(BotoxConsentForm, BotoxConsentForm.CLIENT_ANSWER_FIELDS, request.POST)
+        if not is_minor:
+            answers.update({name: "" for name in GUARDIAN_FIELDS})
+        elif not (answers["guardian_name"] and answers["guardian_phone"]):
+            error = error or "Clients under 18 need a parent or guardian's name and phone number."
+
+        if not error:
+            with transaction.atomic():
+                botox  = BotoxConsentForm.objects.select_for_update().get(pk=pk)
+                if botox.is_closed:
+                    return redirect(botox.view_url)
+                before = botox.snapshot(BotoxConsentForm.CLIENT_ANSWER_FIELDS)
+                for name, value in answers.items():
+                    setattr(botox, name, value)
+                if botox.snapshot(BotoxConsentForm.CLIENT_ANSWER_FIELDS) != before:
+                    botox.save(update_fields=BotoxConsentForm.CLIENT_ANSWER_FIELDS)
+                    botox.log_revision(request.user, Section.CLIENT, Action.UPDATED, BotoxConsentForm.CLIENT_FIELDS)
+                    messages.success(request, "Client's answers updated.")
+            return redirect(back)
+        shown = BotoxConsentForm(user=botox.user, **answers)
+
+    return render(request, "forms_system/botox/client.html", {
+        "f":            shown,
+        "staff_edit":   True,
+        "current":      botox,
+        "error":        error,
+        "back_url":     back,
+        "target_user":  botox.user,
+        "profile_is_minor": _profile_is_minor(botox.user),
+    }, status=400 if error else 200)
 
 
 @staff_required
@@ -497,6 +564,85 @@ def botox_operator(request, pk):
 @clinical_staff_required
 def botox_view(request, pk):
     return _record_page(request, BotoxConsentForm, pk, "forms_system/botox/view.html", as_name="botox")
+
+
+# ---------------------------------------------------------------------------
+# Botox Treatment Cards
+#
+# Practitioner only: what was injected at each appointment, under which
+# prescription. A draft until they sign and complete it. The prescriber can
+# view cards; clients can't.
+# ---------------------------------------------------------------------------
+
+def _prescriptions(user):
+    """The client's Botox forms with a signed prescription, newest first."""
+    return BotoxConsentForm.objects.filter(
+        user=user, withdrawn=False, prescriber_signed=True,
+        prescription_decision=BotoxConsentForm.PrescriptionDecision.PRESCRIBED,
+    ).order_by("-prescriber_signed_at")
+
+
+def _apply_botox_card(card, data):
+    error = lifecycle.apply_values(
+        BotoxTreatmentCard, [n for n in BotoxTreatmentCard.OPERATOR_INPUT_FIELDS if n != "prescription"],
+    )(card, data)
+    if error:
+        return error
+    # Only one of this client's own prescriptions can be chosen.
+    chosen = data.get("prescription")
+    card.prescription = _prescriptions(card.user).filter(pk=chosen).first() if chosen else None
+    if chosen and card.prescription is None:
+        return "Please choose one of this client's prescriptions."
+    return None
+
+
+def _botox_card_context(user, card=None):
+    prescriptions = list(_prescriptions(user))
+    chosen = card.prescription if card else (prescriptions[0] if prescriptions else None)
+    day    = card.date if card else timezone.localdate()
+    return {
+        "target_user":   user,
+        "prescriptions": prescriptions,
+        "chosen_prescription": chosen,
+        "prescription_valid":  bool(chosen and chosen.prescription_valid_on(day)),
+        "areas":         BotoxTreatmentCard.AREAS,
+    }
+
+
+@staff_required
+def botox_card_new(request, user_id):
+    target_user = get_object_or_404(User, pk=user_id)
+    error = None
+
+    if request.method == "POST":
+        card  = BotoxTreatmentCard(user=target_user, created_by=request.user)
+        error = _apply_botox_card(card, request.POST)
+        if not error:
+            card.save()
+            card.log_revision(request.user, Section.OPERATOR, Action.SAVED, BotoxTreatmentCard.OPERATOR_FIELDS)
+            # Signing / completing happens on the card's own page.
+            if request.POST.get("action") in ("sign", "complete"):
+                return botox_card_edit(request, card.pk)
+            return redirect(card.operator_url)
+
+    return render(request, "forms_system/botox/treatment_card.html", {
+        "f": None, "error": error, **_botox_card_context(target_user),
+    }, status=400 if error else 200)
+
+
+@staff_required
+def botox_card_edit(request, pk):
+    card = get_object_or_404(BotoxTreatmentCard, pk=pk)
+    return _practitioner_page(
+        request, BotoxTreatmentCard, pk, "forms_system/botox/treatment_card.html",
+        apply_section=_apply_botox_card,
+        context=_botox_card_context(card.user, card),
+    )
+
+
+@clinical_staff_required
+def botox_card_view(request, pk):
+    return _record_page(request, BotoxTreatmentCard, pk, "forms_system/botox/treatment_card_view.html")
 
 
 # ---------------------------------------------------------------------------

@@ -5,7 +5,7 @@
 {% block content %}
 <div class="cform-page cform-page--wide">
 <div class="cform-header">
-    <span class="cform-header__eyebrow">Caldwell Cosmetics — Prescriber Section</span>
+    <span class="cform-header__eyebrow">Caldwell Cosmetics — Prescription</span>
     <h1 class="cform-header__title">Botox Consent &amp; Prescription</h1>
     <p class="cform-header__sub">Client: <strong>{{ botox.user.full_name }}</strong> — submitted {{ botox.client_signed_at|date:"j F Y \a\t H:i" }}.</p>
 </div>
@@ -13,12 +13,16 @@
 {% if error %}<div class="cform-behalf-banner cform-error-banner" role="alert">{{ error }}</div>{% endif %}
 {% for message in messages %}<div class="cform-existing-banner" role="status">{{ message }}</div>{% endfor %}
 {% if signature_withdrawn %}
-<div class="cform-behalf-banner cform-minor-banner" role="alert"><strong>The client has changed their answers since this was signed.</strong> Please review their section again and re-sign.</div>
+<div class="cform-behalf-banner cform-minor-banner" role="alert"><strong>The client changed their answers after this was signed</strong>, so the prescriber's signature was removed. {% if can_sign %}Please review it again and re-sign.{% else %}The prescriber will need to review and sign it again.{% endif %}</div>
 {% elif botox.prescriber_signed %}
-<div class="cform-existing-banner">Signed by {{ botox.prescriber_name }} on {{ botox.prescriber_signed_at|date:"j F Y \a\t H:i" }}.{% if can_edit %} You can still make changes until the practitioner completes the form — saving again will need your signature.{% endif %}</div>
+<div class="cform-existing-banner">Signed by {{ botox.prescriber_name }} on {{ botox.prescriber_signed_at|date:"j F Y \a\t H:i" }}.{% if can_sign %} You can still make changes until the practitioner completes the form — saving again will need your signature.{% elif can_edit %} You can still update the details — their signature stays in place.{% endif %}</div>
 {% endif %}
 
 {% include "forms_system/botox/_client_summary.html" %}
+{% if can_edit %}
+{% url 'forms_system:botox_client_edit' botox.pk as client_edit_url %}
+{% include "forms_system/_lifecycle/edit_bar.html" with url=client_edit_url label="Edit Client's Answers" hint="Correct or update the client's answers. Their signature stays on file and your changes are recorded under your name." %}
+{% endif %}
 
 {% if can_edit %}
 
@@ -31,11 +35,11 @@
         <div class="cform-grid cform-grid--2" style="margin-bottom:1rem;">
             <div class="cform-field">
                 <label class="cform-label">Prescriber</label>
-                <input class="cform-input" type="text" value="{{ prescriber_details.display_name }}" readonly>
+                <input class="cform-input" type="text" value="{% if prescriber_details %}{{ prescriber_details.display_name }}{% else %}{{ botox.prescriber_name|default:"Added when the prescriber signs" }}{% endif %}" readonly>
             </div>
             <div class="cform-field">
                 <label class="cform-label">Registration</label>
-                <input class="cform-input" type="text" value="{{ prescriber_details.registration_display }}" readonly>
+                <input class="cform-input" type="text" value="{% if prescriber_details %}{{ prescriber_details.registration_display }}{% else %}{{ botox.prescriber_registration|default:"—" }}{% endif %}" readonly>
             </div>
         </div>
 
@@ -78,17 +82,25 @@
 
     <div class="cform-section">
         <h2 class="cform-section__title">Prescriber Signature</h2>
-        <p class="cform-hint">I confirm the decision above is based on my face-to-face assessment of this client.</p>
         {% if botox.prescriber_signed %}<p class="cform-hint">Current signature: <img src="{{ botox.prescriber_signature }}" alt="Current prescriber signature" class="cform-sig-preview"></p>{% endif %}
+        {% if can_sign %}
+        <p class="cform-hint">I confirm the decision above is based on my face-to-face assessment of this client.</p>
         <div class="cform-sig-wrap"><canvas id="sigCanvas" class="cform-sig-canvas"></canvas><div class="cform-sig-actions"><button type="button" class="btn btn--ghost btn--sm" id="sigClear">Clear</button></div></div>
         <input type="hidden" name="prescriber_signature" id="sigData">
+        {% else %}
+        <p class="cform-hint">Only the prescriber can sign this section.{% if botox.prescriber_signed %} Their signature stays in place if you update the details, and your changes are recorded under your name.{% endif %}</p>
+        {% endif %}
     </div>
 
     <div class="cform-submit-row" style="gap:1rem; flex-wrap:wrap;">
+        {% if can_sign %}
         <button type="submit" name="action" value="save" class="btn btn--ghost btn--lg" data-no-signature>Save Progress</button>
         <button type="submit" name="action" value="sign" class="btn btn--primary btn--lg">Save &amp; Sign</button>
+        {% else %}
+        <button type="submit" name="action" value="save" class="btn btn--primary btn--lg" data-no-signature>Save Changes</button>
+        {% endif %}
     </div>
-    <p class="cform-hint" style="text-align:right;">Saving progress without signing will remove any existing signature on this section.</p>
+    {% if can_sign %}<p class="cform-hint" style="text-align:right;">Saving progress without signing will remove any existing signature on this section.</p>{% endif %}
 </form>
 <script src="{% static 'js/sig_pad.js' %}?v=4"></script>
 <script>

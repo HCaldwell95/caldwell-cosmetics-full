@@ -953,3 +953,48 @@ details[open] .cform-prev-summary::after {
 .cform-submit-row {
     gap: 0.75rem;
 }
+/* =====================================================
+   Edit bar — a prominent "Edit …" button under a
+   read-only section (e.g. staff editing the client's answers)
+   ===================================================== */
+
+.cform-edit-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin: -0.75rem 0 1.75rem;
+    padding: 0.75rem 1rem;
+    background: #fdf8f3;
+    border: 1px solid #efe2d3;
+    border-radius: 8px;
+}
+
+.cform-edit-bar__hint {
+    font-family: var(--font-montserrat, 'Montserrat', sans-serif);
+    font-size: 0.78rem;
+    color: var(--color-text-light, #888);
+    margin: 0;
+}
+
+.btn--edit {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    background-color: #fff;
+    color: var(--color-primary-dark, #b8865f);
+    border: 1.5px solid var(--color-primary, #d4a373);
+    white-space: nowrap;
+}
+
+.btn--edit:hover {
+    background-color: var(--color-primary, #d4a373);
+    color: #fff;
+}
+
+.btn--edit svg {
+    width: 15px;
+    height: 15px;
+    flex-shrink: 0;
+}

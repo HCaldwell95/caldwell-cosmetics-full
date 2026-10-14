@@ -6,7 +6,7 @@ from django.urls import reverse
 
 from apps.accounts.models import PrescriberDetails, User
 from apps.forms_system.models import (
-    BotoxConsentForm, ConsultationForm, FormRevision, LaserReConsent,
+    BotoxConsentForm, BotoxTreatmentCard, ConsultationForm, FormRevision, LaserReConsent,
     PhotographyConsent, PRPConsentForm, RecordCard,
 )
 
@@ -59,7 +59,7 @@ class BotoxLifecycleTests(TestCase):
 
     def practitioner_saves(self, action="sign", **overrides):
         self.client.force_login(self.practitioner)
-        data = {"action": action, "units_forehead": "10", "units_total": "10", "operator_signature": png_sig("operator")}
+        data = {"action": action, "operator_signature": png_sig("operator")}
         data.update(overrides)
         return self.client.post(reverse("forms_system:botox_operator", args=[self.form().pk]), data)
 
@@ -87,7 +87,6 @@ class BotoxLifecycleTests(TestCase):
         f = self.form()
         self.assertTrue(f.prescriber_signed)
         self.assertFalse(f.operator_signed)
-        self.assertEqual(f.units_forehead, "10")
         self.assertFalse(f.can_finalise)
 
         self.practitioner_saves()
@@ -124,11 +123,11 @@ class BotoxLifecycleTests(TestCase):
                          {"action": "sign", "prescribed_product": "Changed", "prescriber_signature": png_sig("x")})
         self.client.force_login(self.practitioner)
         self.client.post(reverse("forms_system:botox_operator", args=[done.pk]),
-                         {"action": "sign", "units_forehead": "99", "operator_signature": png_sig("x")})
+                         {"action": "save"})
 
         done.refresh_from_db()
         self.assertEqual(done.prescribed_product, "Botox 100u")
-        self.assertEqual(done.units_forehead, "10")
+        self.assertTrue(done.operator_signed)
         self.assertEqual(done.revisions.count(), revisions)
 
         # Edit pages send you to the read-only record.
@@ -170,7 +169,7 @@ class BotoxLifecycleTests(TestCase):
 
         self.client.force_login(self.prescriber)
         page = self.client.get(reverse("forms_system:botox_prescriber", args=[f.pk]))
-        self.assertContains(page, "changed their answers")
+        self.assertContains(page, "changed their answers after this was signed")
 
     def test_missing_signature_reshows_form_with_answers(self):
         r = self.client_submits(signature="", current_medications="Aspirin")
@@ -188,10 +187,10 @@ class BotoxLifecycleTests(TestCase):
 
     def test_saves_only_touch_own_section(self):
         self.client_submits()
-        self.practitioner_saves(action="save", units_forehead="12")
         self.prescriber_saves(action="save")
+        self.practitioner_saves()
         f = self.form()
-        self.assertEqual(f.units_forehead, "12")
+        self.assertTrue(f.operator_signed)
         self.assertEqual(f.prescribed_product, "Botox 100u")
         self.assertFalse(f.prescriber_signed)
 
@@ -277,6 +276,176 @@ class BotoxLifecycleTests(TestCase):
         self.client.post(reverse("forms_system:botox_operator", args=[self.form().pk]),
                          {"action": "complete", "confirm_complete": "1"})
         self.assertFalse(self.form().finalised)
+
+    # ---- the practitioner can edit the prescription, but only the prescriber signs ----
+
+    def practitioner_edits_prescription(self, action="save", **overrides):
+        self.client.force_login(self.practitioner)
+        data = {
+            "action": action, "prescriber_face_to_face": "1", "prescription_decision": "prescribed",
+            "prescribed_product": "Botox 100u", "prescribed_dose": "Up to 64 units",
+            "prescriber_signature": png_sig("practitioner"),
+        }
+        data.update(overrides)
+        return self.client.post(reverse("forms_system:botox_prescriber", args=[self.form().pk]), data)
+
+    def test_practitioner_can_edit_prescription_but_not_sign(self):
+        self.client_submits()
+        r = self.practitioner_edits_prescription(prescriber_notes="Drafted by practitioner")
+        self.assertRedirects(r, self.form().operator_url, fetch_redirect_response=False)
+        f = self.form()
+        self.assertEqual(f.prescriber_notes, "Drafted by practitioner")
+        self.assertFalse(f.prescriber_signed)
+        self.assertEqual(f.revisions.last().user, self.practitioner)
+
+        self.practitioner_edits_prescription(action="sign")
+        self.assertFalse(self.form().prescriber_signed)
+
+        page = self.client.get(reverse("forms_system:botox_prescriber", args=[f.pk]))
+        self.assertContains(page, "Only the prescriber can sign this section.")
+        self.assertNotContains(page, 'name="prescriber_signature"')
+
+        # The prescriber then signs what the practitioner drafted.
+        self.prescriber_saves(prescriber_notes="Drafted by practitioner")
+        f = self.form()
+        self.assertTrue(f.prescriber_signed)
+        self.assertEqual(f.prescriber_name, "Dr Jane Smith")
+
+    def test_practitioner_changing_signed_prescription_keeps_signature(self):
+        # They work through the consultation together, so the signature stays.
+        self.client_submits()
+        self.prescriber_saves()
+        self.practitioner_edits_prescription(prescribed_dose="Up to 40 units")
+        f = self.form()
+        self.assertTrue(f.prescriber_signed)
+        self.assertEqual(f.prescribed_dose, "Up to 40 units")
+        self.assertEqual(f.prescriber_name, "Dr Jane Smith")
+        last = f.revisions.last()
+        self.assertEqual((last.user, last.action, last.data["prescribed_dose"]), (self.practitioner, Action.SAVED, "Up to 40 units"))
+
+    # ---- staff can edit the client's answers ----
+
+    def staff_edits_client(self, user, **overrides):
+        self.client.force_login(user)
+        data = {
+            "full_name": "Amy", "date_of_birth": "1990-01-01", "email": "client@example.com",
+            "current_medications": "None", "is_pregnant": "0", "consent_agreement": "on",
+        }
+        data.update(overrides)
+        return self.client.post(reverse("forms_system:botox_client_edit", args=[self.form().pk]), data)
+
+    def test_staff_edit_client_answers_without_resigning(self):
+        self.client_submits()
+        self.prescriber_saves()
+        self.practitioner_saves()
+        signature = self.form().signature
+
+        for user in (self.practitioner, self.prescriber):
+            r = self.staff_edits_client(user, current_medications=f"Edited by {user.email}")
+            self.assertEqual(r.status_code, 302)
+            f = self.form()
+            self.assertEqual(f.current_medications, f"Edited by {user.email}")
+            self.assertEqual(f.signature, signature)  # client's signature kept
+            self.assertEqual(f.revisions.filter(section=Section.CLIENT).last().user, user)
+
+        f = self.form()
+        self.assertTrue(f.prescriber_signed)  # signatures stay — edits are made together in the consultation
+        self.assertTrue(f.operator_signed)
+
+    def test_client_cannot_use_staff_edit(self):
+        self.client_submits()
+        self.staff_edits_client(self.client_user, current_medications="Sneaky")
+        self.assertEqual(self.form().current_medications, "None")
+
+    def test_staff_edit_needs_client_to_have_submitted(self):
+        self.client_submits(signature="")  # nothing saved
+        BotoxConsentForm.objects.create(user=self.client_user, full_name="Amy", date_of_birth=date(1990, 1, 1),
+                                        email="client@example.com", signature="")
+        self.staff_edits_client(self.practitioner, current_medications="Too early")
+        self.assertEqual(self.form().current_medications, "")
+
+
+class BotoxTreatmentCardTests(TestCase):
+    """The practitioner's record of each Botox treatment — separate from the consent form."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.practitioner = User.objects.create_superuser(email="owner@example.com", password="x" * 12)
+        cls.prescriber   = User.objects.create_user(email="dr@example.com", password="x" * 12, role=User.Role.PRESCRIBER)
+        cls.client_user  = User.objects.create_user(email="client@example.com", password="x" * 12, first_name="Amy")
+        cls.other_client = User.objects.create_user(email="other@example.com", password="x" * 12, first_name="Bo")
+        cls.prescription = cls.prescribe(cls.client_user)
+
+    @staticmethod
+    def prescribe(user, **fields):
+        from django.utils import timezone
+        values = dict(
+            user=user, signature=png_sig("c"), full_name=user.first_name, date_of_birth=date(1990, 1, 1),
+            email=user.email, client_signed=True, prescriber_signed=True, prescriber_signed_at=timezone.now(),
+            prescriber_name="Dr Jane Smith", prescription_decision="prescribed",
+            prescribed_product="Botox 100u", prescribed_dose="Up to 64 units",
+        )
+        values.update(fields)
+        return BotoxConsentForm.objects.create(**values)
+
+    def setUp(self):
+        self.client.force_login(self.practitioner)
+        self.new_url = reverse("forms_system:botox_card_new", args=[self.client_user.pk])
+
+    def card_data(self, **overrides):
+        data = {"prescription": self.prescription.pk, "date": "2026-10-01", "time": "10:30",
+                "treatment_product_lot": "LOT123", "units_forehead": "10", "units_glabella": "20",
+                "units_total": "30", "action": "save", "operator_signature": png_sig("op")}
+        data.update(overrides)
+        return data
+
+    def test_practitioner_records_signs_and_completes(self):
+        page = self.client.get(self.new_url)
+        self.assertContains(page, "Dr Jane Smith")  # the prescription is offered
+        r = self.client.post(self.new_url, self.card_data())
+        card = BotoxTreatmentCard.objects.get(user=self.client_user)
+        self.assertRedirects(r, card.operator_url, fetch_redirect_response=False)
+        self.assertEqual((card.treatment_number, card.prescription, card.units_total), (1, self.prescription, "30"))
+
+        self.client.post(card.operator_url, self.card_data(action="sign"))
+        self.client.post(card.operator_url, {"action": "complete", "confirm_complete": "1"})
+        card.refresh_from_db()
+        self.assertTrue(card.finalised)
+        self.assertContains(self.client.get(card.view_url), "Glabella: 20")
+
+        # The consent form lists it.
+        self.assertContains(self.client.get(self.prescription.operator_url), f"#{card.treatment_number}")
+
+    def test_prescriber_can_view_but_not_edit(self):
+        self.client.post(self.new_url, self.card_data())
+        card = BotoxTreatmentCard.objects.get()
+        self.client.force_login(self.prescriber)
+        self.assertEqual(self.client.get(card.view_url).status_code, 200)
+        self.client.post(card.operator_url, self.card_data(units_total="99", action="sign"))
+        self.client.post(self.new_url, self.card_data())
+        self.assertEqual(BotoxTreatmentCard.objects.get().units_total, "30")
+        self.assertEqual(BotoxTreatmentCard.objects.count(), 1)
+
+    def test_client_cannot_see_cards(self):
+        self.client.post(self.new_url, self.card_data())
+        card = BotoxTreatmentCard.objects.get()
+        self.client.force_login(self.client_user)
+        self.assertNotEqual(self.client.get(card.view_url).status_code, 200)
+        self.assertNotContains(self.client.get(reverse("accounts:profile")), "Treatment Card")
+
+    def test_only_this_clients_prescriptions_can_be_linked(self):
+        other = self.prescribe(self.other_client)
+        r = self.client.post(self.new_url, self.card_data(prescription=other.pk))
+        self.assertContains(r, "choose one of this client&#x27;s prescriptions", status_code=400)
+        self.assertFalse(BotoxTreatmentCard.objects.exists())
+
+    def test_warns_when_no_valid_prescription(self):
+        self.assertNotContains(self.client.get(self.new_url), "Prescription expired")
+        self.prescription.prescription_valid_until = date(2020, 1, 1)
+        self.prescription.save()
+        self.assertContains(self.client.get(self.new_url), "Prescription expired")
+        page = self.client.get(reverse("forms_system:botox_card_new", args=[self.other_client.pk]))
+        self.assertContains(page, "No prescription on file")
 
 
 # ---------------------------------------------------------------------------

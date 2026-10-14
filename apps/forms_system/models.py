@@ -404,11 +404,15 @@ class ConsultationForm(LifecycleMixin, BaseForm):
 
 class BotoxConsentForm(LifecycleMixin, BaseForm):
     """
-    Botulinum Toxin Consent — two-step.
-    Step 1: client section. Step 2: operator section.
-    The form is considered complete only when operator_signed is True.
-    Between the two, the prescriber completes the prescriber section after
-    a face-to-face assessment.
+    Botulinum Toxin Consent & Prescription.
+
+    1. Client section — completed by the client; the practitioner and the
+       prescriber can also edit it (each change is recorded under their name).
+    2. Prescriber section — edited by the prescriber or the practitioner,
+       but only the prescriber can sign it, after a face-to-face assessment.
+    3. The practitioner countersigns and completes the form.
+
+    The treatment itself is recorded separately, on BotoxTreatmentCard.
     """
 
     class PrescriptionDecision(models.TextChoices):
@@ -498,46 +502,9 @@ class BotoxConsentForm(LifecycleMixin, BaseForm):
     prescriber_signed           = models.BooleanField(default=False)
     prescriber_signed_at        = models.DateTimeField(null=True, blank=True)
 
-    # ---- Step 2: Operator ----
-    treatment_notes             = models.TextField(blank=True)
-    next_appointment            = models.CharField(max_length=200, blank=True)
-
-    # Treatment table rows (up to 4 lines)
-    treatment_line_1            = models.CharField(max_length=300, blank=True)
-    treatment_price_1           = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
-    treatment_units_1           = models.CharField(max_length=50, blank=True)
-    treatment_batch_1           = models.CharField(max_length=100, blank=True)
-
-    treatment_line_2            = models.CharField(max_length=300, blank=True)
-    treatment_price_2           = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
-    treatment_units_2           = models.CharField(max_length=50, blank=True)
-    treatment_batch_2           = models.CharField(max_length=100, blank=True)
-
-    treatment_line_3            = models.CharField(max_length=300, blank=True)
-    treatment_price_3           = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
-    treatment_units_3           = models.CharField(max_length=50, blank=True)
-    treatment_batch_3           = models.CharField(max_length=100, blank=True)
-
-    operator_notes              = models.TextField(blank=True)
-
-    # ---- Step 2: Treatment areas (facial mapping) ----
-    treatment_product_lot       = models.CharField(max_length=200, blank=True)
-    units_forehead              = models.CharField(max_length=10, blank=True)
-    units_glabella              = models.CharField(max_length=10, blank=True)
-    units_crows_feet            = models.CharField(max_length=10, blank=True)
-    units_jelly_roll            = models.CharField(max_length=10, blank=True)
-    units_bunny_lines           = models.CharField(max_length=10, blank=True)
-    units_gummy_smile           = models.CharField(max_length=10, blank=True)
-    units_smokers_lines         = models.CharField(max_length=10, blank=True)
-    units_lip_flip              = models.CharField(max_length=10, blank=True)
-    units_dao_jowls             = models.CharField(max_length=10, blank=True)
-    units_chin                  = models.CharField(max_length=10, blank=True)
-    units_masseter              = models.CharField(max_length=10, blank=True)
-    units_neck_bands            = models.CharField(max_length=10, blank=True)
-    units_total                 = models.CharField(max_length=10, blank=True)
-    treatment_cost              = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
-
-    # Operator signature, completion and withdrawal come from LifecycleMixin.
+    # ---- Practitioner ----
+    # Their countersignature, completion and withdrawal come from
+    # LifecycleMixin. What's injected is recorded on a BotoxTreatmentCard.
 
     # Which fields each person owns. Saves only ever write their own
     # section, so two people working on the form can't overwrite each other.
@@ -559,19 +526,15 @@ class BotoxConsentForm(LifecycleMixin, BaseForm):
         "signature", "guardian_signature", "client_signed", "client_signed_at",
         "completed_by_practitioner", "practitioner",
     ]
-    PRESCRIBER_FIELDS = [
-        "prescriber", "prescriber_name", "prescriber_registration", "prescriber_face_to_face",
-        "prescription_decision", "prescribed_product", "prescribed_dose", "prescription_valid_until",
-        "prescriber_notes", "prescriber_signature", "prescriber_signed", "prescriber_signed_at",
+    # The prescription details either the prescriber or the practitioner can edit.
+    PRESCRIPTION_INPUT_FIELDS = [
+        "prescriber_face_to_face", "prescription_decision", "prescribed_product",
+        "prescribed_dose", "prescription_valid_until", "prescriber_notes",
     ]
-    OPERATOR_TEXT_FIELDS = [
-        "treatment_notes", "next_appointment", "treatment_product_lot",
-        "units_forehead", "units_glabella", "units_crows_feet", "units_jelly_roll",
-        "units_bunny_lines", "units_gummy_smile", "units_smokers_lines", "units_lip_flip",
-        "units_dao_jowls", "units_chin", "units_masseter", "units_neck_bands", "units_total",
-        "operator_notes",
+    PRESCRIBER_FIELDS = ["prescriber", "prescriber_name", "prescriber_registration"] + PRESCRIPTION_INPUT_FIELDS + [
+        "prescriber_signature", "prescriber_signed", "prescriber_signed_at",
     ]
-    OPERATOR_FIELDS = OPERATOR_TEXT_FIELDS + ["treatment_cost"] + LifecycleMixin.OPERATOR_SIGNATURE_FIELDS
+    OPERATOR_FIELDS = list(LifecycleMixin.OPERATOR_SIGNATURE_FIELDS)
 
     VIEW_URL_NAME     = "forms_system:botox_view"
     OPERATOR_URL_NAME = "forms_system:botox_operator"
@@ -592,11 +555,118 @@ class BotoxConsentForm(LifecycleMixin, BaseForm):
     def is_prescribed(self):
         return self.prescriber_signed and self.prescription_decision == self.PrescriptionDecision.PRESCRIBED
 
+    def prescription_valid_on(self, day):
+        return self.is_prescribed and not self.withdrawn and (
+            self.prescription_valid_until is None or self.prescription_valid_until >= day
+        )
+
     class Meta(BaseForm.Meta):
         verbose_name = "Botox Consent & Prescription"
 
     def __str__(self):
         return f"Botox Consent & Prescription — {self.user.full_name} ({self.completed_at.date()})"
+
+
+class BotoxTreatmentCard(LifecycleMixin, models.Model):
+    """
+    What was injected at one Botox appointment. Practitioner only: they fill
+    it in (keeping it as a draft as long as they need), sign and complete it.
+    The prescriber can view it; the client can't. Linked to the prescription
+    it was given under.
+    """
+    AREAS = [
+        ("units_forehead",      "Forehead / Frontalis"),
+        ("units_glabella",      "Glabella"),
+        ("units_crows_feet",    "Crows Feet / Brow Lift"),
+        ("units_jelly_roll",    "Jelly Roll"),
+        ("units_bunny_lines",   "Bunny Lines"),
+        ("units_gummy_smile",   "Gummy Smile"),
+        ("units_smokers_lines", "Smokers Lines"),
+        ("units_lip_flip",      "Lip Flip"),
+        ("units_dao_jowls",     "DAO / Jowls"),
+        ("units_chin",          "Chin"),
+        ("units_masseter",      "Masseter"),
+        ("units_neck_bands",    "Neck Bands"),
+    ]
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="botox_treatment_cards",
+    )
+    treatment_number = models.PositiveIntegerField(help_text="Auto-incremented per client.")
+    prescription     = models.ForeignKey(
+        BotoxConsentForm,
+        on_delete=models.PROTECT,
+        null=True, blank=True,
+        related_name="treatment_cards",
+    )
+    date = models.DateField(default=timezone.localdate)
+    time = models.TimeField(default=_current_time)
+
+    treatment_product_lot = models.CharField(max_length=200, blank=True)
+    units_forehead        = models.CharField(max_length=10, blank=True)
+    units_glabella        = models.CharField(max_length=10, blank=True)
+    units_crows_feet      = models.CharField(max_length=10, blank=True)
+    units_jelly_roll      = models.CharField(max_length=10, blank=True)
+    units_bunny_lines     = models.CharField(max_length=10, blank=True)
+    units_gummy_smile     = models.CharField(max_length=10, blank=True)
+    units_smokers_lines   = models.CharField(max_length=10, blank=True)
+    units_lip_flip        = models.CharField(max_length=10, blank=True)
+    units_dao_jowls       = models.CharField(max_length=10, blank=True)
+    units_chin            = models.CharField(max_length=10, blank=True)
+    units_masseter        = models.CharField(max_length=10, blank=True)
+    units_neck_bands      = models.CharField(max_length=10, blank=True)
+    units_total           = models.CharField(max_length=10, blank=True)
+    treatment_cost        = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
+    next_appointment      = models.CharField(max_length=200, blank=True)
+    treatment_notes       = models.TextField(blank=True, help_text="Notes of agreed treatment.")
+    operator_notes        = models.TextField(blank=True)
+
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="+",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    OPERATOR_INPUT_FIELDS = (
+        ["prescription", "date", "time", "treatment_product_lot"]
+        + [name for name, _ in AREAS]
+        + ["units_total", "treatment_cost", "next_appointment", "treatment_notes", "operator_notes"]
+    )
+    OPERATOR_FIELDS = OPERATOR_INPUT_FIELDS + LifecycleMixin.OPERATOR_SIGNATURE_FIELDS
+
+    VIEW_URL_NAME     = "forms_system:botox_card_view"
+    OPERATOR_URL_NAME = "forms_system:botox_card_edit"
+    FORM_TITLE        = "Botox Treatment Card"
+
+    class Meta:
+        ordering        = ["-date", "-time"]
+        unique_together = ("user", "treatment_number")
+
+    def __str__(self):
+        return f"Botox Treatment Card #{self.treatment_number} — {self.user.full_name} ({self.date})"
+
+    @property
+    def area_units(self):
+        """(area, units) for each area treated."""
+        return [(label, getattr(self, name)) for name, label in self.AREAS if getattr(self, name)]
+
+    def save(self, *args, **kwargs):
+        if not self.pk and not self.treatment_number:
+            with transaction.atomic():
+                self.treatment_number = _next_treatment_number(BotoxTreatmentCard, self.user)
+                super().save(*args, **kwargs)
+            return
+        super().save(*args, **kwargs)
+
+
+def _next_treatment_number(model, user):
+    """The client's next per-client number for `model`. Call inside a transaction."""
+    last = model.objects.select_for_update().filter(user=user).order_by("-treatment_number").first()
+    return (last.treatment_number + 1) if last else 1
 
 
 class PhotographyConsent(LifecycleMixin, BaseForm):
@@ -800,14 +870,7 @@ class RecordCard(LifecycleMixin, models.Model):
     def save(self, *args, **kwargs):
         if not self.pk and not self.treatment_number:
             with transaction.atomic():
-                last = (
-                    RecordCard.objects
-                    .select_for_update()
-                    .filter(user=self.user)
-                    .order_by("-treatment_number")
-                    .first()
-                )
-                self.treatment_number = (last.treatment_number + 1) if last else 1
+                self.treatment_number = _next_treatment_number(RecordCard, self.user)
                 super().save(*args, **kwargs)
             return
         super().save(*args, **kwargs)

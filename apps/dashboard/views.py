@@ -21,6 +21,7 @@ from apps.treatments.models import Treatment, TreatmentCategory
 from apps.forms_system.models import (
     ConsultationForm,
     BotoxConsentForm,
+    BotoxTreatmentCard,
     PhotographyConsent,
     RecordCard,
     PRPConsentForm,
@@ -710,6 +711,20 @@ def client_profile(request, pk):
                 "operator_url":     rc.operator_url,
             }
             for rc in record_cards
+        ],
+        # Practitioner and prescriber only — never shown to the client.
+        "botox_cards": [
+            {
+                "id":               card.pk,
+                "treatment_number": card.treatment_number,
+                "date":             card.date.strftime("%d %b %Y"),
+                "units_total":      card.units_total,
+                "status":           "completed" if card.finalised else "withdrawn" if card.withdrawn else "draft",
+                "operator_signed":  card.operator_signed,
+                "view_url":         card.view_url,
+                "operator_url":     card.operator_url,
+            }
+            for card in BotoxTreatmentCard.objects.filter(user=user).order_by("-treatment_number")
         ],
         "notes": [
             {

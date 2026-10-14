@@ -222,6 +222,21 @@ function renderProfilePanel(data) {
           }).join('')
         : '<p class="dash-muted">No record cards yet.</p>';
 
+    // Botox treatment cards
+    var botoxCardsHtml = (data.botox_cards || []).length
+        ? data.botox_cards.map(function (card) {
+            var href  = (card.status === 'draft' && !isPrescriber) ? card.operator_url : card.view_url;
+            var badge = card.status === 'draft'
+                        ? '<span class="dash-status dash-status--warning">' + (card.operator_signed ? 'Ready to complete' : 'Draft') + '</span>'
+                      : card.status === 'withdrawn' ? '<span class="dash-status">Withdrawn</span>' : '';
+            return '<a href="' + href + '" target="_blank" class="dash-record-row">'
+                + '<span class="dash-record-row__num">#' + card.treatment_number + '</span>'
+                + '<span class="dash-record-row__date">' + esc(card.date) + '</span>'
+                + '<span class="dash-record-row__treatment">' + (card.units_total ? esc(card.units_total) + ' units' : '—') + ' ' + badge + '</span>'
+                + '</a>';
+          }).join('')
+        : '<p class="dash-muted">No treatment cards yet.</p>';
+
     // Notes
     var notesHtml = (data.notes && data.notes.length)
         ? data.notes.map(function (n) {
@@ -355,6 +370,12 @@ function renderProfilePanel(data) {
         + '<div class="dash-form-pills">' + botoxCurrentPills + prpCurrentPills + '</div>'
         + archiveToggle('formArchiveInjectablesToggle', 'formArchiveInjectablesContent', botoxArchivePills + prpArchivePills)
         + '</div>'
+
+        // Botox treatment cards (practitioner; read-only for the prescriber; never the client)
+        + '<div class="dash-panel-section">'
+        + '<div class="dash-panel-section__header"><h3 class="dash-panel-section__title">Botox Treatment Cards</h3>'
+        + (isPrescriber ? '' : '<a href="' + DASHBOARD_URLS.botoxCardNew.replace('{id}', u.id) + '" class="btn btn--ghost btn--sm" target="_blank">+ New Treatment Card</a>')
+        + '</div><div class="dash-record-list">' + botoxCardsHtml + '</div></div>'
 
         // Laser record cards (each includes the client's re-consent)
         + '<div class="dash-panel-section">'

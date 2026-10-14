@@ -18,12 +18,14 @@ from django.utils import timezone
 from apps.bookings.models import Booking
 
 from .models import (
-    BotoxConsentForm, ConsultationForm, FormRevision,
+    BotoxConsentForm, BotoxTreatmentCard, ConsultationForm, FormRevision,
     PhotographyConsent, PRPConsentForm, RecordCard,
 )
 
 # Archived LaserReConsent forms are all closed, so they never need anything.
-LIFECYCLE_MODELS = (ConsultationForm, PhotographyConsent, BotoxConsentForm, PRPConsentForm, RecordCard)
+LIFECYCLE_MODELS = (
+    ConsultationForm, PhotographyConsent, BotoxConsentForm, BotoxTreatmentCard, PRPConsentForm, RecordCard,
+)
 
 
 def _open_forms(model):

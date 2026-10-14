@@ -18,6 +18,7 @@ urlpatterns = [
     path("photography/<int:pk>/operator/",  views.photography_operator,  name="photography_operator"),
     path("botox/<int:pk>/operator/",   views.botox_operator,       name="botox_operator"),
     path("botox/<int:pk>/prescriber/", views.botox_prescriber,     name="botox_prescriber"),
+    path("botox/<int:pk>/client/",     views.botox_client_edit,    name="botox_client_edit"),
     path("prp/<int:pk>/operator/",     views.prp_operator,         name="prp_operator"),
     path("laser/<int:pk>/operator/",   views.laser_operator,       name="laser_operator"),
 
@@ -31,6 +32,11 @@ urlpatterns = [
     path("records/<int:user_id>/new/", views.record_card_new,      name="record_card_new"),
     path("records/<int:pk>/edit/",     views.record_card_edit,     name="record_card_edit"),
     path("records/<int:pk>/view/",     views.record_card_view,     name="record_card_view"),
+
+    # Botox treatment cards (practitioner only; the prescriber can view them)
+    path("botox-cards/<int:user_id>/new/", views.botox_card_new,  name="botox_card_new"),
+    path("botox-cards/<int:pk>/edit/",     views.botox_card_edit, name="botox_card_edit"),
+    path("botox-cards/<int:pk>/view/",     views.botox_card_view, name="botox_card_view"),
 
     # Pre / post treatment information pages
     path("botox/pre-treatment/",       views.botox_pre_treatment,  name="botox_pre_treatment"),
